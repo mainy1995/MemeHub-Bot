@@ -1,0 +1,34 @@
+{
+  "name": "MemeHub-Bot",
+  "version": "0.0.0",
+  "description": "post Memes",
+  "repository": {
+    "url": "mainy1995/MemeHub-Bot",
+    "type": "git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "dev": "supervisor -x micro-bot index.js",
+    "start": "micro-bot",
+    "now-start": "micro-bot -d ${NOW_URL}",
+    "lint": "eslint .",
+    "test": "npm run lint"
+  },
+  "engines": {
+    "node": ">=8.5.0"
+  },
+  "author": "mainy1995 <yannik.meinke@web.de>",
+  "license": "MIT",
+  "dependencies": {
+    "micro-bot": "^2.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "supervisor": "^0.12.0"
+  }
+}
