@@ -55,7 +55,8 @@ bot.on('photo', (ctx) => {
             }else if(err){
                 console.log(err);
             } 
-            //send photo to Memehub with inlinekeyboard          
+            //send photo to Memehub with inlinekeyboard  
+            //hier id für die gruppe eintragen        
             ctx.telegram.sendPhoto('-1001324535695', ctx.message.photo[ctx.message.photo.length-1].file_id, { caption: "@" + ctx.message.from.username, reply_markup: { inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]] } }); //, { text: "👎", callback_data: "downvote" }
             
         });
