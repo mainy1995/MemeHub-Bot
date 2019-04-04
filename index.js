@@ -1,5 +1,7 @@
 const { Composer, log, session } = require('micro-bot')
 var mysql = require('mysql');
+
+//Read SQL Connection from console
 const mysql_password =  process.env.MYSQL_PASSWORD
 if (!mysql_password) {
   console.error(`μ-bot: Please supply Mysql password`)
@@ -10,6 +12,8 @@ if (!mysql_host) {
   console.error(`μ-bot: Please supply Mysql Host`)
   process.exit(1)
 }
+
+//Create SQL Connection
 var con = mysql.createConnection({
     host: mysql_host,
     user: "MemehubBOT",
@@ -19,29 +23,47 @@ var con = mysql.createConnection({
 
 const bot = new Composer()
 
-bot.use(log())
-bot.use(session())
-bot.start(({ reply }) => reply('Welcome message'))
-bot.help(({ reply }) => reply('Help message'))
-bot.settings(({ reply }) => reply('Bot settings'))
+bot.use(log());
+bot.use(session());
+
+//replay to /start
+bot.start(({ reply }) => reply('Welcome message'));
+
+//replay to /help
+bot.help(({ reply }) => reply('Help message'));
+
+//replat on /date
+bot.command('date', ({ reply }) => reply(`Server time: ${Date()}`))
+
+
+//replay to /setting
+bot.settings(({ reply }) => reply('Bot settings'));
+
+//do this if photo is sent
 bot.on('photo', (ctx) => {
     ctx.reply('👍')
     console.log(ctx.message)
     con.connect(function (err) {
         if (err) console.log(err);
         console.log()
+
+        //insert photo and publisher in database pick the photoid with the highest resolution
         var sql = "INSERT INTO Memehub.memes (UserID, photoID) VALUES ( '"+ctx.message.from.id +"','"+ctx.message.photo[ctx.message.photo.length-1].file_id+"')";
         con.query(sql, function (err, result) {
             if (err&&err.sqlMessage.includes('photoID')) {
                 ctx.telegram.sendMessage(ctx.message.from.id,'REPOST DU SPAST!'); 
             }else if(err){
                 console.log(err);
-            }           
+            } 
+            //send photo to Memehub with inlinekeyboard          
             ctx.telegram.sendPhoto('-1001324535695', ctx.message.photo[ctx.message.photo.length-1].file_id, { caption: "@" + ctx.message.from.username, reply_markup: { inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]] } }); //, { text: "👎", callback_data: "downvote" }
             
         });
     });
 })
+
+
+//do this on an callback query
 bot.on('callback_query', (ctx) => {
     let photoID=ctx.update.callback_query.message.photo[ctx.update.callback_query.message.photo.length-1].file_id;
     let upvotes;
@@ -64,17 +86,16 @@ bot.on('callback_query', (ctx) => {
                     upvotes=result[0].upvotes;
                     ctx.editMessageReplyMarkup({inline_keyboard: [[{ text: "👍 - "+upvotes,callback_data:"upvote"}]]});
                     
-    ctx.answerCbQuery();
+                ctx.answerCbQuery();
                 });
             });           
             break;       
-        default:
-        
-    ctx.answerCbQuery();
+        default:        
+            ctx.answerCbQuery();
             break;
     }
 
 })
-bot.command('date', ({ reply }) => reply(`Server time: ${Date()}`))
+
 
 module.exports = bot
