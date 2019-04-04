@@ -96,6 +96,4 @@ bot.on('callback_query', (ctx) => {
     }
 
 })
-
-
 module.exports = bot
