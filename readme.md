@@ -1,5 +1,5 @@
 
-Verher nodejs und mysql installieren
+Vorher nodejs und mysql installieren
 datenbank einrichten mit den 2 tabellen im sql ordner und benutzer anlegen
 dann in den ordner und npm install und dann könnt ihr mit dem npm run start den bot starten
 
