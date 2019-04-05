@@ -2,15 +2,15 @@ const { Composer, log, session } = require('micro-bot')
 var mysql = require('mysql');
 
 //Read SQL Connection from console
-const mysql_password =  process.env.MYSQL_PASSWORD
+const mysql_password = process.env.MYSQL_PASSWORD
 if (!mysql_password) {
-  console.error(`μ-bot: Please supply MYSQL_PASSWORD`)
-  process.exit(1)
+    console.error(`μ-bot: Please supply MYSQL_PASSWORD`)
+    process.exit(1)
 }
-const mysql_host =  process.env.MYSQL_HOST
+const mysql_host = process.env.MYSQL_HOST
 if (!mysql_host) {
-  console.error(`μ-bot: Please supply MYSQL_HOST`)
-  process.exit(1)
+    console.error(`μ-bot: Please supply MYSQL_HOST`)
+    process.exit(1)
 }
 
 const mysql_user = process.env.MYSQL_USER
@@ -24,7 +24,7 @@ if (!mysql_user) {
     console.error(`μ-bot: Please supply MYSQL_DB`)
     process.exit(1)
 }
-  
+
 //Create SQL Connection
 var con = mysql.createConnection({
     host: mysql_host,
@@ -66,7 +66,7 @@ bot.on('animation', (ctx) => handle_media_message(ctx, animation_id, send_animat
  */
 function photo_id(message) {
     if (!has_photo(message)) return null
-    return message.photo[message.photo.length-1].file_id
+    return message.photo[message.photo.length - 1].file_id
 }
 
 /**
@@ -116,6 +116,18 @@ function any_media_id(message) {
     return null
 }
 
+
+function save_user(user) {
+    var sql = "REPLACE INTO user (UserID, Username, Vorname, Nachname) VALUES ( '" + user.id + "','" + user.username + "','" + user.first_name + "','" + user.last_name + "');";
+    con.query(sql, function (err, result) {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
+
+
+
 /**
  * Saves memes to the db, forwards them and handles upvoting
  * @param {The telegraph message context} ctx 
@@ -130,26 +142,34 @@ function handle_media_message(ctx, file_id_callback, send_media) {
 
         //insert photo and publisher in database
         var file_id = file_id_callback(ctx.message)
-        var user_id = ctx.message.from.id
-        var sql = "INSERT INTO memes (UserID, photoID) VALUES ( '" + user_id + "','" + file_id + "')";
+        var user = ctx.message.from
+        if (!ctx.message.from.is_bot) {
+            save_user(ctx.message.from);
+        }
+        var sql = "INSERT INTO memes (UserID, photoID,privMessageID,groupMessageID,categorie ) VALUES ( '" + user.id + "','" + file_id + "','" + ctx.message.message_id + "','" + file_id + "','" + file_id + "')";
         con.query(sql, function (err, result) {
-            if (err&&err.sqlMessage.includes('photoID')) {
-                ctx.telegram.sendMessage(user_id,'REPOST DU SPAST!'); 
-            }else if(err){
+            if (err && err.sqlMessage.includes('photoID')) {
+                ctx.telegram.sendMessage(user.id, 'REPOST DU SPAST!');
+            } else if (err) {
                 console.log(err);
-            } 
+            }
             //send the meme to Memehub with inlinekeyboard
             send_media(
                 ctx,
                 group_id,
-                file_id, 
-                { 
-                    caption: "@" + ctx.message.from.username, 
-                    reply_markup: { 
-                        inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]] 
-                    } 
+                file_id,
+                {
+                    caption: "@" + ctx.message.from.username,
+                    reply_markup: {
+                        inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]]
+                    }
                 }
-            ); //, { text: "👎", callback_data: "downvote" } 
+            ).then((ctx)=>{
+                
+
+
+
+            }); //, { text: "👎", callback_data: "downvote" } 
         });
     });
 }
@@ -160,13 +180,16 @@ function handle_media_message(ctx, file_id_callback, send_media) {
 bot.on('callback_query', (ctx) => {
     let file_id = any_media_id(ctx.update.callback_query.message)
     let upvotes;
-    let user=ctx.update.callback_query.from.id;
+    let user = ctx.update.callback_query.from;
     console.log(ctx.update)
+    if (!ctx.message.from.is_bot) {
+        save_user(ctx.message.from);
+    }
     switch (ctx.update.callback_query.data) {
         case "upvote":
             con.connect(function (err) {
                 if (err) console.log(err);
-                var sql = "INSERT INTO votes (userID, photoID, vote) VALUES ('" + user + "','" + file_id + "', true) ON DUPLICATE KEY UPDATE vote = !vote;";
+                var sql = "INSERT INTO votes (userID, photoID, vote) VALUES ('" + user.id + "','" + file_id + "', true) ON DUPLICATE KEY UPDATE vote = !vote;";
                 console.log(sql);
                 con.query(sql, function (err, result) {
                     if (err) console.log(err);
@@ -176,13 +199,13 @@ bot.on('callback_query', (ctx) => {
                 con.query(sql, function (err, result) {
                     if (err) console.log(err);
                     console.log(result[0].upvotes);
-                    upvotes=result[0].upvotes;
-                    ctx.editMessageReplyMarkup({inline_keyboard: [[{ text: "👍 - " + upvotes, callback_data: "upvote" }]]});
+                    upvotes = result[0].upvotes;
+                    ctx.editMessageReplyMarkup({ inline_keyboard: [[{ text: "👍 - " + upvotes, callback_data: "upvote" }]] });
                     ctx.answerCbQuery();
                 });
-            });           
-            break;       
-        default:        
+            });
+            break;
+        default:
             ctx.answerCbQuery();
             break;
     }
