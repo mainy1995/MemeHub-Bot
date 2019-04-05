@@ -4,25 +4,42 @@ var mysql = require('mysql');
 //Read SQL Connection from console
 const mysql_password =  process.env.MYSQL_PASSWORD
 if (!mysql_password) {
-  console.error(`μ-bot: Please supply Mysql password`)
+  console.error(`μ-bot: Please supply MYSQL_PASSWORD`)
   process.exit(1)
 }
 const mysql_host =  process.env.MYSQL_HOST
 if (!mysql_host) {
-  console.error(`μ-bot: Please supply Mysql Host`)
+  console.error(`μ-bot: Please supply MYSQL_HOST`)
   process.exit(1)
 }
 
+const mysql_user = process.env.MYSQL_USER
+if (!mysql_user) {
+    console.error(`μ-bot: Please supply MYSQL_USER`)
+    process.exit(1)
+}
+
+const mysql_db = process.env.MYSQL_DB
+if (!mysql_user) {
+    console.error(`μ-bot: Please supply MYSQL_DB`)
+    process.exit(1)
+}
+  
 //Create SQL Connection
 var con = mysql.createConnection({
     host: mysql_host,
-    user: "root",
+    user: mysql_user,
     password: mysql_password,
-    database: "Memehub"
+    database: mysql_db
 });
 
+const group_id = process.env.GROUP_ID
+if (!mysql_user) {
+    console.error(`μ-bot: Please supply GROUP_ID`)
+    process.exit(1)
+}
+
 const bot = new Composer()
-const group_id = '-330462420'
 
 bot.use(log());
 bot.use(session());
