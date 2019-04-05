@@ -13,11 +13,11 @@ als umgebung nutze ich ms visual studio code
 
 ```sh
 $ npm install
-$ BOT_TOKEN='123:......' MYSQL_HOST='...' MYSQL_PASSWORD='...' npm run start
+$ BOT_TOKEN='123:......' GROUP_ID='...' MYSQL_HOST='...' MYSQL_USER='...' MYSQL_PASSWORD='...' MYSQL_DB='...' npm run start
 ```
 
 Frameworks:
-Telegraf:   https://telegraf.js.org/#/?id=telegraf-js
-μ-bot:      https://github.com/telegraf/micro-bot
+ -  Telegraf:   https://telegraf.js.org/#/?id=telegraf-js  
+ -  μ-bot:      https://github.com/telegraf/micro-bot  
 
 Datenbank:  mySQL
