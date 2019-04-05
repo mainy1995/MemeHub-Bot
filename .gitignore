@@ -36,3 +36,4 @@ node_modules
 coverage
 
 start_bot.sh
+package-lock.json
