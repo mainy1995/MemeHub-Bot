@@ -119,6 +119,55 @@ function any_media_id(message) {
     return null
 }
 
+
+function save_user(user) {
+    var sql = "REPLACE INTO user (UserID, Username, Vorname, Nachname) VALUES ( '" + user.id + "','" + user.username + "','" + user.first_name + "','" + user.last_name + "');";
+    console.log("=========================SAVE USER SQL QUERY===========================")
+    console.log(sql)
+    console.log(user)
+    con.query(sql, function (err, result) {
+        if (err) {
+            console.log("=========================SQL QUERY===========================")
+            console.log(sql)
+            console.log(err);
+        }
+    });
+}
+function conOpen(con, callback) {
+    switch (con.state) {
+        case 16:
+            con.end(function (err) {
+                if (err) {
+                    console.log("=========================SQL CON END===========================")
+                    console.log(sql)
+                    console.log(err);
+                }
+
+            });
+            con.connect(function (err) {
+                if (err) {
+                    console.log("=========================SQL CON START===========================")
+                    console.log(sql)
+                    console.log(err);
+                }
+                callback();
+            });
+            break;
+        case 0:
+            con.connect(function (err) {
+                if (err) {
+                    console.log("=========================SQL CON START===========================")
+                    console.log(sql)
+                    console.log(err);
+                }
+                callback();
+            });
+            break;
+        default:
+            callback();
+            break;
+    }
+}
 /**
  * Saves memes to the db, forwards them and handles upvoting
  * @param {The telegraph message context} ctx 
@@ -126,11 +175,9 @@ function any_media_id(message) {
  */
 function handle_media_message(ctx, file_id_callback, send_media) {
     ctx.reply('👍')
+    console.log("=======================HANDLE MEDIA=======================")
     console.log(ctx.message)
-    con.connect(function (err) {
-        if (err) console.log(err);
-        console.log()
-
+    conOpen(con, function () {
         //insert photo and publisher in database
         var file_id = file_id_callback(ctx.message)
         var user_id = ctx.message.from.id
@@ -139,6 +186,17 @@ function handle_media_message(ctx, file_id_callback, send_media) {
             if (err&&err.sqlMessage.includes('photoID')) {
                 ctx.telegram.sendMessage(user_id,'REPOST DU SPAST!'); 
             }else if(err){
+        var user = ctx.message.from
+        if (!ctx.message.from.is_bot) {
+            save_user(ctx.message.from);
+        }
+        var sql = "INSERT INTO memes (UserID, photoID,privMessageID,categorie ) VALUES ( '" + user.id + "','" + file_id + "','" + ctx.message.message_id + "','" + ctx.message.caption + "')";
+        con.query(sql, function (err, result) {
+            if (err && err.sqlMessage.includes('photoID')) {
+                ctx.telegram.sendMessage(user.id, 'REPOST DU SPAST!');
+            } else if (err) {
+                console.log("=========================SQL QUERY===========================")
+                console.log(sql)
                 console.log(err);
             } 
             //send the meme to Memehub with inlinekeyboard
@@ -153,9 +211,33 @@ function handle_media_message(ctx, file_id_callback, send_media) {
                     } 
                 }
             ); //, { text: "👎", callback_data: "downvote" } 
+                file_id,
+                {
+                    caption: "@" + ctx.message.from.username+" | #"+ctx.message.caption,
+                    reply_markup: {
+                        inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]]
+                    }
+                }
+            ).then((ctx) => {
+                console.log("=========================SEND MEDIA CALLBACK===========================")
+                console.log(ctx)
+                conOpen(con, function () {
+                    var sql = "UPDATE memes set groupMessageID='" + ctx.message_id + "' where photoID='" + photo_id(ctx) + "' ;";
+                    console.log(sql);
+                    con.query(sql, function (err, result) {
+                        if (err) {
+                            console.log("=========================SQL QUERY===========================")
+                            console.log(sql)
+                            console.log(err);
+                        }
+                    })
+                });
+            });
+
         });
-    });
+    })
 }
+
 
 
 
@@ -171,16 +253,39 @@ bot.on('callback_query', (ctx) => {
                 if (err) console.log(err);
                 var sql = "INSERT INTO votes (userID, photoID, vote) VALUES ('" + user + "','" + file_id + "', true) ON DUPLICATE KEY UPDATE vote = !vote;";
                 console.log(sql);
+
+    let user = ctx.update.callback_query.from;
+    console.log("=======================UPVOTE CALLBACK QUERY=======================")
+    console.log(ctx.update)
+    if (!ctx.update.callback_query.from.is_bot) {
+        save_user(ctx.update.callback_query.from);
+    }
+    switch (ctx.update.callback_query.data) {
+        case "upvote":
+            conOpen(con, function () {
+                var sql = "INSERT INTO votes (userID, photoID, vote) VALUES ('" + user.id + "','" + file_id + "', true) ON DUPLICATE KEY UPDATE vote = !vote;";
+
                 con.query(sql, function (err, result) {
-                    if (err) console.log(err);
-                    console.log("1 record inserted");
+                    if (err) {
+                        console.log("=========================SQL QUERY===========================")
+                        console.log(sql)
+                        console.log(err);
+                    }
                 });
                 var sql = "select sum(vote) as upvotes  from votes where photoID='" + file_id + "';";
                 con.query(sql, function (err, result) {
+
                     if (err) console.log(err);
                     console.log(result[0].upvotes);
                     upvotes=result[0].upvotes;
                     ctx.editMessageReplyMarkup({inline_keyboard: [[{ text: "👍 - " + upvotes, callback_data: "upvote" }]]});
+                    if (err) {
+                        console.log("=========================SQL QUERY===========================")
+                        console.log(sql)
+                        console.log(err);
+                    }
+                    upvotes = result[0].upvotes;
+                    ctx.editMessageReplyMarkup({ inline_keyboard: [[{ text: "👍 - " + upvotes, callback_data: "upvote" }]] });
                     ctx.answerCbQuery();
                 });
             });           
