@@ -174,53 +174,58 @@ function conOpen(con, callback) {
  * @param {A callback used to find the file id of the media in that message} file_id_callback 
  */
 function handle_media_message(ctx, file_id_callback, send_media) {
-    ctx.reply('👍')
-    console.log("=======================HANDLE MEDIA=======================")
-    console.log(ctx.message)
-    conOpen(con, function () {
-        //insert photo and publisher in database
-        var file_id = file_id_callback(ctx.message)
-        var user = ctx.message.from
-        if (!ctx.message.from.is_bot) {
-            save_user(ctx.message.from);
-        }
-        var sql = "INSERT INTO memes (UserID, photoID,privMessageID,categorie ) VALUES ( '" + user.id + "','" + file_id + "','" + ctx.message.message_id + "','" + ctx.message.caption + "')";
-        con.query(sql, function (err, result) {
-            if (err && err.sqlMessage.includes('photoID')) {
-                ctx.telegram.sendMessage(user.id, 'REPOST DU SPAST!');
-            } else if (err) {
-                console.log("=========================SQL QUERY===========================")
-                console.log(sql)
-                console.log(err);
+    var user = ctx.message.from
+    if (!user.username) {
+        ctx.reply('Posting without username not allowed! Set your username in settings.')
+    } else {
+        ctx.reply('👍')
+        console.log("=======================HANDLE MEDIA=======================")
+        console.log(ctx.message)
+        conOpen(con, function () {
+            //insert photo and publisher in database
+            var file_id = file_id_callback(ctx.message)
+            if (!user.is_bot) {
+                save_user(user);
             }
-            //send the meme to Memehub with inlinekeyboard
-            send_media(
-                ctx,
-                group_id,
-                file_id,
-                {
-                    caption: "@" + ctx.message.from.username + " | #" + ctx.message.caption,
-                    reply_markup: {
-                        inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]]
-                    }
+            var sql = "INSERT INTO memes (UserID, photoID,privMessageID,categorie ) VALUES ( '" + user.id + "','" + file_id + "','" + ctx.message.message_id + "','" + ctx.message.caption + "')";
+            con.query(sql, function (err, result) {
+                if (err && err.sqlMessage.includes('photoID')) {
+                    ctx.telegram.sendMessage(user.id, 'REPOST DU SPAST!');
+                } else if (err) {
+                    console.log("=========================SQL QUERY===========================")
+                    console.log(sql)
+                    console.log(err);
                 }
-            ).then((ctx) => {
-                console.log("=========================SEND MEDIA CALLBACK===========================")
-                console.log(ctx)
-                conOpen(con, function () {
-                    var sql = "UPDATE memes set groupMessageID='" + ctx.message_id + "' where photoID='" + photo_id(ctx) + "' ;";
-                    console.log(sql);
-                    con.query(sql, function (err, result) {
-                        if (err) {
-                            console.log("=========================SQL QUERY===========================")
-                            console.log(sql)
-                            console.log(err);
+                //send the meme to Memehub with inlinekeyboard
+                send_media(
+                    ctx,
+                    group_id,
+                    file_id,
+                    {
+                        caption: "@" + user.username + " | #" + ctx.message.caption,
+                        reply_markup: {
+                            inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]]
                         }
-                    })
+                    }
+                ).then((ctx) => {
+                    console.log("=========================SEND MEDIA CALLBACK===========================")
+                    console.log(ctx)
+                    conOpen(con, function () {
+                        var sql = "UPDATE memes set groupMessageID='" + ctx.message_id + "' where photoID='" + photo_id(ctx) + "' ;";
+                        console.log(sql);
+                        con.query(sql, function (err, result) {
+                            if (err) {
+                                console.log("=========================SQL QUERY===========================")
+                                console.log(sql)
+                                console.log(err);
+                            }
+                        })
+                    });
                 });
             });
-        });
-    })
+        })
+    }
+
 }
 
 
