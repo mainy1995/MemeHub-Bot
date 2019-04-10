@@ -37,3 +37,5 @@ coverage
 
 start_bot.sh
 package-lock.json
+
+.vscode/
