@@ -1,5 +1,5 @@
 {
-  "name": "MemeHub-Bot",
+  "name": "memehub-bot",
   "version": "0.0.0",
   "description": "post Memes",
   "repository": {
@@ -12,7 +12,8 @@
     "start": "micro-bot",
     "now-start": "micro-bot -d ${NOW_URL}",
     "lint": "eslint .",
-    "test": "npm run lint"
+    "test": "npm run lint",
+    "debug": "micro-bot --nolazy --inspect-brk=9229"
   },
   "engines": {
     "node": ">=8.5.0"
