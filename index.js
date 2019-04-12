@@ -21,6 +21,7 @@ bot.help(({ reply }) => reply('Just send me memes! You can add categories by add
 
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
+bot.on('video', forward.handle_meme_request);
 
 bot.on('callback_query', (ctx) => {
     if (!ctx.update.callback_query.data in callback_handlers || ctx.update.callback_query.from.is_bot) {
