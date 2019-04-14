@@ -1,11 +1,10 @@
-const { Composer, log, session } = require('micro-bot')
-const util = require('./js/util');
-const db = require('./js/sql-db');
+const { Composer, log, session } = require('micro-bot');
+const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const upvote = require('./js/meme-upvoting');
 const stats = require('./js/statistics');
 
-db.init();
+db.init('live');
 forward.init();
 
 let callback_handlers = {
@@ -21,6 +20,7 @@ bot.help(({ reply }) => reply('Just send me memes! You can add categories by add
 
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
+bot.on('video', forward.handle_meme_request);
 
 bot.on('callback_query', (ctx) => {
     if (!ctx.update.callback_query.data in callback_handlers || ctx.update.callback_query.from.is_bot) {

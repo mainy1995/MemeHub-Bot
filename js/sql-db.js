@@ -57,9 +57,7 @@ function save_user(user) {
             console.log("ERROR: Failed to save user");
             console.log(`  > Query: ${sql}`);
             console.log(`  > Error: ${err}`);
-            return;
         }
-        console.log(`User saved to db (${result})`);
     });
 }
 

@@ -13,7 +13,8 @@
     "now-start": "micro-bot -d ${NOW_URL}",
     "lint": "eslint .",
     "test": "npm run lint",
-    "debug": "micro-bot --nolazy --inspect-brk=9229"
+    "debug": "micro-bot --nolazy --inspect-brk=9229",
+    "migrate": "node js/migration.js"
   },
   "engines": {
     "node": ">=8.5.0"
@@ -22,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "micro-bot": "^2.5.1",
+    "mongodb": "^3.2.3",
     "mysql": "^2.16.0"
   },
   "devDependencies": {

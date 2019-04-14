@@ -1,5 +1,5 @@
 const util = require('./util');
-const db = require('./sql-db');
+const db = require('./mongo-db');
 
 /**
  * Saves the user, his upvote and updates the upvote count.
@@ -14,16 +14,14 @@ function handle_upvote_request(ctx) {
         .then(() => {
             db.count_upvotes(file_id)
                 .then((upvotes) => {
-                    ctx.editMessageReplyMarkup({ inline_keyboard: [[{ text: "👍 - " + upvotes, callback_data: "upvote" }]] });
+                    ctx.editMessageReplyMarkup({ inline_keyboard: [[{ text: `👍 - ${upvotes}`, callback_data: "upvote" }]] })
+                        .catch(err => console.log(`ERROR: Could not update vote count (${err})`));
                     ctx.answerCbQuery();
-                })
-                .catch(() => {
+                }, (err) => {
+                    console.log(`ERROR: counting failed (${err})`);
                     ctx.answerCbQuery();
                 });
-        })
-        .catch(() => {
-            ctx.answerCbQuery();
-        });
+        }, () => ctx.answerCbQuery());
     
 }
 

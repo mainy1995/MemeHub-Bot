@@ -1,10 +1,16 @@
+send_methods = {
+    'photo': 'sendPhoto',
+    'animation': 'sendAnimation',
+    'video': 'sendVideo'
+};
+
 /**
  * Returns the file id of the largest photo in a message or null if no photo is present.
  * @param {the message which contains the photo} message 
  */
 function photo_id(message) {
-    if (!has_photo(message)) return null
-    return message.photo[message.photo.length - 1].file_id
+    if (!has_photo(message)) return null;
+    return message.photo[message.photo.length - 1].file_id;
 }
 
 /**
@@ -12,8 +18,17 @@ function photo_id(message) {
  * @param {The message which contains the animation} message 
  */
 function animation_id(message) {
-    if (!has_animation(message)) return null
-    return message.animation.file_id
+    if (!has_animation(message)) return null;
+    return message.animation.file_id;
+}
+
+/**
+ * Returns the file id of the video in a message or null if none is present.
+ * @param {The message which contains the video} message 
+ */
+function video_id(message) {
+    if (!has_video(message)) return null;
+    return message.video.file_id;
 }
 
 /**
@@ -21,9 +36,10 @@ function animation_id(message) {
  * @param {The message which may contain some kind of media} message 
  */
 function any_media_id(message) {
-    if (has_photo(message)) return photo_id(message)
-    if (has_animation(message)) return animation_id(message)
-    return null
+    if (has_photo(message)) return photo_id(message);
+    if (has_animation(message)) return animation_id(message);
+    if (has_video(message)) return video_id(message);
+    return null;
 }
 
 /**
@@ -31,7 +47,7 @@ function any_media_id(message) {
  * @param {The message to check} message 
  */
 function has_photo(message) {
-    return !!message.photo && message.photo.length > 0
+    return !!message.photo && message.photo.length > 0;
 }
 
 /**
@@ -39,7 +55,15 @@ function has_photo(message) {
  * @param {The message to check} message 
  */
 function has_animation(message) {
-    return !!message.animation
+    return !!message.animation;
+}
+
+/**
+ * Checks weather a message contains a video.
+ * @param {The message to check} message 
+ */
+function has_video(message) {
+    return !!message.video;
 }
 
 /**
@@ -50,9 +74,18 @@ function has_animation(message) {
  * @param {Extra parameters passed to the send method} extra
  */
 function send_any_media(ctx, chat_id, media_id, extra) {
-    if (has_photo(ctx.message)) return ctx.telegram.sendPhoto(chat_id, media_id, extra)
-    if (has_animation(ctx.message)) return ctx.telegram.sendAnimation(chat_id, media_id, extra)
-    return Promise.reject();
+    return send_media_by_type(ctx, chat_id, media_id, get_media_type_from_message(ctx.message), extra);
+}
+
+function send_media_by_type(ctx, chat_id, media_id, media_type, extra) {
+    if (!media_type in send_methods) return Promise.reject();
+    return ctx.telegram[send_methods[media_type]](chat_id, media_id, extra);
+}
+
+function get_media_type_from_message(message) {
+    if (has_photo(message)) return 'photo';
+    if (has_animation(message)) return 'animation';
+    if (has_video(message)) return 'video';
 }
 
 /**
@@ -62,7 +95,14 @@ function send_any_media(ctx, chat_id, media_id, extra) {
 function categroy_from_cation(caption) {
     if (!caption) return null;
     if (typeof caption !== 'string') return null;
-    return caption.replace(/\W/g, '') // Removes all characters that are not alphanumeric or _
+    return caption.replace(/\W/g, ''); // Removes all characters that are not alphanumeric or _
+}
+
+function name_from_user(user) {
+    let name = `@${user.username}`;
+    if (!name) name = `${user.first_name} ${user.last_name}`;
+    if (!name) name = "Unknown user";
+    return name;
 }
 
 /**
@@ -75,7 +115,7 @@ function load_env_variable(name) {
         console.error(`ERROR: Please supply '${name}'`);
         process.exit(1);
     }
-    return value
+    return value;
 }
 
 module.exports.photo_id = photo_id;
@@ -83,6 +123,10 @@ module.exports.animation_id = animation_id;
 module.exports.any_media_id = any_media_id;
 module.exports.has_photo = has_photo;
 module.exports.has_animation = has_animation;
+module.exports.has_video = has_video;
 module.exports.send_any_media = send_any_media;
+module.exports.send_media_by_type = send_media_by_type;
+module.exports.get_media_type_from_message = get_media_type_from_message;
 module.exports.categroy_from_cation = categroy_from_cation;
+module.exports.name_from_user = name_from_user;
 module.exports.load_env_variable = load_env_variable
