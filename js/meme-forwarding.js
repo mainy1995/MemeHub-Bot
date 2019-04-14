@@ -1,5 +1,5 @@
 const util = require('./util');
-const db = require('./sql-db');
+const db = require('./mongo-db');
 
 let group_id;
 
@@ -17,9 +17,10 @@ function init() {
  */
 function handle_meme_request(ctx) {
     try {
-        let user = ctx.message.from
-        let file_id = util.any_media_id(ctx.message)
-        let category = util.categroy_from_cation(ctx.message.caption)
+        let user = ctx.message.from;
+        let file_id = util.any_media_id(ctx.message);
+        let file_type = util.get_media_type_from_message(ctx.message);
+        let category = util.categroy_from_cation(ctx.message.caption);
         
         console.log(` === Meme request from user "${user.first_name} ${user.last_name}" ===`);
 
@@ -40,16 +41,17 @@ function handle_meme_request(ctx) {
         }
         
         db.save_user(user);
-        db.save_meme(user.id, file_id, ctx.message.message_id, category)
+        db.save_meme(user.id, file_id, file_type, ctx.message.message_id, category)
             .then(() => { 
                 ctx.reply('👍'); 
                 forward_meme_to_group(ctx, file_id, user, category)
             })
             .catch((err) => {
-                if (!!err.sqlMessage && err.sqlMessage.includes('photoID')) {
+                if (!!err.code && err.code == 11000) {
                     ctx.telegram.sendMessage(user.id, 'REPOST DU SPAST 😡');
                     return;
                 }
+                console.log(err);
                 ctx.reply("Something went horribly wrong 😢 I cannot send your meme!");
             });
     }
@@ -82,14 +84,14 @@ function forward_meme_to_group(ctx, file_id, user, category) {
             }
         }
     )
-        .then((ctx) => { 
-            console.log("Meme send to group");
-            db.save_meme_group_message(ctx);
-        })
-        .catch((err) => {
-            console.log("ERROR: Could not send meme to group");
-            console.log(`  > Error: ${err}`);
-        });  
+    .catch((err) => {
+        console.log("ERROR: Could not send meme to group");
+        console.log(`  > Error: ${err}`);
+    })
+    .then((ctx) => { 
+        console.log("Meme send to group");
+        db.save_meme_group_message(ctx);
+    });
 }
 
 module.exports.init = init;

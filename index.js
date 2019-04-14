@@ -1,11 +1,10 @@
-const { Composer, log, session } = require('micro-bot')
-const util = require('./js/util');
-const db = require('./js/sql-db');
+const { Composer, log, session } = require('micro-bot');
+const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const upvote = require('./js/meme-upvoting');
 const stats = require('./js/statistics');
 
-db.init();
+db.init('live');
 forward.init();
 
 let callback_handlers = {

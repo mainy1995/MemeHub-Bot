@@ -1,3 +1,9 @@
+send_methods = {
+    'photo': 'sendPhoto',
+    'animation': 'sendAnimation',
+    'video': 'sendVideo'
+};
+
 /**
  * Returns the file id of the largest photo in a message or null if no photo is present.
  * @param {the message which contains the photo} message 
@@ -68,10 +74,18 @@ function has_video(message) {
  * @param {Extra parameters passed to the send method} extra
  */
 function send_any_media(ctx, chat_id, media_id, extra) {
-    if (has_photo(ctx.message)) return ctx.telegram.sendPhoto(chat_id, media_id, extra);
-    if (has_animation(ctx.message)) return ctx.telegram.sendAnimation(chat_id, media_id, extra);
-    if (has_video(ctx.message)) return ctx.telegram.sendVideo(chat_id, media_id, extra);
-    return Promise.reject();
+    return send_media_by_type(ctx, chat_id, media_id, get_media_type_from_message(ctx.message), extra);
+}
+
+function send_media_by_type(ctx, chat_id, media_id, media_type, extra) {
+    if (!media_type in send_methods) return Promise.reject();
+    return ctx.telegram[send_methods[media_type]](chat_id, media_id, extra);
+}
+
+function get_media_type_from_message(message) {
+    if (has_photo(message)) return 'photo';
+    if (has_animation(message)) return 'animation';
+    if (has_video(message)) return 'video';
 }
 
 /**
@@ -82,6 +96,13 @@ function categroy_from_cation(caption) {
     if (!caption) return null;
     if (typeof caption !== 'string') return null;
     return caption.replace(/\W/g, ''); // Removes all characters that are not alphanumeric or _
+}
+
+function name_from_user(user) {
+    let name = `@${user.username}`;
+    if (!name) name = `${user.first_name} ${user.last_name}`;
+    if (!name) name = "Unknown user";
+    return name;
 }
 
 /**
@@ -104,5 +125,8 @@ module.exports.has_photo = has_photo;
 module.exports.has_animation = has_animation;
 module.exports.has_video = has_video;
 module.exports.send_any_media = send_any_media;
+module.exports.send_media_by_type = send_media_by_type;
+module.exports.get_media_type_from_message = get_media_type_from_message;
 module.exports.categroy_from_cation = categroy_from_cation;
+module.exports.name_from_user = name_from_user;
 module.exports.load_env_variable = load_env_variable
