@@ -99,9 +99,16 @@ function categroy_from_cation(caption) {
 }
 
 function name_from_user(user) {
-    let name = `@${user.username}`;
-    if (!name) name = `${user.first_name} ${user.last_name}`;
-    if (!name) name = "Unknown user";
+    let name = user.username;
+    if (!!name) return `@${name}`;
+
+    name = 'Unknonwn User';
+
+    if (!!user.first_name) {
+        name = user.first_name;
+        if (!!user.last_name) return name + ` ${user.last_name}`;
+    }
+    else if (!!user.last_name) return user.last_name;
     return name;
 }
 

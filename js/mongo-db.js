@@ -179,6 +179,11 @@ function get_user_average_upvotes(user_id) {
                     return;
                 }
 
+                if(!result) {
+                    resolve(0);
+                    return;
+                }
+
                 resolve(result.average_upvotes);
             });
         });
