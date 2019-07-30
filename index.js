@@ -4,6 +4,7 @@ const forward = require('./js/meme-forwarding');
 const upvote = require('./js/meme-upvoting');
 const upweeb = require('./js/meme-upweebing');
 const stats = require('./js/statistics');
+const categoriesStage = require('./js/categories');
 
 db.init('test');
 forward.init();
@@ -16,6 +17,7 @@ let callback_handlers = {
 const bot = new Composer()
 bot.use(log());
 bot.use(session());
+categoriesStage.init(bot);
 
 bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
 bot.help(({ reply }) => reply('Just send me memes! You can add categories by adding a caption.'));

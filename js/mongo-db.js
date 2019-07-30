@@ -228,6 +228,21 @@ function get_user_average_upvotes(user_id) {
     });
 }
 
+function get_user_meme_count(user_id) {
+    return new Promise((resolve, reject) => {
+        memes.countDocuments({ poster_id: user_id }, (err, data) => {
+            console.log(err);
+            console.log(data);
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            resolve(data);
+        });
+    });
+}
+
 function get_user_meme_counts() {
     return new Promise((resolve, reject) => {
         memes.aggregate([
@@ -275,3 +290,4 @@ module.exports.count_upweebs = count_upweebs;
 module.exports.get_user_top_meme = get_user_top_meme;
 module.exports.get_user_average_upvotes = get_user_average_upvotes;
 module.exports.get_user_meme_counts = get_user_meme_counts;
+module.exports.get_user_meme_count = get_user_meme_count;

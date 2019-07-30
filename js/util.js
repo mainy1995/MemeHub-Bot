@@ -92,7 +92,7 @@ function get_media_type_from_message(message) {
  * Takes a string and returns a single valid categroy, consisting of only alphanumeric characters and _.
  * @param {The caption written by the user.} caption 
  */
-function categroy_from_cation(caption) {
+function escape_category(caption) {
     if (!caption) return null;
     if (typeof caption !== 'string') return null;
     return caption.replace(/\W/g, ''); // Removes all characters that are not alphanumeric or _
@@ -134,6 +134,6 @@ module.exports.has_video = has_video;
 module.exports.send_any_media = send_any_media;
 module.exports.send_media_by_type = send_media_by_type;
 module.exports.get_media_type_from_message = get_media_type_from_message;
-module.exports.categroy_from_cation = categroy_from_cation;
+module.exports.escape_category = escape_category;
 module.exports.name_from_user = name_from_user;
 module.exports.load_env_variable = load_env_variable
