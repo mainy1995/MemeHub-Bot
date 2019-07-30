@@ -2,13 +2,15 @@ const { Composer, log, session } = require('micro-bot');
 const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const upvote = require('./js/meme-upvoting');
+const upweeb = require('./js/meme-upweebing');
 const stats = require('./js/statistics');
 
-db.init('live');
+db.init('test');
 forward.init();
 
 let callback_handlers = {
-    "upvote": upvote.handle_upvote_request
+    "upvote": upvote.handle_upvote_request,
+    "upweeb": upweeb.handle_upweeb_request
 };
 
 const bot = new Composer()

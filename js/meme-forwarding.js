@@ -80,7 +80,7 @@ function forward_meme_to_group(ctx, file_id, user, category) {
         {
             caption: caption,
             reply_markup: {
-                inline_keyboard: [[{ text: "👍", callback_data: "upvote" }]]
+                inline_keyboard: [[{ text: "👍", callback_data: "upvote" }, {text: "🤬", callback_data: "upweeb"}]]
             }
         }
     )

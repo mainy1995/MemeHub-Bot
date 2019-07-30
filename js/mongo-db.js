@@ -109,6 +109,26 @@ function save_upvote(user_id, file_id) {
     });
 }
 
+function save_upweeb(user_id, file_id) { 
+    return new Promise((resolve, reject) => {
+        memes.findOne({ _id: file_id, upweebed_by: user_id }, { _id: true })
+            .then(meme => {
+                if (meme) {
+                    memes.updateOne(
+                        { _id: file_id },
+                        { $pull: { upweebed_by: user_id }}
+                    ).then(resolve, reject);
+                }
+                else {
+                    memes.updateOne(
+                        { _id: file_id },
+                        { $addToSet: { upweebed_by: user_id }}
+                    ).then(resolve, reject);
+                }
+            }, reject);
+    });
+}
+
 /**
  * Counts the amount of upvotes on the given meme.
  * @param {The id of the meme} file_id 
@@ -123,6 +143,24 @@ function count_upvotes(file_id) {
                 }
 
                 resolve(meme.upvoted_by.length);
+            }, log_err);
+    });
+}
+
+/**
+ * Counts the amount of upweebs on the given meme.
+ * @param {The id of the meme} file_id 
+ */
+function count_upweebs(file_id) {
+    return new Promise((resolve, reject) => {
+        var result = memes.findOne({ _id: file_id })
+            .then(meme => {
+                if (!meme || !meme.upweebed_by) {
+                    reject();
+                    return;
+                }
+
+                resolve(meme.upweebed_by.length);
             }, log_err);
     });
 }
@@ -231,7 +269,9 @@ module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
 module.exports.save_meme_group_message = save_meme_group_message;
 module.exports.save_upvote = save_upvote;
+module.exports.save_upweeb = save_upweeb;
 module.exports.count_upvotes = count_upvotes;
+module.exports.count_upweebs = count_upweebs;
 module.exports.get_user_top_meme = get_user_top_meme;
 module.exports.get_user_average_upvotes = get_user_average_upvotes;
 module.exports.get_user_meme_counts = get_user_meme_counts;
