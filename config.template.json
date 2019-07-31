@@ -1,5 +1,4 @@
 {
-    "bot_token": "<Your telegram bot token>",
     "group_id": "<The id of the meme group>",
     
     "mongodb": {
@@ -11,15 +10,28 @@
         }
     },
 
+    "vote_types": [
+        { 
+            "id": "like",
+            "emoji": "👍"
+         },
+         {
+             "id": "weeb",
+             "emoji": "😺"
+         }
+    ],
+
     "achievements": {
         "post_count": [
             { "count": 1, "message": "The message to show. %USER% will be replaced with the users handle" }
         ],
-        "upvote_count": [
-            { "count": 1, "message": "Exactly the same" }
-        ],
-        "upweeb_count": [
-            { "count": 10000, "message": "There's no limit" }
-        ]
+        "vote_count": {
+            "like": [
+                { "count": 1, "message": "Yust the same" }
+            ],
+            "weeb": [
+                { "count": 10000, "message": "There is no limit" }
+            ]
+        }
     }
 }

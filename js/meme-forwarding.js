@@ -3,6 +3,7 @@ const config = require('./config');
 const db = require('./mongo-db');
 const categories = require('./categories');
 const achievements = require('./achievements');
+const voting = require('./meme-voting');
 
 /**
  * Saves memes to the db, forwards them and handles upvoting
@@ -90,7 +91,7 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
         {
             caption: caption,
             reply_markup: {
-                inline_keyboard: [[{ text: "👍", callback_data: "upvote" }, {text: "🤬", callback_data: "upweeb"}]]
+                inline_keyboard: voting.create_keyboard([])
             }
         }
     )

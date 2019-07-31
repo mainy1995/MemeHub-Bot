@@ -1,16 +1,9 @@
 const { Composer, log, session } = require('micro-bot');
 const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
-const upvote = require('./js/meme-upvoting');
-const upweeb = require('./js/meme-upweebing');
+const voting = require('./js/meme-voting');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
-
-
-const callback_handlers = {
-    "upvote": upvote.handle_upvote_request,
-    "upweeb": upweeb.handle_upweeb_request
-};
 
 const bot = new Composer()
 db.init();
@@ -27,12 +20,11 @@ bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);
 
 bot.on('callback_query', (ctx) => {
-    if (!ctx.update.callback_query.data in callback_handlers || ctx.update.callback_query.from.is_bot) {
+    if (!voting.is_vote_callback(ctx.update.callback_query) || ctx.update.callback_query.from.is_bot) {
         ctx.answerCbQuery();
         return;
     }
-
-    callback_handlers[ctx.update.callback_query.data](ctx);
+    voting.handle_vote_request(ctx);
 });
 
 bot.command('top', stats.my_top); // zeigt mein Meme mit den meisten Upvotes an
