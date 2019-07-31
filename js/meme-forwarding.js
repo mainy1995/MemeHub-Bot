@@ -1,25 +1,16 @@
 const util = require('./util');
+const config = require('./config');
 const db = require('./mongo-db');
 const categories = require('./categories');
-const archievements = require('./archievements');
-
-let group_id;
-
-/**
- * Initializes the module.
- */
-function init() {
-    group_id = util.load_env_variable("GROUP_ID");
-}
+const achievements = require('./achievements');
 
 /**
  * Saves memes to the db, forwards them and handles upvoting
  * @param {The telegraph message context} ctx 
  * @param {A callback used to find the file id of the media in that message} file_id_callback 
  */
-function handle_meme_request(ctx) {
+async function handle_meme_request(ctx) {
     try {
-
         const options = {
             user: ctx.message.from,
             file_id: util.any_media_id(ctx.message),
@@ -46,6 +37,7 @@ function handle_meme_request(ctx) {
             return
         }
         
+        await db.connected;
         db.save_user(options.user);
         
         if (!options.category) {
@@ -66,7 +58,7 @@ function process_meme(ctx, options) {
         .then(() => { 
             forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.category);
             ctx.reply('👍');
-            archievements.check_post_archievements(ctx);
+            setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
         })
         .catch((err) => {
             if (!!err.code && err.code == 11000) {
@@ -92,7 +84,7 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
 
     return util.send_media_by_type(
         ctx,
-        group_id,
+        config.group_id,
         file_id,
         file_type,
         {
@@ -112,7 +104,6 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
     });
 }
 
-module.exports.init = init;
 module.exports.handle_meme_request = handle_meme_request;
 module.exports.process_meme = process_meme;
 module.exports.forward_meme_to_group = forward_meme_to_group;

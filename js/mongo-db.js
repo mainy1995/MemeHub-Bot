@@ -1,28 +1,36 @@
 const util = require('./util.js');
+const config = require('./config');
 const MongoClient = require('mongodb').MongoClient;
-const collection_names = {
-    memes: "memes",
-    users: "users"
-};
+
+const collection_names = config.mongodb.collection_names;
+const db_name = config.mongodb.database;
+
 let client;
 let memes;
 let users;
-let db_name;
 
-function init(database = 'test') {
-    db_name = database;
-    const uri = util.load_env_variable('MONGO_CONNECTION');
+let connected;
+
+function init() {
+    const uri = config.mongodb.connection_string;
     client = new MongoClient(uri, { useNewUrlParser: true });
-    client.connect((err) => {
-        if (err) return log_err(err);
-        console.log("Connected to mongodb");
-        const db = client.db(db_name);
-        db.createCollection(collection_names.memes)
-            .then(collection => memes = collection)
-            .catch(log_err);
-        db.createCollection(collection_names.users)
-            .then(collection => users = collection)
-            .catch(log_err);
+    connected = new Promise((resolve, reject) => {
+        client.connect(async (err) => {
+            if (err) {
+                log_err(err); 
+                reject(err);
+            }
+
+            const db = client.db(db_name);
+            var collections = await Promise.all([
+                db.createCollection(collection_names.memes), 
+                db.createCollection(collection_names.users)
+            ]);
+            
+            memes = collections[0];
+            users = collections[1];
+            resolve();
+        });
     });
 }
 
@@ -46,6 +54,7 @@ function log_err(err) {
     console.log("ERROR: db operation failed.");
     console.log(`  > Error: ${err}`);
 }
+
 
 /**
  * Saves a meme to the database.
@@ -231,7 +240,6 @@ function get_user_average_upvotes(user_id) {
 function get_user_meme_count(user_id) {
     return new Promise((resolve, reject) => {
         memes.countDocuments({ poster_id: user_id }, (err, data) => {
-            console.log(err);
             console.log(data);
             if (err) {
                 reject(err);
@@ -291,3 +299,4 @@ module.exports.get_user_top_meme = get_user_top_meme;
 module.exports.get_user_average_upvotes = get_user_average_upvotes;
 module.exports.get_user_meme_counts = get_user_meme_counts;
 module.exports.get_user_meme_count = get_user_meme_count;
+module.exports.connected = connected;

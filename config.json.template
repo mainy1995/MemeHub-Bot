@@ -1,0 +1,25 @@
+{
+    "bot_token": "<Your telegram bot token>",
+    "group_id": "<The id of the meme group>",
+    
+    "mongodb": {
+        "connection_string": "your mongo db connection string",
+        "database": "<The database to use (e.g. live, test)>",
+        "collection_names": {
+            "memes": "memes>",
+            "users": "users"
+        }
+    },
+
+    "achievements": {
+        "post_count": [
+            { "count": 1, "message": "The message to show. %USER% will be replaced with the users handle" }
+        ],
+        "upvote_count": [
+            { "count": 1, "message": "Exactly the same" }
+        ],
+        "upweeb_count": [
+            { "count": 10000, "message": "There's no limit" }
+        ]
+    }
+}

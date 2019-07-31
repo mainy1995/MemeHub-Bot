@@ -5,10 +5,11 @@ const db = require('./mongo-db');
  * Saves the user, his upvote and updates the upvote count.
  * @param {The context of the callback_query} ctx 
  */
-function handle_weeb_request(ctx) {
+async function handle_weeb_request(ctx) {
     let file_id = util.any_media_id(ctx.update.callback_query.message);
     let user = ctx.update.callback_query.from;
 
+    await db.connected;
     db.save_user(ctx.update.callback_query.from);
     db.save_upweeb(user.id, file_id)
         .then(() => {

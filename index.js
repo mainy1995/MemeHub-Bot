@@ -6,15 +6,15 @@ const upweeb = require('./js/meme-upweebing');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
 
-db.init('test');
-forward.init();
 
-let callback_handlers = {
+const callback_handlers = {
     "upvote": upvote.handle_upvote_request,
     "upweeb": upweeb.handle_upweeb_request
 };
 
 const bot = new Composer()
+db.init();
+
 bot.use(log());
 bot.use(session());
 categoriesStage.init(bot);
@@ -37,6 +37,7 @@ bot.on('callback_query', (ctx) => {
 
 bot.command('top', stats.my_top); // zeigt mein Meme mit den meisten Upvotes an
 bot.command('avg', stats.my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
-bot.command('meme_sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uploads an
+bot.command('sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uploads an
+
 
 module.exports = bot

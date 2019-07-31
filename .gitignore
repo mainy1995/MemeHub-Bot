@@ -39,3 +39,4 @@ start_bot.sh
 package-lock.json
 
 .vscode/
+config.json
