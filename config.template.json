@@ -1,0 +1,37 @@
+{
+    "group_id": "<The id of the meme group>",
+    
+    "mongodb": {
+        "connection_string": "your mongo db connection string",
+        "database": "<The database to use (e.g. live, test)>",
+        "collection_names": {
+            "memes": "memes>",
+            "users": "users"
+        }
+    },
+
+    "vote_types": [
+        { 
+            "id": "like",
+            "emoji": "👍"
+         },
+         {
+             "id": "weeb",
+             "emoji": "😺"
+         }
+    ],
+
+    "achievements": {
+        "post_count": [
+            { "count": 1, "message": "The message to show. %USER% will be replaced with the users handle" }
+        ],
+        "vote_count": {
+            "like": [
+                { "count": 1, "message": "Yust the same" }
+            ],
+            "weeb": [
+                { "count": 10000, "message": "There is no limit" }
+            ]
+        }
+    }
+}

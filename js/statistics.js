@@ -36,8 +36,7 @@ function user_overview(ctx) {
     db.get_user_meme_counts()
         .then(users => {
             let list = users.map((user, index) => `${index + 1}. ${util.name_from_user(user)} with ${user.memes} ${user.memes == 1 ? "meme" : "memes"}` ).join('\n');
-            ctx.reply("Here are the top posters:");
-            ctx.reply(list);
+            ctx.reply(`Here are the top posters:\n\n${list}`);
         }, (err) => {
             console.log(err);
             ctx.reply("I'm broken 💩");

@@ -1,28 +1,36 @@
 const util = require('./util.js');
+const config = require('./config');
 const MongoClient = require('mongodb').MongoClient;
-const collection_names = {
-    memes: "memes",
-    users: "users"
-};
+
+const collection_names = config.mongodb.collection_names;
+const db_name = config.mongodb.database;
+
 let client;
 let memes;
 let users;
-let db_name;
 
-function init(database = 'test') {
-    db_name = database;
-    const uri = util.load_env_variable('MONGO_CONNECTION');
+let connected;
+
+function init() {
+    const uri = config.mongodb.connection_string;
     client = new MongoClient(uri, { useNewUrlParser: true });
-    client.connect((err) => {
-        if (err) return log_err(err);
-        console.log("Connected to mongodb");
-        const db = client.db(db_name);
-        db.createCollection(collection_names.memes)
-            .then(collection => memes = collection)
-            .catch(log_err);
-        db.createCollection(collection_names.users)
-            .then(collection => users = collection)
-            .catch(log_err);
+    connected = new Promise((resolve, reject) => {
+        client.connect(async (err) => {
+            if (err) {
+                log_err(err); 
+                reject(err);
+            }
+
+            const db = client.db(db_name);
+            var collections = await Promise.all([
+                db.createCollection(collection_names.memes), 
+                db.createCollection(collection_names.users)
+            ]);
+            
+            memes = collections[0];
+            users = collections[1];
+            resolve();
+        });
     });
 }
 
@@ -63,7 +71,7 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
             private_message_id: message_id,
             group_message_id: group_message_id,
             category: category,
-            upvoted_by: [],
+            votes: {},
             post_date: post_date
         })
         .then(resolve)
@@ -89,42 +97,66 @@ function save_meme_group_message(ctx) {
     .catch(log_err);
 }
 
-function save_upvote(user_id, file_id) { 
-    return new Promise((resolve, reject) => {
-        memes.findOne({ _id: file_id, upvoted_by: user_id }, { _id: true })
-            .then(meme => {
-                if (meme) {
-                    memes.updateOne(
-                        { _id: file_id },
-                        { $pull: { upvoted_by: user_id }}
-                    ).then(resolve, reject);
-                }
-                else {
-                    memes.updateOne(
-                        { _id: file_id },
-                        { $addToSet: { upvoted_by: user_id }}
-                    ).then(resolve, reject);
-                }
-            }, reject);
-    });
+async function save_vote(user_id, file_id, vote_type) {
+    const vote_path = `votes.${vote_type}`;
+    let find = {};
+    find['_id'] = file_id;
+    find[vote_path] = user_id;
+    
+    try {
+        const meme = await memes.findOne(find);
+        let toggle = {}
+        toggle[vote_path] = user_id;
+
+        if (meme) {
+            await memes.updateOne({ _id: file_id }, { $pull: toggle });
+            return;
+        }
+        await memes.updateOne({ _id: file_id }, { $addToSet: toggle });
+    }
+    catch (err) { log_err(err); }
+    
 }
 
-/**
- * Counts the amount of upvotes on the given meme.
- * @param {The id of the meme} file_id 
- */
-function count_upvotes(file_id) {
-    return new Promise((resolve, reject) => {
-        var result = memes.findOne({ _id: file_id })
-            .then(meme => {
-                if (!meme || !meme.upvoted_by) {
-                    reject();
-                    return;
-                }
+async function count_votes(file_id) {
+    try {
+        const meme = await memes.findOne({ _id: file_id });       
+        if (!meme) throw "meme not found";
+        if (!meme.votes) return [];
 
-                resolve(meme.upvoted_by.length);
-            }, log_err);
-    });
+        const votes = {}
+        for (type of Object.keys(meme.votes)) {
+            votes[type] = meme.votes[type].length;
+        }
+        
+        return votes;
+    }
+    catch (err) { 
+        log_err(err);
+        throw err;
+    }
+}
+
+async function count_user_total_votes_by_type(user_id, vote_type) {
+    try {
+        const cursor = await memes.aggregate([
+            { $match: { poster_id: user_id }},
+            { $project: {
+                _id: false,
+                votes_of_type: `$votes.${vote_type}`
+            }},
+            { $unwind: "$votes_of_type" },
+            { $count: "upvotes" }
+        ]);
+        const result = await cursor.next();
+
+        if (!result) return 0;
+        return result.upvotes;
+    }
+    catch(err) {
+        log_err(err);
+        throw err;
+    }
 }
 
 function get_user_top_meme(user_id) {
@@ -134,7 +166,7 @@ function get_user_top_meme(user_id) {
             { $project: {
                 _id: false,
                 media_id: "$_id",
-                upvotes: { $size: "$upvoted_by" },
+                upvotes: { $size: "$votes.like" },
                 type: true
             }},
             { $sort: { upvotes: -1 } }
@@ -156,12 +188,26 @@ function get_user_top_meme(user_id) {
     });
 }
 
+function get_user_from_meme(file_id) {
+    return new Promise((resolve, reject) => {
+        memes.findOne({ _id: file_id })
+            .then(meme => {
+                if (!meme || !meme.poster_id) {
+                    reject();
+                    return;
+                }
+
+                resolve(meme.poster_id);
+            })
+    })
+}
+
 function get_user_average_upvotes(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
             { $match: { poster_id: user_id }},
             { $project: {
-                upvotes: { $size: "$upvoted_by" }
+                upvotes: { $size: "$vote.like" }
             }},
             { $group: { 
                 _id: "$poster_id",
@@ -179,8 +225,26 @@ function get_user_average_upvotes(user_id) {
                     return;
                 }
 
+                if(!result) {
+                    resolve(0);
+                    return;
+                }
+
                 resolve(result.average_upvotes);
             });
+        });
+    });
+}
+
+function get_user_meme_count(user_id) {
+    return new Promise((resolve, reject) => {
+        memes.countDocuments({ poster_id: user_id }, (err, data) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            resolve(data);
         });
     });
 }
@@ -225,8 +289,12 @@ module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
 module.exports.save_meme_group_message = save_meme_group_message;
-module.exports.save_upvote = save_upvote;
-module.exports.count_upvotes = count_upvotes;
+module.exports.save_vote = save_vote;
+module.exports.count_votes = count_votes;
 module.exports.get_user_top_meme = get_user_top_meme;
 module.exports.get_user_average_upvotes = get_user_average_upvotes;
 module.exports.get_user_meme_counts = get_user_meme_counts;
+module.exports.get_user_meme_count = get_user_meme_count;
+module.exports.get_user_from_meme = get_user_from_meme;
+module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
+module.exports.connected = connected;

@@ -92,30 +92,24 @@ function get_media_type_from_message(message) {
  * Takes a string and returns a single valid categroy, consisting of only alphanumeric characters and _.
  * @param {The caption written by the user.} caption 
  */
-function categroy_from_cation(caption) {
+function escape_category(caption) {
     if (!caption) return null;
     if (typeof caption !== 'string') return null;
     return caption.replace(/\W/g, ''); // Removes all characters that are not alphanumeric or _
 }
 
 function name_from_user(user) {
-    let name = `@${user.username}`;
-    if (!name) name = `${user.first_name} ${user.last_name}`;
-    if (!name) name = "Unknown user";
-    return name;
-}
+    let name = user.username;
+    if (!!name) return `@${name}`;
 
-/**
- * Tries to load an environment variable and terminates the program, if none is found.
- * @param {The name of the environment variable} name 
- */
-function load_env_variable(name) {
-    let value = process.env[name];
-    if (!value) {
-        console.error(`ERROR: Please supply '${name}'`);
-        process.exit(1);
+    name = 'Unknonwn User';
+
+    if (!!user.first_name) {
+        name = user.first_name;
+        if (!!user.last_name) return name + ` ${user.last_name}`;
     }
-    return value;
+    else if (!!user.last_name) return user.last_name;
+    return name;
 }
 
 module.exports.photo_id = photo_id;
@@ -127,6 +121,5 @@ module.exports.has_video = has_video;
 module.exports.send_any_media = send_any_media;
 module.exports.send_media_by_type = send_media_by_type;
 module.exports.get_media_type_from_message = get_media_type_from_message;
-module.exports.categroy_from_cation = categroy_from_cation;
+module.exports.escape_category = escape_category;
 module.exports.name_from_user = name_from_user;
-module.exports.load_env_variable = load_env_variable
