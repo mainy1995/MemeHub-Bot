@@ -42,6 +42,11 @@ async function handle_vote_request(ctx) {
     
 }
 
+async function handle_legacy_like_request(ctx) {
+    ctx.update.callback_query.data = "vote:like";
+    return handle_vote_request(ctx);
+}
+
 function vote_type_from_callback_data(data) {
     return data.split(':', 2)[1];
 }
@@ -61,6 +66,12 @@ function is_vote_callback(callback_query) {
     return callback_query.data.startsWith(`${vote_prefix}:`);
 }
 
+function is_legacy_like_callback(callback_query) {
+    return callback_query.data == "upvote";
+}
+
 module.exports.handle_vote_request = handle_vote_request;
+module.exports.handle_legacy_like_request = handle_legacy_like_request;
 module.exports.create_keyboard = create_keyboard;
 module.exports.is_vote_callback = is_vote_callback;
+module.exports.is_legacy_like_callback = is_legacy_like_callback;

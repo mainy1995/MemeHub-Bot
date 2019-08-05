@@ -20,6 +20,11 @@ bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);
 
 bot.on('callback_query', (ctx) => {
+    if (voting.is_legacy_like_callback(ctx.update.callback_query)) {
+        voting.handle_legacy_like_request(ctx);
+        return;
+    }
+
     if (!voting.is_vote_callback(ctx.update.callback_query) || ctx.update.callback_query.from.is_bot) {
         ctx.answerCbQuery();
         return;
