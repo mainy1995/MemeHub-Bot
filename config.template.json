@@ -10,6 +10,13 @@
         }
     },
 
+    "categories": {
+        "options": [
+            "OC", "Gesellschaft", "Dank", "SpongeBob", "Mathe", "Weeb", "Games"
+        ],
+        "keyboard_width": 3
+    },
+
     "vote_types": [
         { 
             "id": "like",
