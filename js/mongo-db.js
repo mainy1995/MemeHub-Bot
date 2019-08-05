@@ -202,6 +202,11 @@ function get_user_from_meme(file_id) {
     })
 }
 
+async function get_user(user_id) {
+    const user = await users.findOne({ _id: user_id});
+    return user;
+}
+
 function get_user_average_upvotes(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
@@ -298,3 +303,4 @@ module.exports.get_user_meme_count = get_user_meme_count;
 module.exports.get_user_from_meme = get_user_from_meme;
 module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
+module.exports.get_user = get_user;
