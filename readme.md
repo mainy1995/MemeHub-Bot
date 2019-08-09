@@ -1,6 +1,5 @@
 
 Vorher nodejs und mysql installieren
-datenbank einrichten mit den 2 tabellen im sql ordner und benutzer anlegen
 dann in den ordner und npm install und dann könnt ihr mit dem npm run start den bot starten
 
 zum testen erstellt euch einfach nen eigenen bot bei @botfather auf telegram dann bekommt ihr nen bottoken um euch mit ihm zu verbinden.
@@ -20,4 +19,4 @@ Frameworks:
  -  Telegraf:   https://telegraf.js.org/#/?id=telegraf-js  
  -  μ-bot:      https://github.com/telegraf/micro-bot  
 
-Datenbank:  mySQL
+Datenbank:  mongo
