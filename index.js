@@ -2,6 +2,7 @@ const { Composer, log, session } = require('micro-bot');
 const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const voting = require('./js/meme-voting');
+const clearing = require('./js/meme-clearing');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
 
@@ -14,12 +15,20 @@ categoriesStage.init(bot);
 
 bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
 bot.help(({ reply }) => reply('Just send me memes! You can add categories by adding a caption.'));
-
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);
 
+bot.on('text', (ctx)=>{
+    console.log('===========================================text============================================');
+    console.log(ctx);
+    if(clearing.is_clearing_request(ctx)){
+        clearing.clear_repost(ctx);
+    }
+}) 
+
 bot.on('callback_query', (ctx) => {
+    
     if (voting.is_legacy_like_callback(ctx.update.callback_query)) {
         voting.handle_legacy_like_request(ctx);
         return;
