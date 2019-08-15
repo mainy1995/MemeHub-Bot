@@ -1,22 +1,25 @@
+# Setup
 
-Vorher nodejs und mysql installieren
-dann in den ordner und npm install und dann könnt ihr mit dem npm run start den bot starten
+  - Install node and npm from [here](https://nodejs.org/en/)
+  - fork and clone the repo
+  - run `npm i` inside
+  - copy `config.template.json` to `config.json` and configure your settings
+  - create a bot using the [@BotFather](https://telegram.me/botfather) in telegram
+  - add the bot to a group and find the group id ([How-To](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id))
+  - depending on your system, copy `start_bot.template.sh` (linux) or `start_bot.template.ps1` (Windows powershell) and set your bot token, which you got from the BotFather
+  - make sure you have a working mongodb instance (see mongodb)
 
-zum testen erstellt euch einfach nen eigenen bot bei @botfather auf telegram dann bekommt ihr nen bottoken um euch mit ihm zu verbinden.
+# MongoDB
 
-dann müsst ihr noch die gruppen id auf eine gruppe ändern die ihr zum testen benutzt. dazu einfach den bot in ne gruppe einfügen und starten, dann in der gruppe /start und ihr könnt in der konsole die id auslesen.
+The bot uses mongodb for storing data. You only need to create a database, collections will be created on the fly. Collection names and the database to use are set in the `config.json`.
 
-als umgebung nutze ich ms visual studio code
+A convinient way to get started is to use a free atlas instance in the cloud ([Link](https://www.mongodb.com/cloud/atlas)).
 
-## Usage
+# Running
 
-```sh
-$ npm install
-$ BOT_TOKEN='123:......' GROUP_ID='...' MYSQL_HOST='...' MYSQL_USER='...' MYSQL_PASSWORD='...' MYSQL_DB='...' npm run start
-```
+Just run the `start_bot.sh` / `start_bot.ps1`
 
-Frameworks:
- -  Telegraf:   https://telegraf.js.org/#/?id=telegraf-js  
- -  μ-bot:      https://github.com/telegraf/micro-bot  
+# Frameworks
 
-Datenbank:  mongo
+  - Telegraf:   https://telegraf.js.org/#/?id=telegraf-js  
+  - μ-bot:      https://github.com/telegraf/micro-bot
