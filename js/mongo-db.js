@@ -202,6 +202,11 @@ function get_user_from_meme(file_id) {
     })
 }
 
+async function get_user(user_id) {
+    const user = await users.findOne({ _id: user_id});
+    return user;
+}
+
 function get_user_average_upvotes(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
@@ -284,7 +289,23 @@ function get_user_meme_counts() {
         });
     });
 }
+async function save_repost(message_id) {    
+    let find = {};
+    find['group_message_id'] = message_id;
+    
+    try {
+        const meme = await memes.findOne(find);
 
+        if (meme) {
+            console.log("Test");
+            console.log(message_id);
+            await memes.updateOne({group_message_id: message_id },{ $set:{ isRepost: true}});
+         
+            return;
+        }
+    }
+    catch (err) { log_err(err); }
+}
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
@@ -298,3 +319,5 @@ module.exports.get_user_meme_count = get_user_meme_count;
 module.exports.get_user_from_meme = get_user_from_meme;
 module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
+module.exports.get_user = get_user;
+module.exports.save_repost= save_repost;

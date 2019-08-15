@@ -17,15 +17,16 @@ async function check_post_archievements(ctx) {
 
 async function check_vote_achievements(ctx, file_id, vote_type) {
     try {
-        const user = await db.get_user_from_meme(file_id);
-        const upvotes = await db.count_user_total_votes_by_type(user, vote_type);
+        const poster_id = await db.get_user_from_meme(file_id);
+        const upvotes = await db.count_user_total_votes_by_type(poster_id, vote_type);
         if (!config.achievements.vote_count[vote_type]) return;
 
         const achievement = config.achievements.vote_count[vote_type].find(a => a.count === upvotes);
 
         if (!achievement) return;
-        console.log(ctx);
-        ctx.telegram.sendMessage(config.group_id, fromatMessage(achievement, ctx.update.callback_query.from));
+
+        const poster = await db.get_user(poster_id);
+        ctx.telegram.sendMessage(config.group_id, fromatMessage(achievement, poster));
     }
     catch (err) {
         console.log("ERROR: Checking upvote achievements failed:");
