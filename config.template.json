@@ -1,5 +1,6 @@
 {
     "group_id": "<The id of the meme group>",
+    "welcome_message": "Welcome to the MemeHub! 👋\n\nPlease send your memes to this private chat, I will forward them for you.",
     
     "mongodb": {
         "connection_string": "your mongo db connection string",
