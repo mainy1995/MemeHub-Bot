@@ -1,5 +1,5 @@
 const util = require('./util');
-const config = require('./config');
+const config = require('../config.json');
 const db = require('./mongo-db');
 const categories = require('./categories');
 const achievements = require('./achievements');

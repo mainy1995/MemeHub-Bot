@@ -1,5 +1,5 @@
 const util = require('./util.js');
-const config = require('./config');
+const config = require('../config.json');
 const MongoClient = require('mongodb').MongoClient;
 
 const collection_names = config.mongodb.collection_names;

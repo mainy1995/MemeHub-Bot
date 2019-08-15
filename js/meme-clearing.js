@@ -1,9 +1,4 @@
-const util = require('./util');
-const config = require('./config');
 const db = require('./mongo-db');
-const categories = require('./categories');
-const achievements = require('./achievements');
-const voting = require('./meme-voting');
 
 /**
  * Checks Message if its from Admin and if it contains Repost

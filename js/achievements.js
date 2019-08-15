@@ -1,5 +1,5 @@
 const db = require('./mongo-db');
-const config = require('./config');
+const config = require('../config.json');
 
 async function check_post_archievements(ctx) {
     try {

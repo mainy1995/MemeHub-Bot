@@ -1,6 +1,6 @@
 const util = require('./util');
 const db = require('./mongo-db');
-const config = require('./config');
+const config = require('../config.json');
 const achievements = require('./achievements');
 
 const vote_prefix = "vote"

@@ -2,7 +2,7 @@ const { Stage, Scene } = require('micro-bot');
 const Keyboard = require('telegraf-keyboard');
 const forward = require('./meme-forwarding');
 const util = require('./util');
-const config = require('./config');
+const config = require('../config.json');
 
 let categories = config.categories.options;
 categories = categories.map(c => "#" + util.escape_category(c));
