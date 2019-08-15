@@ -37,6 +37,7 @@ coverage
 
 start_bot.sh
 start_bot.bat
+start_bot.ps1
 package-lock.json
 .vscode/
 config.json
