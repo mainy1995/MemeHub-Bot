@@ -19,7 +19,7 @@ function clear_repost(ctx){
     var answer_msg_id=ctx.update.message.message_id;
     db.save_repost(repost_msg_id);
     ctx.deleteMessage(repost_msg_id);
-    ctx.deleteMessage(answer_msg_id);    
+    ctx.deleteMessage(answer_msg_id);
 }
 
 

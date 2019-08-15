@@ -21,6 +21,14 @@ async function handle_meme_request(ctx) {
         };
         
         console.log(` === Meme request from user "${options.user.first_name} ${options.user.last_name}" ===`);
+        
+        if (!is_private_chat(ctx)) {
+            if (is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
+            ctx.deleteMessage(ctx.message.message_id);
+            ctx.telegram.sendMessage(options.user.id, 'Please only send memes here in the private chat!');
+            console.log("Aborting due to wrong chat");
+            return;
+        }
 
         if (!options.user.username) {
             ctx.reply('Posting without username not allowed! Choose a username in the settings.');
@@ -51,6 +59,14 @@ async function handle_meme_request(ctx) {
         console.log("ERROR: Unknown exception");
         console.log(`  > Exception: ${exception}`);
     }
+}
+
+function is_private_chat(ctx) {
+    return ctx.message.from.id == ctx.message.chat.id;
+}
+
+function is_reaction(ctx) {
+    return !!ctx.update.message.reply_to_message;
 }
 
 function process_meme(ctx, options) {
