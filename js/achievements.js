@@ -1,12 +1,13 @@
 const db = require('./mongo-db');
-const config = require('../config.json');
+const config = require('../config/config.json');
+const achievements = require('../config/achievements.json');
 
 let recent_vote_achievements = {};
 
 async function check_post_archievements(ctx) {
     try {
         const result = await db.get_user_meme_count(ctx.message.from.id);
-        const achievement = config.achievements.post_count.find(a => a.count === result);
+        const achievement = achievements.post_count.find(a => a.count === result);
 
         if (!achievement) return;
 
@@ -21,9 +22,9 @@ async function check_vote_achievements(ctx, file_id, vote_type) {
     try {
         const poster_id = await db.get_user_from_meme(file_id);
         const votes = await db.count_user_total_votes_by_type(poster_id, vote_type);
-        if (!config.achievements.vote_count[vote_type]) return;
+        if (!achievements.vote_count[vote_type]) return;
 
-        const achievement = config.achievements.vote_count[vote_type].find(a => a.count === votes);
+        const achievement = achievements.vote_count[vote_type].find(a => a.count === votes);
 
         if (!achievement) return;
 

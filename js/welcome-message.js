@@ -1,4 +1,4 @@
-const config = require('../config.json');
+const config = require('../config/config.json');
 
 async function greet_new_user(ctx) {
     try {

@@ -2,15 +2,15 @@ const { Stage, Scene } = require('micro-bot');
 const Keyboard = require('telegraf-keyboard');
 const forward = require('./meme-forwarding');
 const util = require('./util');
-const config = require('../config.json');
+const categories = require('../config/categories.json')
 
-let categories = config.categories.options;
-categories = categories.map(c => "#" + util.escape_category(c));
-categories.push('No category');
-const chunk_size = config.categories.keyboard_width;
+let category_options = categories.options;
+category_options = category_options.map(c => "#" + util.escape_category(c));
+category_options.push('No category');
+const chunk_size = categories.keyboard_width;
 const keyboard = new Keyboard();
-for (let i = 0; i < categories.length; i += chunk_size) {
-    keyboard.add(categories.slice(i, i + chunk_size));
+for (let i = 0; i < category_options.length; i += chunk_size) {
+    keyboard.add(category_options.slice(i, i + chunk_size));
 }
 
 

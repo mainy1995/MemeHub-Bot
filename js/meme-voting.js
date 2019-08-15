@@ -1,7 +1,7 @@
 const util = require('./util');
 const db = require('./mongo-db');
-const config = require('../config.json');
 const achievements = require('./achievements');
+const vote_types = require('../config/vote-types.json');
 
 const vote_prefix = "vote"
 
@@ -14,7 +14,7 @@ async function handle_vote_request(ctx) {
     const user = ctx.update.callback_query.from;
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
-    if (!config.vote_types.find(t => t.id == vote_type)) {
+    if (!vote_types.find(t => t.id == vote_type)) {
         console.log("Unknown vote type:");
         console.log(vote_type);
         return;
@@ -53,7 +53,7 @@ function vote_type_from_callback_data(data) {
 
 function create_keyboard(votes) {
     let keyboard = []
-    for (const type of config.vote_types) {
+    for (const type of vote_types) {
         keyboard.push({
             text: !!votes[type.id] ? `${type.emoji} - ${votes[type.id]}` : type.emoji,
             callback_data: `${vote_prefix}:${type.id}`
