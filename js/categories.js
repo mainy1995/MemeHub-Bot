@@ -1,4 +1,6 @@
-const { Stage, Scene } = require('micro-bot');
+const Stage = require('telegraf/stage');
+const Scene = require('telegraf/scenes/base');
+const session = require('telegraf/session');
 const Keyboard = require('telegraf-keyboard');
 const forward = require('./meme-forwarding');
 const util = require('./util');
@@ -25,7 +27,8 @@ function init(bot) {
 
     const stage = new Stage();
     stage.register(selectCategory);
-    bot.use(stage);
+    bot.use(session());
+    bot.use(stage.middleware());
 }
 
 function ask(ctx, data) {

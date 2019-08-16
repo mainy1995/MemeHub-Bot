@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "supervisor -x micro-bot index.js",
-    "start": "micro-bot",
+    "start": "node index.js",
     "now-start": "micro-bot -d ${NOW_URL}",
     "lint": "eslint .",
     "test": "npm run lint",
@@ -25,6 +25,7 @@
     "micro-bot": "^2.5.1",
     "mongodb": "^3.2.3",
     "mysql": "^2.16.0",
+    "node-cron": "^2.0.3",
     "telegraf-keyboard": "^1.1.2"
   },
   "devDependencies": {
