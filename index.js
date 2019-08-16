@@ -1,4 +1,4 @@
-const { Composer, log, session } = require('micro-bot');
+const Telegraf = require('telegraf');
 const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const voting = require('./js/meme-voting');
@@ -6,12 +6,13 @@ const clearing = require('./js/meme-clearing');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
 const welcome = require('./js/welcome-message');
+const config = require('./config/config.json');
+const best_of = require('./js/best-of.js');
 
-const bot = new Composer()
+const bot = new Telegraf(config.bot_token);
+
 db.init();
-
-bot.use(log());
-bot.use(session());
+best_of.init(bot);
 categoriesStage.init(bot);
 
 bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
@@ -25,7 +26,6 @@ bot.command('top', stats.my_top); // zeigt mein Meme mit den meisten Upvotes an
 bot.command('avg', stats.my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
 bot.command('sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uploads an
 bot.command('repost',clearing.clear_repost); //löscht meme aus gruppe und markiert als repost
-    
 
 bot.on('callback_query', (ctx) => {
     
@@ -40,4 +40,5 @@ bot.on('callback_query', (ctx) => {
     }
     voting.handle_vote_request(ctx);
 });
-module.exports = bot
+
+bot.launch();

@@ -1,0 +1,15 @@
+{
+    "enabled": true,
+    "recent_best": [
+        { 
+            "cron_schedule": "15 20 * * *",
+            "vote_type": "like",
+            "caption": "Yesterday's best meme:"
+        },
+        { 
+            "cron_schedule": "2 1 * * *",
+            "vote_type": "like",
+            "caption": "Yesterday's best meme test"
+        }
+    ]
+}
