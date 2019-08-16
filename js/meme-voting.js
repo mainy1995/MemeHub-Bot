@@ -59,6 +59,7 @@ function create_keyboard(votes) {
             callback_data: `${vote_prefix}:${type.id}`
         });
     }
+    console.log(keyboard);
     return [keyboard];
 }
 
