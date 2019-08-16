@@ -1,5 +1,4 @@
 const Telegraf = require('telegraf');
-
 const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const voting = require('./js/meme-voting');
@@ -7,17 +6,13 @@ const clearing = require('./js/meme-clearing');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
 const welcome = require('./js/welcome-message');
-const cron = require('node-cron');
 const config = require('./config/config.json');
+const best_of = require('./js/best-of.js');
 
 const bot = new Telegraf(config.bot_token);
 
 db.init();
-
-cron.schedule('0 * * * * *', () => {
-    bot.telegram.sendMessage(config.group_id, "Hi there!");
-});
-
+best_of.init(bot);
 categoriesStage.init(bot);
 
 bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
