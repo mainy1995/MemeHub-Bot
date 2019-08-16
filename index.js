@@ -31,7 +31,6 @@ bot.command('top', stats.my_top); // zeigt mein Meme mit den meisten Upvotes an
 bot.command('avg', stats.my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
 bot.command('sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uploads an
 bot.command('repost',clearing.clear_repost); //löscht meme aus gruppe und markiert als repost
-    
 
 bot.on('callback_query', (ctx) => {
     
