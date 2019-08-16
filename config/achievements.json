@@ -1,0 +1,32 @@
+{
+    "post_count": [
+        { "count": 1, "message": "🎊 %USER% just posted for the first time 🎊" },
+        { "count": 10, "message": "This is your %COUNT%th meme, %USER%!" },
+        { "count": 100, "message": "WOW! That's a total %COUNT% memes from %USER% 😲"},
+        { "count": 200, "message": "🔥%COUNT%🔥️ memes from %USER% 🥳" },
+        { "count": 300, "message": "You posted %COUNT% memes so far, %USER%. That's dedication 🙏"},
+        { "count": 500, "message": "🙀 %USER% just reached %COUNT% memes!"},
+        { "count": 700, "message": "⚠️⚠️⚠️ %COUNT% memes by %USER% ⚠️⚠️⚠️"},
+        { "count": 1000, "message": "%USER% posted a total of %COUNT% memes 🎈🎉🎊"}
+    ],
+    "vote_count": {
+        "like": [
+            { "count": 1, "message": "%USER% just got a like ❤️" },
+            { "count": 50, "message": "🎊🎉 Let's celebrate %COUNT% likes by %USER% 🎉🎊"},
+            { "count": 100, "message": "Dominating! %COUNT% people clicked like on a meme by %USER%" },
+            { "count": 500, "message": "%USER% is unstoppable! %COUNT% likes🔥" },
+            { "count": 1000, "message": "💥GODLIKE💥 %USER% now has %COUNT% likes!" },
+            { "count": 5000, "message": "Holy Shit! Somebody liked a meme from god %USER% for the %COUNT%th time 🤯" }
+        ],
+        "weeb": [
+            { "count": 10, "message": "Ha! %USER% is a weeb!" },
+            { "count": 100, "message": "Hey %USER%! Why can't you stop posting weeb memes?" },
+            { "count": 200, "message": "You just can't help yourself, can you %USER%? 😤" },
+            { "count": 300, "message": "🚨 WEEB ALARM 🚨 (%COUNT% weeb votes for %USER%)" },
+            { "count": 500, "message": "If you continue posting weeb memes you will be a weeblord very soon, %USER%" },
+            { "count": 750, "message": "I CANNOT WARN YOU AGAIN, %USER%! STOP POSTING WEEB MEMES AS LONG A YOU CAN! IT IS NOT TOO LATE!" },
+            { "count": 1000, "message": "🔔🔔🔔 IT'S OFFICIAL! %USER% is a weeblord 🔔🔔🔔" },
+            { "count": 5000, "message": "At this point people clicked on that weeb button %COUNT% times, just because %USER% keeps posting all these weeb memes..." }
+        ]
+    }
+}

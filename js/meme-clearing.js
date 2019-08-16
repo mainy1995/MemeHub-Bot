@@ -1,9 +1,4 @@
-const util = require('./util');
-const config = require('./config');
 const db = require('./mongo-db');
-const categories = require('./categories');
-const achievements = require('./achievements');
-const voting = require('./meme-voting');
 
 /**
  * Checks Message if its from Admin and if it contains Repost
@@ -24,7 +19,7 @@ function clear_repost(ctx){
     var answer_msg_id=ctx.update.message.message_id;
     db.save_repost(repost_msg_id);
     ctx.deleteMessage(repost_msg_id);
-    ctx.deleteMessage(answer_msg_id);    
+    ctx.deleteMessage(answer_msg_id);
 }
 
 

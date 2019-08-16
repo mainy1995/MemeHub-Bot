@@ -5,6 +5,7 @@ const voting = require('./js/meme-voting');
 const clearing = require('./js/meme-clearing');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
+const welcome = require('./js/welcome-message');
 
 const bot = new Composer()
 db.init();
@@ -15,6 +16,7 @@ categoriesStage.init(bot);
 
 bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
 bot.help(({ reply }) => reply('Just send me memes! You can add categories by adding a caption.'));
+bot.on('new_chat_members', welcome.greet_new_user);
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);
