@@ -15,7 +15,6 @@ function init(_bot) {
 function send_recent_best(task) {
     bot.telegram.sendMessage(config.group_id, "BEST OF TASK: ");
     bot.telegram.sendMessage(config.group_id, JSON.stringify(task));
-    
 }
 
 module.exports.init = init;
