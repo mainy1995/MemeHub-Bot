@@ -311,23 +311,20 @@ function get_user_meme_counts() {
         });
     });
 }
-async function save_repost(message_id) {    
-    let find = {};
-    find['group_message_id'] = message_id;
-    
-    try {
-        const meme = await memes.findOne(find);
 
-        if (meme) {
-            console.log("Test");
-            console.log(message_id);
-            await memes.updateOne({group_message_id: message_id },{ $set:{ isRepost: true}});
-         
-            return;
+async function save_repost(message_id) {
+    try {
+        const meme = await memes.findOne({ group_message_id: message_id});
+
+        if (!meme) {
+            util.log("Cannot flag meme as repost, as it does not exist", { message_id });
         }
+        
+        await memes.updateOne({group_message_id: message_id },{ $set:{ isRepost: true}});
     }
     catch (err) { log_err(err); }
 }
+
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;

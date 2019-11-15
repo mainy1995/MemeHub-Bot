@@ -11,6 +11,7 @@ const config = require('./config/config.json');
 const best_of = require('./js/best-of.js');
 const util = require('./js/util.js');
 const debug = require('./js/debug.js');
+const admins = require('./js/admins.js');
 
 const bot = new Telegraf(config.bot_token);
 
@@ -18,6 +19,7 @@ db.init();
 best_of.init(bot);
 categoriesStage.init(bot);
 debug.init(bot);
+admins.init(bot);
 util.set_bot(bot);
 maintain.set_bot(bot);
 
