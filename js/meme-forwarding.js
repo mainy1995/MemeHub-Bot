@@ -95,8 +95,8 @@ function process_meme(ctx, options) {
  * @returns {The promise that is returned by the send method}
  */
 function forward_meme_to_group(ctx, file_id, file_type, user, category) {
-    let caption = `@${user.username}`
-    if (category) caption += ` | #${category}`;
+    const caption = build_caption(user, category);
+    
 
     return util.send_media_by_type(
         ctx,
@@ -119,6 +119,13 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
     });
 }
 
+function build_caption(user, category) {
+    let caption = `@${user.username}`
+    if (category) caption += ` | #${category}`;
+    return caption;
+}
+
 module.exports.handle_meme_request = handle_meme_request;
 module.exports.process_meme = process_meme;
 module.exports.forward_meme_to_group = forward_meme_to_group;
+module.exports.build_caption = build_caption;

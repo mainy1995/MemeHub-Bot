@@ -1,5 +1,6 @@
 const util = require('./util.js');
 const config = require('../config/config.json');
+const maintain = require('./meme-maintaining.js');
 const MongoClient = require('mongodb').MongoClient;
 
 const collection_names = config.mongodb.collection_names;
@@ -48,7 +49,14 @@ function save_user(user) {
             last_name: user.last_name
         }},
         { upsert: true }
-    ).catch(log_err);
+    ).catch(log_err)
+    .then((result) => {
+        // Check, if username is new
+        if (result.modifiedCount == 1 && result.matchedCount == 1) {
+            console.log(' === \x1b[36m%s\x1b[0m ===', 'Detected username change. Updating old posts');
+            maintain.update_user_name(user);
+        }
+    });
 }
 
 function log_err(err) {
@@ -116,6 +124,19 @@ async function save_vote(user_id, file_id, vote_type) {
     }
     catch (err) { log_err(err); }
     
+}
+
+async function* get_memes_by_user(user_id, options) {
+    if (!options) options = {};
+    try {
+        const result = await memes.find({ poster_id: user_id }, options);
+
+        while (await result.hasNext()) {
+            yield await result.next();
+        }
+        
+    }
+    catch (err) { log_err(err); }
 }
 
 async function count_votes(file_id) {
@@ -204,6 +225,7 @@ function get_user_from_meme(file_id) {
 
 async function get_user(user_id) {
     const user = await users.findOne({ _id: user_id});
+    user.id = user._id;
     return user;
 }
 
@@ -311,6 +333,7 @@ module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
 module.exports.save_meme_group_message = save_meme_group_message;
 module.exports.save_vote = save_vote;
+module.exports.get_memes_by_user = get_memes_by_user;
 module.exports.count_votes = count_votes;
 module.exports.get_user_top_meme = get_user_top_meme;
 module.exports.get_user_average_upvotes = get_user_average_upvotes;

@@ -3,6 +3,7 @@ const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const voting = require('./js/meme-voting');
 const clearing = require('./js/meme-clearing');
+const maintain = require('./js/meme-maintaining.js');
 const stats = require('./js/statistics');
 const categoriesStage = require('./js/categories');
 const welcome = require('./js/welcome-message');
@@ -18,6 +19,7 @@ best_of.init(bot);
 categoriesStage.init(bot);
 debug.init(bot);
 util.set_bot(bot);
+maintain.set_bot(bot);
 
 bot.start(welcome.send_welcome_message);
 bot.help(welcome.send_help_message);
