@@ -15,9 +15,9 @@ db.init();
 best_of.init(bot);
 categoriesStage.init(bot);
 
-bot.start(({ reply }) => reply('Welcome to the Memehub bot!'));
-bot.help(({ reply }) => reply('Just send me memes! You can add categories by adding a caption.'));
-bot.on('new_chat_members', welcome.greet_new_user);
+bot.start(welcome.send_welcome_message);
+bot.help(welcome.send_help_message);
+bot.on('new_chat_members', welcome.send_public_welcome_message);
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);

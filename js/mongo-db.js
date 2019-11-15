@@ -13,7 +13,7 @@ let connected;
 
 function init() {
     const uri = config.mongodb.connection_string;
-    client = new MongoClient(uri, { useNewUrlParser: true });
+    client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
     connected = new Promise((resolve, reject) => {
         client.connect(async (err) => {
             if (err) {
@@ -29,6 +29,7 @@ function init() {
             
             memes = collections[0];
             users = collections[1];
+            console.log('\x1b[32m%s\x1b[0m', '    Connected to mongodb')
             resolve();
         });
     });
