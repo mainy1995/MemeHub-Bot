@@ -2,6 +2,7 @@
     "bot_token": "<Your bot token you got from the BotFather>",
     "group_id": "<The id of the meme group>",
     "welcome_message": "Welcome to the MemeHub! 👋\n\nPlease send your memes to this private chat, I will forward them for you.",
+    "public_welcome_message:": "Hi %USER%!",
     
     "mongodb": {
         "connection_string": "<your mongo db connection string>",
