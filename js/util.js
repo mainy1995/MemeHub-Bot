@@ -1,8 +1,20 @@
+const config = require("../config/config.json");
+
 send_methods = {
     'photo': 'sendPhoto',
     'animation': 'sendAnimation',
     'video': 'sendVideo'
 };
+
+let bot;
+
+/**
+ * Sets the Telegraf object to use when sending messages without a context.
+ * @param {The Telegraf object to use when sending messages without a context} _bot 
+ */
+function set_bot(_bot) {
+    bot = _bot;
+}
 
 /**
  * Returns the file id of the largest photo in a message or null if no photo is present.
@@ -47,6 +59,7 @@ function any_media_id(message) {
  * @param {The message to check} message 
  */
 function has_photo(message) {
+    if (!message) return false;
     return !!message.photo && message.photo.length > 0;
 }
 
@@ -55,6 +68,7 @@ function has_photo(message) {
  * @param {The message to check} message 
  */
 function has_animation(message) {
+    if (!message) return false;
     return !!message.animation;
 }
 
@@ -63,6 +77,7 @@ function has_animation(message) {
  * @param {The message to check} message 
  */
 function has_video(message) {
+    if (!message) return false;
     return !!message.video;
 }
 
@@ -112,6 +127,40 @@ function name_from_user(user) {
     return name;
 }
 
+/**
+ * universal error logging. prints the error to the console, but also sends a message to every chat in the error_chats array of the config
+ * @param {*} problem 
+ * @param {*} error 
+ */
+function log_error(problem, error) {
+    console.log('    \x1b[31m%s\x1b[0m ' + problem, "ERROR:");
+    console.log(`      > ${error}`);
+    send_error_message(`Error: ${problem}\n\n > ${error}`);
+}
+
+/**
+ * Sends an message to all chats in the error_chats array of the config
+ * @param {The message to send} message 
+ */
+function send_error_message(message) {
+    if (!bot) {
+        console.log('    \x1b[31m%s\x1b[0m Cannot send error message', "ERROR:");
+        console.log(`      > Telegraf bot object not set in util.js`);
+        return;
+    }
+    try {
+        for(id of config.error_chats) {
+            console.log(`Sending errot to ${id}`);
+            bot.telegram.sendMessage(id, message);
+        }
+    }
+    catch(e) {
+        console.log('    \x1b[31m%s\x1b[0m Failed sending error message', "ERROR:");
+        console.log(`      > ${e}`);
+    }
+}
+
+module.exports.set_bot = set_bot;
 module.exports.photo_id = photo_id;
 module.exports.animation_id = animation_id;
 module.exports.any_media_id = any_media_id;
@@ -123,3 +172,5 @@ module.exports.send_media_by_type = send_media_by_type;
 module.exports.get_media_type_from_message = get_media_type_from_message;
 module.exports.escape_category = escape_category;
 module.exports.name_from_user = name_from_user;
+module.exports.log_error = log_error;
+module.exports.send_error_message = send_error_message;

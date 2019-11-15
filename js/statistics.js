@@ -15,7 +15,7 @@ function my_top(ctx) {
             });
         })
         .catch((err) => {
-            console.log(err);
+            util.log_error('getting statistics failed (my_top)', err);
             ctx.reply("I'm broken 💩");
         });
 }
@@ -27,7 +27,7 @@ function my_average(ctx) {
             ctx.reply(`Your posts get an average of ${parseFloat(average).toFixed(2)} upvotes!`);
         })
         .catch((err) => {
-            console.log(err);
+            util.log_error('getting statistics failed (my_average)', err);
             ctx.reply("I'm broken 💩");
         });
 }
@@ -38,7 +38,7 @@ function user_overview(ctx) {
             let list = users.map((user, index) => `${index + 1}. ${util.name_from_user(user)} with ${user.memes} ${user.memes == 1 ? "meme" : "memes"}` ).join('\n');
             ctx.reply(`Here are the top posters:\n\n${list}`);
         }, (err) => {
-            console.log(err);
+            util.log_error('getting statistics failed (user_overview)', err);
             ctx.reply("I'm broken 💩");
         });
 }

@@ -1,11 +1,12 @@
 const db = require('./mongo-db');
+const config = require('../config/config.json');
 
 /**
  * Checks Message if its from Admin and if it contains Repost
  * @param {The telegraph message context} ctx 
  */
 function is_clearing_request(ctx) {
-    if (ctx.update.message.from.id == '18267377' && ctx.update.message.reply_to_message != null && ctx.update.message.text == '/repost')
+    if (config.admins.includes(ctx.update.message.from.id) && ctx.update.message.reply_to_message != null && ctx.update.message.text == '/repost')
         return true;
     else
         return false;

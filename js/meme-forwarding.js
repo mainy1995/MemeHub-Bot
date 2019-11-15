@@ -20,7 +20,7 @@ async function handle_meme_request(ctx) {
             category: util.escape_category(ctx.message.caption)
         };
         
-        console.log(` === Meme request from user "${options.user.first_name} ${options.user.last_name}" ===`);
+        console.log(`\n === \x1b[36mMeme request from user "${options.user.first_name} ${options.user.last_name}"\x1b[0m ===`);
         
         if (!is_private_chat(ctx)) {
             if (is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
@@ -56,8 +56,7 @@ async function handle_meme_request(ctx) {
         process_meme(ctx, options);
     }
     catch(exception) {
-        console.log("ERROR: Unknown exception");
-        console.log(`  > Exception: ${exception}`);
+        util.log_error("Cannot handle meme request", exception);
     }
 }
 
@@ -82,7 +81,7 @@ function process_meme(ctx, options) {
                 ctx.telegram.sendMessage(options.user.id, 'REPOST DU SPAST 😡');
                 return;
             }
-            console.log(err);
+            util.log_error("Cannot store meme request in db", err);
             ctx.reply("Something went horribly wrong 😢 I cannot send your meme!");
         });
 }
@@ -112,8 +111,7 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
         }
     )
     .catch((err) => {
-        console.log("ERROR: Could not send meme to group");
-        console.log(`  > Error: ${err}`);
+        util.log_error("Cannot not send meme to group", err);
     })
     .then((ctx) => { 
         console.log("Meme send to group");

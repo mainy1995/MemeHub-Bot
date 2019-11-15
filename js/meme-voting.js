@@ -15,8 +15,7 @@ async function handle_vote_request(ctx) {
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
     if (!vote_types.find(t => t.id == vote_type)) {
-        console.log("Unknown vote type:");
-        console.log(vote_type);
+        util.log_error("Unknown vote type", vote_type);
         return;
     }
 
@@ -31,12 +30,11 @@ async function handle_vote_request(ctx) {
         const votes = await db.count_votes(file_id);
         
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
-            .catch(err => console.log(`ERROR: Could not update vote count (${err})`));
+            .catch(err => util.log_error('Could not update vote count', err));
         ctx.answerCbQuery();
     }
     catch(err) {
-        console.log(`ERROR: Vote handling failed:`);
-        console.log(err);
+        console.log('Vote handling failed', err);
         ctx.answerCbQuery();
     }
     
@@ -59,7 +57,6 @@ function create_keyboard(votes) {
             callback_data: `${vote_prefix}:${type.id}`
         });
     }
-    console.log(keyboard);
     return [keyboard];
 }
 

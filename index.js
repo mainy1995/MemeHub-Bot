@@ -8,12 +8,16 @@ const categoriesStage = require('./js/categories');
 const welcome = require('./js/welcome-message');
 const config = require('./config/config.json');
 const best_of = require('./js/best-of.js');
+const util = require('./js/util.js');
+const debug = require('./js/debug.js');
 
 const bot = new Telegraf(config.bot_token);
 
 db.init();
 best_of.init(bot);
 categoriesStage.init(bot);
+debug.init(bot);
+util.set_bot(bot);
 
 bot.start(welcome.send_welcome_message);
 bot.help(welcome.send_help_message);
@@ -28,7 +32,6 @@ bot.command('sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uplo
 bot.command('repost',clearing.clear_repost); //löscht meme aus gruppe und markiert als repost
 
 bot.on('callback_query', (ctx) => {
-    
     if (voting.is_legacy_like_callback(ctx.update.callback_query)) {
         voting.handle_legacy_like_request(ctx);
         return;
@@ -41,4 +44,8 @@ bot.on('callback_query', (ctx) => {
     voting.handle_vote_request(ctx);
 });
 
-bot.launch();
+bot.launch().then(() => {
+    console.log('    \x1b[32m%s\x1b[0m', 'Bot launched');
+}, (err) => {
+    util.log_error("Cannot launch bot", err);
+});

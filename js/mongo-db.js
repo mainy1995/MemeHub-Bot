@@ -17,7 +17,7 @@ function init() {
     connected = new Promise((resolve, reject) => {
         client.connect(async (err) => {
             if (err) {
-                log_err(err); 
+                log_err(err);
                 reject(err);
             }
 
@@ -29,7 +29,7 @@ function init() {
             
             memes = collections[0];
             users = collections[1];
-            console.log('\x1b[32m%s\x1b[0m', '    Connected to mongodb')
+            console.log('    \x1b[32m%s\x1b[0m', 'Connected to mongodb');
             resolve();
         });
     });
@@ -52,8 +52,7 @@ function save_user(user) {
 }
 
 function log_err(err) {
-    console.log("ERROR: db operation failed.");
-    console.log(`  > Error: ${err}`);
+    util.log_error("DB operation failed", err);
 }
 
 /**

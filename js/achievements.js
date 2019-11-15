@@ -1,4 +1,5 @@
 const db = require('./mongo-db');
+const util = require('./util.js');
 const config = require('../config/config.json');
 const achievements = require('../config/achievements.json');
 
@@ -14,7 +15,7 @@ async function check_post_archievements(ctx) {
         ctx.telegram.sendMessage(config.group_id, fromatMessage(achievement, ctx.message.from));
     }
     catch (err) {
-        console.log("ERROR: Checking post achievements failed");
+        util.log_error("Checking post achievements failed", err);
     }
 }
 
@@ -36,8 +37,7 @@ async function check_vote_achievements(ctx, file_id, vote_type) {
         recent_vote_achievements[`${poster._id}:${vote_type}`] = votes;
     }
     catch (err) {
-        console.log("ERROR: Checking upvote achievements failed:");
-        console.log(err);
+        util.log_error("Checking upvote achievements failed", err);
     }
 }
 
