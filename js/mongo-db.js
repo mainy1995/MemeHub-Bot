@@ -1,29 +1,36 @@
-const util = require('./util.js');
-const log = require('./log.js');
-const config = require('../config/config.json');
-const maintain = require('./meme-maintaining.js');
+const util = require('./util');
+const log = require('./log');
+const _config = require('./config');
+const maintain = require('./meme-maintaining');
 const MongoClient = require('mongodb').MongoClient;
 
-const collection_names = config.mongodb.collection_names;
-const db_name = config.mongodb.database;
+ let client;
+ let memes;
+ let users;
+ let connection;
+ let connected;
 
-let client;
-let memes;
-let users;
+_config.subscribe('config', c => {
+    init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
+});
 
-let connected;
+function init(collection_names, db_name, connection_string) {
+    if (connection) {
+        log.info('Disconnecting from mongo db', 'config has changed');
+        connection.close();
+    }
 
-function init() {
-    const uri = config.mongodb.connection_string;
-    client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    client = new MongoClient(connection_string, { useNewUrlParser: true, useUnifiedTopology: true });
     connected = new Promise((resolve, reject) => {
-        client.connect(async (err) => {
+        client.connect(async (err, con) => {
             if (err) {
                 log.error("Cannot connect to mongo db", err);
                 reject(err);
             }
-
+            
+            connection = con;
             const db = client.db(db_name);
+            
             var collections = await Promise.all([
                 db.createCollection(collection_names.memes), 
                 db.createCollection(collection_names.users)

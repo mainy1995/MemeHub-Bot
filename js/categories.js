@@ -4,17 +4,20 @@ const session = require('telegraf/session');
 const Keyboard = require('telegraf-keyboard');
 const forward = require('./meme-forwarding');
 const util = require('./util');
-const categories = require('../config/categories.json')
+const _config = require('./config');
 
-let category_options = categories.options;
-category_options = category_options.map(c => "#" + util.escape_category(c));
-category_options.push('No category');
-const chunk_size = categories.keyboard_width;
-const keyboard = new Keyboard();
-for (let i = 0; i < category_options.length; i += chunk_size) {
-    keyboard.add(category_options.slice(i, i + chunk_size));
-}
+let keyboard = new Keyboard();
 
+_config.subscribe('categories', categories => {
+    let category_options = categories.options;
+    category_options = category_options.map(c => "#" + util.escape_category(c));
+    category_options.push('No category');
+    const chunk_size = categories.keyboard_width;
+    keyboard = new Keyboard();
+    for (let i = 0; i < category_options.length; i += chunk_size) {
+        keyboard.add(category_options.slice(i, i + chunk_size));
+    }
+});
 
 const mediaCache = [];
 

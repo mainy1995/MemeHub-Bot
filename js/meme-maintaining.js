@@ -1,10 +1,13 @@
-const db = require('./mongo-db.js');
-const config = require('../config/config.json');
-const log = require('./log.js');
-const voting = require('./meme-voting.js');
+const db = require('./mongo-db');
+const log = require('./log');
+const voting = require('./meme-voting');
 const forwarding = require('./meme-forwarding');
+const _config = require('./config');
 
 let bot;
+let group_id = undefined;
+_config.subscribe('config', c => group_id = c.group_id);
+
 
 function set_bot(_bot) {
     bot = _bot;
@@ -15,7 +18,7 @@ async function update_user_name(user) {
     for await (const meme of memes) {
         const caption = forwarding.build_caption(user, meme.category);
         const keyboard = voting.create_keyboard(meme.votes);
-        bot.telegram.editMessageCaption(config.group_id, meme.group_message_id, null, caption, { reply_markup: { inline_keyboard: keyboard}})
+        bot.telegram.editMessageCaption(group_id, meme.group_message_id, null, caption, { reply_markup: { inline_keyboard: keyboard}})
             .catch(err => {
                 log.error("Could not update meme caption after user name change", err);
             });

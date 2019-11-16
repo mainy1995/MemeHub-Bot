@@ -1,5 +1,5 @@
-const util = require('./util.js');
-const log = require('./log.js');
+const util = require('./util');
+const log = require('./log');
 const db = require('./mongo-db');
 
 function my_top(ctx) {

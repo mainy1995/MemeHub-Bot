@@ -1,28 +1,18 @@
-const _config = require('./config.js');
-
-
-let config = {};
-let c = {
-    log: {}
-}
-_config.subscribe('config', new_config => {
-    config = new_config;
-});
-_config.register('log', c);
+const _config = require('./config');
 
 const colors = {
-    ERROR:   '\x1b[31m',
-    WARNING: '\x1b[45m',
-    INFO:    '\x1b[34m',
-    SUCCESS: '\x1b[32m',
-    reset:   '\x1b[0m'
-};
+    "ERROR":   "\x1b[31m",
+    "WARNING": "\x1b[45m",
+    "INFO":    "\x1b[34m",
+    "SUCCESS": "\x1b[32m",
+    "reset":   "\x1b[0m"
+}
 
-const indentation = {
-    head: '  ',
-    data: '   ] ',
-    data_inner: '  '
-};
+let config = {};
+let log = {};
+
+_config.subscribe('config', c => config = c);
+_config.subscribe('log', c => log = c);
 
 let bot;
 
@@ -56,13 +46,13 @@ function log_success(text, data) {
 }
 
 function handle_log(level, text, data) {
-    if (c.log[level] && c.log[level].console) print_log(level, text, data);
-    if (c.log[level] && c.log[level].message) send_log_message(level, text, data);
+    if (log.levels[level] && log.levels[level].console) print_log(level, text, data);
+    if (log.levels[level] && log.levels[level].message) send_log_message(level, text, data);
 }
 
 function print_log(level, text, data) {
-    if (level === 'SUCCESS') console.log(`${indentation.head}${colors.SUCCESS}${text}${colors.reset}`);
-    else console.log(`${indentation.head}${colors[level]}${level}:${colors.reset} ${text}`);
+    if (level === 'SUCCESS') console.log(`${log.indentation.head}${colors.SUCCESS}${text}${colors.reset}`);
+    else console.log(`${log.indentation.head}${colors[level]}${level}:${colors.reset} ${text}`);
     if (data) console.log(`${indented(readable(data))}`);
 }
 
@@ -86,11 +76,11 @@ function send_log_message(level, text, data) {
 
 function readable(data) {
     if (typeof data === 'string') return data;
-    return JSON.stringify(data, null, indentation.data_inner);
+    return JSON.stringify(data, null, log.indentation.data_inner);
 }
 
 function indented(json_string) {
-    return `${indentation.data}${json_string.replace(/(?:\r\n|\r|\n)/g, `\n${indentation.data}`)}`;
+    return `${log.indentation.data}${json_string.replace(/(?:\r\n|\r|\n)/g, `\n${log.indentation.data}`)}`;
 }
 
 module.exports.init = init;

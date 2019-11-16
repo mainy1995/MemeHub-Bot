@@ -1,4 +1,7 @@
-const config = require('../config/config.json');
+const _config = require('./config');
+
+let config = {};
+_config.subscribe('config', c => config = c);
 
 let bot
 

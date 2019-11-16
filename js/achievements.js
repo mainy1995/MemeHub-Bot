@@ -1,7 +1,11 @@
 const db = require('./mongo-db');
-const log = require('./log.js');
-const config = require('../config/config.json');
-const achievements = require('../config/achievements.json');
+const log = require('./log');
+const _config = require('./config');
+
+let config = {};
+let achievements = {};
+_config.subscribe('config', c => config = c);
+_config.subscribe('achievements', c => achievements = c);
 
 let recent_vote_achievements = {};
 

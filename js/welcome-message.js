@@ -1,5 +1,8 @@
-const config = require('../config/config.json');
-const util = require('./util.js');
+const _config = require('./config');
+const util = require('./util');
+
+let config = {};
+_config.subscribe('config', c => config = c);
 
 async function send_public_welcome_message(ctx) {
     ctx.reply(

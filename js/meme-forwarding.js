@@ -1,10 +1,13 @@
 const util = require('./util');
-const log = require('./log.js');
-const config = require('../config/config.json');
+const log = require('./log');
+const _config = require('./config');
 const db = require('./mongo-db');
 const categories = require('./categories');
 const achievements = require('./achievements');
 const voting = require('./meme-voting');
+
+let group_id = undefined;
+_config.subscribe('config', c => group_id = c.group_id);
 
 /**
  * Saves memes to the db, forwards them and handles upvoting
@@ -101,7 +104,7 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
 
     return util.send_media_by_type(
         ctx,
-        config.group_id,
+        group_id,
         file_id,
         file_type,
         {

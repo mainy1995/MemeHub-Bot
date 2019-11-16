@@ -1,5 +1,4 @@
 const Telegraf = require('telegraf');
-const db = require('./js/mongo-db');
 const forward = require('./js/meme-forwarding');
 const voting = require('./js/meme-voting');
 const clearing = require('./js/meme-clearing');
@@ -15,8 +14,7 @@ const admins = require('./js/admins.js');
 
 const bot = new Telegraf(config.bot_token);
 
-db.init();
-best_of.init(bot);
+best_of.set_bot(bot);
 categoriesStage.init(bot);
 debug.init(bot);
 admins.init(bot);
@@ -29,7 +27,6 @@ bot.on('new_chat_members', welcome.send_public_welcome_message);
 bot.on('photo', forward.handle_meme_request);
 bot.on('animation', forward.handle_meme_request);
 bot.on('video', forward.handle_meme_request);
-
 bot.command('top', stats.my_top); // zeigt mein Meme mit den meisten Upvotes an
 bot.command('avg', stats.my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
 bot.command('sum', stats.user_overview); // zeigt memer mit deren Anzahl an Uploads an

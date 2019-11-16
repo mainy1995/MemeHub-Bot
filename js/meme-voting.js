@@ -1,10 +1,15 @@
 const util = require('./util');
-const log = require('./log.js');
+const log = require('./log');
 const db = require('./mongo-db');
 const achievements = require('./achievements');
-const vote_types = require('../config/vote-types.json');
+const config = require('./config');
 
 const vote_prefix = "vote"
+
+let vote_types = [];
+config.subscribe('vote-types', c => { vote_types = c; });
+
+
 
 /**
  * Saves the user, his upvote and updates the upvote count.

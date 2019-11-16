@@ -1,6 +1,6 @@
 const db = require('./mongo-db');
-const log = require('./log.js');
-const admins = require('./admins.js');
+const log = require('./log');
+const admins = require('./admins');
 
 /**
  * Checks Message if its from Admin and if it contains Repost

@@ -1,5 +1,5 @@
+const log = require('./log');
 const watchr = require('watchr');
-const log = require('./log.js');
 const fs = require('fs');
 
 /** Mapping of config names to callback functions subscribed to this config */
