@@ -1,0 +1,18 @@
+{
+    "ERROR": {
+        "console": true,
+        "message": true
+    },
+    "WARNING": {
+        "console": true,
+        "message": true
+    },
+    "INFO": {
+        "console": true,
+        "message": false
+    },
+    "SUCCESS": {
+        "console": true,
+        "message": false
+    }
+}

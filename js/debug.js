@@ -1,6 +1,6 @@
 const maintain = require('./meme-maintaining.js');
 const db = require('./mongo-db.js');
-const util = require('./util.js');
+const log = require('./log.js');
 const config = require('./config.js');
 
 let debug_config = {};
@@ -16,7 +16,7 @@ function init(bot) {
 
 async function reply_with_chatinfo(ctx) {
     if (!debug_config.command_chatinfo) return;
-    util.log_info('Chat info', ctx.update.message.chat);
+    log.info('Chat info', ctx.update.message.chat);
     ctx.reply(JSON.stringify(ctx.update.message.chat, null, '  '));
 }
 
@@ -32,7 +32,7 @@ async function log_all_updates(ctx, next) {
         return;
     }
 
-    util.log_info('Incoming update', ctx.update);
+    log.info('Incoming update', ctx.update);
     next();
 }
 

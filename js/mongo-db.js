@@ -1,4 +1,5 @@
 const util = require('./util.js');
+const log = require('./log.js');
 const config = require('../config/config.json');
 const maintain = require('./meme-maintaining.js');
 const MongoClient = require('mongodb').MongoClient;
@@ -18,7 +19,7 @@ function init() {
     connected = new Promise((resolve, reject) => {
         client.connect(async (err) => {
             if (err) {
-                log_err(err);
+                log.error("Cannot connect to mongo db", err);
                 reject(err);
             }
 
@@ -30,7 +31,7 @@ function init() {
             
             memes = collections[0];
             users = collections[1];
-            console.log('    \x1b[32m%s\x1b[0m', 'Connected to mongodb');
+            log.success('Connected to mongodb');
             resolve();
         });
     });
@@ -49,18 +50,14 @@ function save_user(user) {
             last_name: user.last_name
         }},
         { upsert: true }
-    ).catch(log_err)
+    ).catch((err) => log.error("Cannot save user in mongo db", { error: err, user}))
     .then((result) => {
         // Check, if username is new
         if (result.modifiedCount == 1 && result.matchedCount == 1) {
-            console.log(' === \x1b[36m%s\x1b[0m ===', 'Detected username change. Updating old posts');
+            log.info('Detected username change. Updating old posts', user);
             maintain.update_user_name(user);
         }
     });
-}
-
-function log_err(err) {
-    util.log_error("DB operation failed", err);
 }
 
 /**
@@ -83,7 +80,10 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
             post_date: post_date
         })
         .then(resolve)
-        .catch(reject);
+        .catch((error) => {
+            log.error("Cannot save meme in mongo db", { error, request: { user_id, file_id, file_type, message_id, category, group_message_id, post_date }});
+            reject(error);
+        });
     });
 }
 
@@ -93,16 +93,17 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
  */
 function save_meme_group_message(ctx) {
     let file_id = util.any_media_id(ctx);
-    console.log(`message id: ${ctx.message_id}`);
     if (!file_id) {
-        console.log("Cannot save meme group message: missing file id");
+        log.error("Cannot store group message id in mongo db", "missing file id");
         return;
     }
     memes.updateOne(
         { _id: file_id },
         { $set: { group_message_id: ctx.message_id }}
     )
-    .catch(log_err);
+    .catch((error) => {
+        log.error("Cannot store group message id in mongo db", { error, file_id });
+    });
 }
 
 async function save_vote(user_id, file_id, vote_type) {
@@ -122,7 +123,9 @@ async function save_vote(user_id, file_id, vote_type) {
         }
         await memes.updateOne({ _id: file_id }, { $addToSet: toggle });
     }
-    catch (err) { log_err(err); }
+    catch (error) { 
+        log.error("Cannot save vote in mongo db", { error, request: { user_id, file_id, vote_type } }); 
+    }
     
 }
 
@@ -136,7 +139,10 @@ async function* get_memes_by_user(user_id, options) {
         }
         
     }
-    catch (err) { log_err(err); }
+    catch (error) { 
+        log.error("Cannot get memes by user from mongo db", { error, request: { user_id, options } });
+        throw error;
+    }
 }
 
 async function count_votes(file_id) {
@@ -152,9 +158,9 @@ async function count_votes(file_id) {
         
         return votes;
     }
-    catch (err) { 
-        log_err(err);
-        throw err;
+    catch (error) { 
+        log.error("Cannot count votes in mongo db", { error, request: { file_id }});
+        throw error;
     }
 }
 
@@ -174,9 +180,9 @@ async function count_user_total_votes_by_type(user_id, vote_type) {
         if (!result) return 0;
         return result.upvotes;
     }
-    catch(err) {
-        log_err(err);
-        throw err;
+    catch(error) {
+        log.error("Cannot count user total votes by type in mongo db", { error, request: { user_id, vote_type }});
+        throw error;
     }
 }
 
@@ -317,12 +323,14 @@ async function save_repost(message_id) {
         const meme = await memes.findOne({ group_message_id: message_id});
 
         if (!meme) {
-            util.log("Cannot flag meme as repost, as it does not exist", { message_id });
+            log.error("Cannot flag meme as repost, as it does not exist", { message_id });
         }
         
         await memes.updateOne({group_message_id: message_id },{ $set:{ isRepost: true}});
     }
-    catch (err) { log_err(err); }
+    catch (error) {
+        log.error("Cannot save repost flag", { error, request: { message_id } });
+    }
 }
 
 module.exports.init = init;

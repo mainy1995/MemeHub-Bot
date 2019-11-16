@@ -1,5 +1,5 @@
 const watchr = require('watchr');
-const util = require('./util.js');
+const log = require('./log.js');
 const fs = require('fs');
 
 /** Mapping of config names to callback functions subscribed to this config */
@@ -22,6 +22,13 @@ function subscribe(config_name, update_callback) {
     init_config(config_name);
 }
 
+function register(config_name, parent, key) {
+    if (!key) key = config_name;
+    subscribe(config_name, new_config => {
+        parent[key] = new_config;
+    });
+}
+
 async function init_config(config_name) {
     read_config(config_name);
 
@@ -29,27 +36,27 @@ async function init_config(config_name) {
         `config/${config_name}.json`, 
         (changeType) =>{
             if (changeType === 'delete') {
-                util.log_error('Missing config file', `Config file "${config_name}" has been deleted`);
+                log.error('Missing config file', `Config file "${config_name}" has been deleted`);
                 return;
             }
 
             if (changeType === 'create') {
-                util.log_warning('New config file', `Config file "${config_name}" has been created`);
+                log.warning('New config file', `Config file "${config_name}" has been created`);
                 read_config(config_name);
                 return;
             }
 
             if (changeType !== 'update') {
-                util.log_error('Unknown config file update', `Config file "${config_name}" has been changed, but the update type "${changeType}" is unhandled. Skipping change.`);
+                log.error('Unknown config file update', `Config file "${config_name}" has been changed, but the update type "${changeType}" is unhandled. Skipping change.`);
                 return;
             }
 
-            util.log_info('Updated config file', `Config file "${config_name}" has been updated`);
+            log.info('Updated config file', `Config file "${config_name}" has been updated`);
             read_config(config_name);
         },
         (err) => {
             if (err) {
-                util.log_error(`Cannot attch watchr to config "${config_name}"`, err);
+                log.error(`Cannot attch watchr to config "${config_name}"`, err);
                 return;
             }
         });
@@ -58,7 +65,7 @@ async function init_config(config_name) {
 function read_config(config_name) {
     fs.readFile(`config/${config_name}.json`, (err, data) => {
         if (err) {
-            util.log_error(`Cannot read config file "${config_name}"`, err);
+            log.error(`Cannot read config file "${config_name}"`, err);
             return;
         }
 
@@ -84,3 +91,4 @@ function notify_subscribers(config_name, config = null) {
 }
 
 module.exports.subscribe = subscribe;
+module.exports.register = register;

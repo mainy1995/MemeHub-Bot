@@ -9,7 +9,7 @@ const categoriesStage = require('./js/categories');
 const welcome = require('./js/welcome-message');
 const config = require('./config/config.json');
 const best_of = require('./js/best-of.js');
-const util = require('./js/util.js');
+const log = require('./js/log.js');
 const debug = require('./js/debug.js');
 const admins = require('./js/admins.js');
 
@@ -20,7 +20,7 @@ best_of.init(bot);
 categoriesStage.init(bot);
 debug.init(bot);
 admins.init(bot);
-util.set_bot(bot);
+log.init(bot);
 maintain.set_bot(bot);
 
 bot.start(welcome.send_welcome_message);
@@ -49,7 +49,7 @@ bot.on('callback_query', (ctx) => {
 });
 
 bot.launch().then(() => {
-    console.log('    \x1b[32m%s\x1b[0m', 'Bot launched');
+    log.success('Bot launched');
 }, (err) => {
-    util.log_error("Cannot launch bot", err);
+    log.error("Cannot launch bot", err);
 });

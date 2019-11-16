@@ -1,4 +1,5 @@
 const util = require('./util');
+const log = require('./log.js');
 const config = require('../config/config.json');
 const db = require('./mongo-db');
 const categories = require('./categories');
@@ -20,29 +21,30 @@ async function handle_meme_request(ctx) {
             category: util.escape_category(ctx.message.caption)
         };
         
-        console.log(`\n === \x1b[36mMeme request from user "${options.user.first_name} ${options.user.last_name}"\x1b[0m ===`);
+        const username = util.name_from_user(options.user);
+        log.info(`Meme request from user "${username}"`);
         
         if (!is_private_chat(ctx)) {
             if (is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
             ctx.deleteMessage(ctx.message.message_id);
             ctx.telegram.sendMessage(options.user.id, 'Please only send memes here in the private chat!');
-            console.log("Aborting due to wrong chat");
+            log.info("Aborting meme request due to wrong chat");
             return;
         }
 
         if (!options.user.username) {
-            ctx.reply('Posting without username not allowed! Choose a username in the settings.');
-            console.log("Aborting due to missung username");
+            ctx.reply('Posting without a username is not allowed! Please choose a username in the settings.');
+            log.info("Aborting meme request due to missung username");
             return;
         }
         if (options.user.is_bot) {
             ctx.reply('Only humans may send memes, sorry!')
-            console.log("Aborting because user is a bot");
+            log.info("Aborting meme request because user is a bot");
             return;
         }
         if (options.file_id === null) {
             ctx.reply('It looks like I am not able to send this kind of meme, sorry!')
-            console.log("Aborting due to missing file id");
+            log.warning("Aborting meme request due to missing file id", ctx.message);
             return
         }
         
@@ -56,7 +58,7 @@ async function handle_meme_request(ctx) {
         process_meme(ctx, options);
     }
     catch(exception) {
-        util.log_error("Cannot handle meme request", exception);
+        log.error("Cannot handle meme request", { exception, options, request_message: ctx.message });
     }
 }
 
@@ -76,12 +78,12 @@ function process_meme(ctx, options) {
             ctx.reply('👍');
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
         })
-        .catch((err) => {
-            if (!!err.code && err.code == 11000) {
+        .catch((error) => {
+            if (!!err && err.code == 11000) {
                 ctx.telegram.sendMessage(options.user.id, 'REPOST DU SPAST 😡');
                 return;
             }
-            util.log_error("Cannot store meme request in db", err);
+            log.error("Cannot store meme request in db", { error, options });
             ctx.reply("Something went horribly wrong 😢 I cannot send your meme!");
         });
 }
@@ -94,9 +96,8 @@ function process_meme(ctx, options) {
  * @param {The category of the meme or null for no category} category
  * @returns {The promise that is returned by the send method}
  */
-function forward_meme_to_group(ctx, file_id, file_type, user, category) {
+function forward_meme_to_group(ctx, file_id, file_type, user, category) {    
     const caption = build_caption(user, category);
-    
 
     return util.send_media_by_type(
         ctx,
@@ -110,11 +111,10 @@ function forward_meme_to_group(ctx, file_id, file_type, user, category) {
             }
         }
     )
-    .catch((err) => {
-        util.log_error("Cannot not send meme to group", err);
+    .catch((error) => {
+        log.error("Cannot not send meme to group", error);
     })
     .then((ctx) => { 
-        console.log("Meme send to group");
         db.save_meme_group_message(ctx);
     });
 }

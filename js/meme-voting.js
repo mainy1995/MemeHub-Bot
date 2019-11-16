@@ -1,4 +1,5 @@
 const util = require('./util');
+const log = require('./log.js');
 const db = require('./mongo-db');
 const achievements = require('./achievements');
 const vote_types = require('../config/vote-types.json');
@@ -15,7 +16,7 @@ async function handle_vote_request(ctx) {
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
     if (!vote_types.find(t => t.id == vote_type)) {
-        util.log_error("Unknown vote type", vote_type);
+        log.warning("Cannot handle vote request", `Unknown vote type: "${vote_type}"`);
         return;
     }
 
@@ -30,11 +31,11 @@ async function handle_vote_request(ctx) {
         const votes = await db.count_votes(file_id);
         
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
-            .catch(err => util.log_error('Could not update vote count', err));
+            .catch(err => log.error('Cannot update vote count', err));
         ctx.answerCbQuery();
     }
     catch(err) {
-        console.log('Vote handling failed', err);
+        log.error('Vote handling failed', err);
         ctx.answerCbQuery();
     }
     
