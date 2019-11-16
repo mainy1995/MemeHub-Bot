@@ -7,8 +7,6 @@ const subscribers = {};
 /** Mapping of config names to the current configs */
 const configs = {};
 
-console.log("CONFIG");
-
 /**
  * Subscribes to a config file.
  * @param config_name {The config_name of the config to subscribe to.}  

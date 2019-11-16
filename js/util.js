@@ -134,19 +134,19 @@ function name_from_user(user) {
  */
 function log_error(problem, error) {
     console.log(`    \x1b[31m%s\x1b[0m ${problem}`, "ERROR:");
-    console.log(`      > ${error}`);
+    console.log(`      > ${JSON.stringify(error, null, '  ')}`);
     send_log_message(`Error: ${problem}\n\n > ${JSON.stringify(error, null, '  ')}`);
 }
 
 function log_warning(problem, data) {
     console.log(`    \x1b[45m%s\x1b[0m ${problem}`, 'WARNING:');
-    if (data) console.log(`      > ${data}`);
-    send_log_message(`WARNING: ${problem}` + !!data ? `\n\n > ${JSON.stringify(data, null, ' ')}` : '');
+    if (data) console.log(`      > ${JSON.stringify(data, null, '  ')}`);
+    send_log_message(`WARNING: ${problem}` + !!data ? `\n\n > ${JSON.stringify(data, null, '  ')}` : '');
 }
 
 function log_info(info, data) {
     console.log(`    \x1b[34m%s\x1b[0m ${info}`, 'INFO:');
-    if (data) console.log(`      > ${data}`);
+    if (data) console.log(`      > ${JSON.stringify(data, null, '  ')}`);
 }
 
 /**
