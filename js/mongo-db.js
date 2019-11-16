@@ -136,15 +136,16 @@ async function save_vote(user_id, file_id, vote_type) {
     
 }
 
-async function* get_memes_by_user(user_id, options) {
+async function* get_memes_by_user(user_id, options, include_reposts) {
     if (!options) options = {};
     try {
-        const result = await memes.find({ poster_id: user_id }, options);
+        const result = include_reposts
+            ? await memes.find({ poster_id: user_id }, options)
+            : await memes.find({ poster_id: user_id, isRepost: { $exists: false } });
 
         while (await result.hasNext()) {
             yield await result.next();
         }
-        
     }
     catch (error) { 
         log.error("Cannot get memes by user from mongo db", { error, request: { user_id, options } });

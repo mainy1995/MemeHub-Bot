@@ -2,13 +2,28 @@ const util = require('./util');
 const log = require('./log');
 const db = require('./mongo-db');
 const achievements = require('./achievements');
-const config = require('./config');
+const _config = require('./config');
+const _bot = require('./bot');
 
 const vote_prefix = "vote"
-
 let vote_types = [];
-config.subscribe('vote-types', c => { vote_types = c; });
 
+_config.subscribe('vote-types', c => { vote_types = c; });
+
+_bot.subscribe(bot => {
+    bot.on('callback_query', (ctx) => {
+        if (is_legacy_like_callback(ctx.update.callback_query)) {
+            handle_legacy_like_request(ctx);
+            return;
+        }
+
+        if (!is_vote_callback(ctx.update.callback_query) || ctx.update.callback_query.from.is_bot) {
+            ctx.answerCbQuery();
+            return;
+        }
+        handle_vote_request(ctx);
+    });
+});
 
 
 /**

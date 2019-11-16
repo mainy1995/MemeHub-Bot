@@ -1,15 +1,14 @@
 const _config = require('./config');
+const _bot = require('./bot');
 
 let config = {};
-_config.subscribe('config', c => config = c);
-
 let bot
 
-async function init(_bot) {
-    bot = _bot;    
-}
+_config.subscribe('config', c => config = c);
+_bot.subscribe(b => bot = b);
 
 async function getAdmins() {
+    if (!bot) throw 'Bot not connected';
     return bot.telegram.getChatAdministrators(config.group_id);
 }
 
@@ -18,5 +17,4 @@ async function can_delete_messages(user) {
     return admins.some(a => a.user.id == user.id && (a.status == 'creator' || a.can_delete_messages));
 }
 
-module.exports.init = init;
 module.exports.can_delete_messages = can_delete_messages;

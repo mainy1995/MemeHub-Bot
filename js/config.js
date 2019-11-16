@@ -22,13 +22,6 @@ function subscribe(config_name, update_callback) {
     init_config(config_name);
 }
 
-function register(config_name, parent, key) {
-    if (!key) key = config_name;
-    subscribe(config_name, new_config => {
-        parent[key] = new_config;
-    });
-}
-
 async function init_config(config_name) {
     read_config(config_name);
 
@@ -91,4 +84,3 @@ function notify_subscribers(config_name, config = null) {
 }
 
 module.exports.subscribe = subscribe;
-module.exports.register = register;

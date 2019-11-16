@@ -1,8 +1,6 @@
-const _config = require('./config');
-
 const colors = {
     "ERROR":   "\x1b[31m",
-    "WARNING": "\x1b[45m",
+    "WARNING": "\x1b[35m",
     "INFO":    "\x1b[34m",
     "SUCCESS": "\x1b[32m",
     "reset":   "\x1b[0m"
@@ -11,17 +9,19 @@ const colors = {
 let config = {};
 let log = {};
 
-_config.subscribe('config', c => config = c);
-_config.subscribe('log', c => log = c);
-
 let bot;
 
 /**
  * Sets the Telegraf object to use when sending messages without a context.
  * @param {The Telegraf object to use when sending messages without a context} _bot 
  */
-function init(_bot) {
+function set_bot(_bot) {
     bot = _bot;
+}
+
+function set_config(_config) { 
+    _config.subscribe('config', c => config = c);
+    _config.subscribe('log', c => log = c);
 }
 
 /**
@@ -83,7 +83,8 @@ function indented(json_string) {
     return `${log.indentation.data}${json_string.replace(/(?:\r\n|\r|\n)/g, `\n${log.indentation.data}`)}`;
 }
 
-module.exports.init = init;
+module.exports.set_bot = set_bot;
+module.exports.set_config = set_config;
 module.exports.error = log_error;
 module.exports.warning = log_warning;
 module.exports.success = log_success;

@@ -1,6 +1,13 @@
 const util = require('./util');
 const log = require('./log');
 const db = require('./mongo-db');
+const _bot = require('./bot');
+
+_bot.subscribe(bot => {
+    bot.command('top', my_top); // zeigt mein Meme mit den meisten Upvotes an
+    bot.command('avg', my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
+    bot.command('sum', user_overview); // zeigt memer mit deren Anzahl an Uploads an
+});
 
 function my_top(ctx) {
     let user_id = ctx.message.from.id;  

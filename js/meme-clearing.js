@@ -1,6 +1,9 @@
 const db = require('./mongo-db');
 const log = require('./log');
 const admins = require('./admins');
+const _bot = require('./bot');
+
+_bot.subscribe(bot => bot.command('repost', clear_repost));
 
 /**
  * Checks Message if its from Admin and if it contains Repost

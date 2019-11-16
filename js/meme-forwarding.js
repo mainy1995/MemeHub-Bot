@@ -1,6 +1,7 @@
 const util = require('./util');
 const log = require('./log');
 const _config = require('./config');
+const _bot = require('./bot');
 const db = require('./mongo-db');
 const categories = require('./categories');
 const achievements = require('./achievements');
@@ -8,6 +9,12 @@ const voting = require('./meme-voting');
 
 let group_id = undefined;
 _config.subscribe('config', c => group_id = c.group_id);
+_bot.subscribe(bot => {
+    bot.on('photo', handle_meme_request);
+    bot.on('animation', handle_meme_request);
+    bot.on('video', handle_meme_request);
+});
+
 
 /**
  * Saves memes to the db, forwards them and handles upvoting
@@ -50,18 +57,23 @@ async function handle_meme_request(ctx) {
             log.warning("Aborting meme request due to missing file id", ctx.message);
             return
         }
+
         
         await db.connected;
         db.save_user(options.user);
         
         if (!options.category) {
-            categories.ask(ctx, options);
+            categories.ask(ctx).then(category => { 
+                options.category = category;
+                process_meme(ctx, options);
+            });
             return;
         }
+        
         process_meme(ctx, options);
     }
     catch(exception) {
-        log.error("Cannot handle meme request", { exception, options, request_message: ctx.message });
+        log.error("Cannot handle meme request", { exception, request_message: ctx.message });
     }
 }
 
@@ -74,15 +86,15 @@ function is_reaction(ctx) {
 }
 
 function process_meme(ctx, options) {
-    ctx.reply("Sending you meme ✈️", { reply_markup: { remove_keyboard: true }});
     db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.category)
         .then(() => { 
+            ctx.reply("Sending you meme ✈️");
             forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.category);
             ctx.reply('👍');
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
         })
         .catch((error) => {
-            if (!!err && err.code == 11000) {
+            if (!!error && error.code == 11000) {
                 ctx.telegram.sendMessage(options.user.id, 'REPOST DU SPAST 😡');
                 return;
             }
