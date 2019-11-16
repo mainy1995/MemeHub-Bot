@@ -1,0 +1,25 @@
+{
+    "levels": {
+        "ERROR": {
+            "console": true,
+            "message": false
+        },
+        "WARNING": {
+            "console": true,
+            "message": false
+        },
+        "INFO": {
+            "console": true,
+            "message": false
+        },
+        "SUCCESS": {
+            "console": true,
+            "message": false
+        }
+    },
+    "indentation": {
+        "head": "  ",
+        "data": "   ] ",
+        "data_inner": "  "
+    }
+}

@@ -1,6 +1,9 @@
 const db = require('./mongo-db');
-const util = require('./util.js');
-const admins = require('./admins.js');
+const log = require('./log');
+const admins = require('./admins');
+const _bot = require('./bot');
+
+_bot.subscribe(bot => bot.command('repost', clear_repost));
 
 /**
  * Checks Message if its from Admin and if it contains Repost
@@ -28,7 +31,7 @@ async function clear_repost(ctx) {
         }
     }
     catch (err) {
-        util.log_error("Failed to clear repost message or repost command. The bot might need to have the 'can_delete_messages' privilege.", err);
+        log.error("Failed to clear repost message or repost command. The bot might need to have the 'can_delete_messages' privilege.", err);
     }
 }
 

@@ -1,7 +1,7 @@
 {
     "bot_token": "<Your bot token you got from the BotFather>",
     "group_id": "<The id of the meme group>",
-    "error_chats": [ "<chats that recieve error messages>" ],
+    "log_chats": [ "<chats that recieve error messages>" ],
     "public_welcome_message:": "Hi %USER%!",
     "welcome_message": "Welcome to the MemeHub! 👋\n\nPlease send your memes to this private chat, I will forward them for you.",
     "help_message": "Just send me memes! I will then ask you to pick a category. You can also choose a custom category by including a cation. When all is done I will send the meme for you. We support images, gifs and videos.",

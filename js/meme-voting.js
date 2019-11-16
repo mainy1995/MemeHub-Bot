@@ -1,9 +1,30 @@
 const util = require('./util');
+const log = require('./log');
 const db = require('./mongo-db');
 const achievements = require('./achievements');
-const vote_types = require('../config/vote-types.json');
+const _config = require('./config');
+const _bot = require('./bot');
 
 const vote_prefix = "vote"
+let vote_types = [];
+
+_config.subscribe('vote-types', c => { vote_types = c; });
+
+_bot.subscribe(bot => {
+    bot.on('callback_query', (ctx) => {
+        if (is_legacy_like_callback(ctx.update.callback_query)) {
+            handle_legacy_like_request(ctx);
+            return;
+        }
+
+        if (!is_vote_callback(ctx.update.callback_query) || ctx.update.callback_query.from.is_bot) {
+            ctx.answerCbQuery();
+            return;
+        }
+        handle_vote_request(ctx);
+    });
+});
+
 
 /**
  * Saves the user, his upvote and updates the upvote count.
@@ -15,7 +36,7 @@ async function handle_vote_request(ctx) {
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
     if (!vote_types.find(t => t.id == vote_type)) {
-        util.log_error("Unknown vote type", vote_type);
+        log.warning("Cannot handle vote request", `Unknown vote type: "${vote_type}"`);
         return;
     }
 
@@ -30,11 +51,11 @@ async function handle_vote_request(ctx) {
         const votes = await db.count_votes(file_id);
         
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
-            .catch(err => util.log_error('Could not update vote count', err));
+            .catch(err => log.error('Cannot update vote count', err));
         ctx.answerCbQuery();
     }
     catch(err) {
-        console.log('Vote handling failed', err);
+        log.error('Vote handling failed', err);
         ctx.answerCbQuery();
     }
     
