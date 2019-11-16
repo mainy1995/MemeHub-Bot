@@ -26,7 +26,8 @@
     "mongodb": "^3.2.3",
     "mysql": "^2.16.0",
     "node-cron": "^2.0.3",
-    "telegraf-keyboard": "^1.1.2"
+    "telegraf-keyboard": "^1.1.2",
+    "watchr": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^5.9.0",

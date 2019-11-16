@@ -133,29 +133,39 @@ function name_from_user(user) {
  * @param {*} error 
  */
 function log_error(problem, error) {
-    console.log('    \x1b[31m%s\x1b[0m ' + problem, "ERROR:");
+    console.log(`    \x1b[31m%s\x1b[0m ${problem}`, "ERROR:");
     console.log(`      > ${error}`);
-    send_error_message(`Error: ${problem}\n\n > ${error}`);
+    send_log_message(`Error: ${problem}\n\n > ${JSON.stringify(error, null, '  ')}`);
+}
+
+function log_warning(problem, data) {
+    console.log(`    \x1b[45m%s\x1b[0m ${problem}`, 'WARNING:');
+    if (data) console.log(`      > ${data}`);
+    send_log_message(`WARNING: ${problem}` + !!data ? `\n\n > ${JSON.stringify(data, null, ' ')}` : '');
+}
+
+function log_info(info, data) {
+    console.log(`    \x1b[34m%s\x1b[0m ${info}`, 'INFO:');
+    if (data) console.log(`      > ${data}`);
 }
 
 /**
- * Sends an message to all chats in the error_chats array of the config
+ * Sends an message to all chats in the log_chats array of the config
  * @param {The message to send} message 
  */
-function send_error_message(message) {
+function send_log_message(message) {
     if (!bot) {
-        console.log('    \x1b[31m%s\x1b[0m Cannot send error message', "ERROR:");
+        console.log('    \x1b[31m%s\x1b[0m Cannot send log message', "ERROR:");
         console.log(`      > Telegraf bot object not set in util.js`);
         return;
     }
     try {
-        for(id of config.error_chats) {
-            console.log(`Sending errot to ${id}`);
+        for(id of config.log_chats) {
             bot.telegram.sendMessage(id, message);
         }
     }
     catch(e) {
-        console.log('    \x1b[31m%s\x1b[0m Failed sending error message', "ERROR:");
+        console.log('    \x1b[31m%s\x1b[0m Failed sending log message', "ERROR:");
         console.log(`      > ${e}`);
     }
 }
@@ -173,4 +183,6 @@ module.exports.get_media_type_from_message = get_media_type_from_message;
 module.exports.escape_category = escape_category;
 module.exports.name_from_user = name_from_user;
 module.exports.log_error = log_error;
-module.exports.send_error_message = send_error_message;
+module.exports.log_warning = log_warning;
+module.exports.log_info = log_info;
+module.exports.send_log_message = send_log_message;
