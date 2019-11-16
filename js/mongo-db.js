@@ -9,12 +9,14 @@ const MongoClient = require('mongodb').MongoClient;
  let users;
  let connection;
  let connected;
+ let collection_names;
 
 _config.subscribe('config', c => {
     init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
 });
 
-function init(collection_names, db_name, connection_string) {
+function init(coll_names, db_name, connection_string) {
+    collection_names = coll_names;
     if (connection) {
         log.info('Disconnecting from mongo db', 'config has changed');
         connection.close();
@@ -197,7 +199,10 @@ async function count_user_total_votes_by_type(user_id, vote_type) {
 function get_user_top_meme(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
-            { $match: { poster_id: user_id }},
+            { $match: { 
+                poster_id: user_id,
+                'votes.like': { $exists: true }
+            }},
             { $project: {
                 _id: false,
                 media_id: "$_id",
@@ -246,9 +251,12 @@ async function get_user(user_id) {
 function get_user_average_upvotes(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
-            { $match: { poster_id: user_id }},
+            { $match: { 
+                poster_id: user_id,
+                'votes.like': { $exists: true }
+            }},
             { $project: {
-                upvotes: { $size: "$vote.like" }
+                upvotes: { $size: "$votes.like" }
             }},
             { $group: { 
                 _id: "$poster_id",
@@ -290,40 +298,26 @@ function get_user_meme_count(user_id) {
     });
 }
 
-function get_user_meme_counts() {
-    return new Promise((resolve, reject) => {
-        memes.aggregate([
-            { $group: { 
-                _id: "$poster_id",
-                memes: { $sum: 1 }
-            }},
-            { $sort: { memes: -1 }},
-            { $limit: 5 },
-            { $lookup: {
-                from: collection_names.users,
-                localField: "_id",
-                foreignField: "_id",
-                as: "users"
-            }},
-            { $replaceRoot: {
-                 newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$users", 0 ] }, "$$ROOT" ] } 
-            }},
-            { $project: { users: 0 } }
-        ], {}, (err, cursor) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            
-            cursor.toArray((err, users) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve(users);
-            });
-        });
-    });
+async function get_user_meme_counts(limit = 5) {
+    const result = await memes.aggregate([
+        { $group: { 
+            _id: "$poster_id",
+            memes: { $sum: 1 }
+        }},
+        { $sort: { memes: -1 }},
+        { $limit: limit },
+        { $lookup: {
+            from: collection_names.users,
+            localField: "_id",
+            foreignField: "_id",
+            as: "users"
+        }},
+        { $replaceRoot: {
+                newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$users", 0 ] }, "$$ROOT" ] } 
+        }},
+        { $project: { users: 0 } }
+    ]);
+    return result.toArray();
 }
 
 async function save_repost(message_id) {
