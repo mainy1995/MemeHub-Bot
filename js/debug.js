@@ -3,7 +3,7 @@ const debug_config = require('../config/debug.json');
 const db = require('./mongo-db.js');
 
 function init(bot) {
-    if (debug_configbot.log_all_updates) bot.use(log_all_updates);
+    if (debug_config.log_all_updates) bot.use(log_all_updates);
     if (debug_config.command_chatinfo) bot.command('chatinfo', reply_with_chat_id);
     if (debug_config.command_update_username) bot.command('updateusername', trigger_update_user_name);
 }
