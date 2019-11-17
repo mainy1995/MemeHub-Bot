@@ -1,3 +1,4 @@
+
 send_methods = {
     'photo': 'sendPhoto',
     'animation': 'sendAnimation',
@@ -47,6 +48,7 @@ function any_media_id(message) {
  * @param {The message to check} message 
  */
 function has_photo(message) {
+    if (!message) return false;
     return !!message.photo && message.photo.length > 0;
 }
 
@@ -55,6 +57,7 @@ function has_photo(message) {
  * @param {The message to check} message 
  */
 function has_animation(message) {
+    if (!message) return false;
     return !!message.animation;
 }
 
@@ -63,6 +66,7 @@ function has_animation(message) {
  * @param {The message to check} message 
  */
 function has_video(message) {
+    if (!message) return false;
     return !!message.video;
 }
 

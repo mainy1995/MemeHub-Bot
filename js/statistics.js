@@ -1,5 +1,13 @@
-const util = require('./util.js');
+const util = require('./util');
+const log = require('./log');
 const db = require('./mongo-db');
+const _bot = require('./bot');
+
+_bot.subscribe(bot => {
+    bot.command('top', my_top); // zeigt mein Meme mit den meisten Upvotes an
+    bot.command('avg', my_average); // zeigt durchschnittliche Upvotes auf meine Memes an
+    bot.command('sum', user_overview); // zeigt memer mit deren Anzahl an Uploads an
+});
 
 function my_top(ctx) {
     let user_id = ctx.message.from.id;  
@@ -15,7 +23,7 @@ function my_top(ctx) {
             });
         })
         .catch((err) => {
-            console.log(err);
+            log.error('getting statistics failed (my_top)', err);
             ctx.reply("I'm broken 💩");
         });
 }
@@ -27,7 +35,7 @@ function my_average(ctx) {
             ctx.reply(`Your posts get an average of ${parseFloat(average).toFixed(2)} upvotes!`);
         })
         .catch((err) => {
-            console.log(err);
+            log.error('getting statistics failed (my_average)', err);
             ctx.reply("I'm broken 💩");
         });
 }
@@ -38,7 +46,7 @@ function user_overview(ctx) {
             let list = users.map((user, index) => `${index + 1}. ${util.name_from_user(user)} with ${user.memes} ${user.memes == 1 ? "meme" : "memes"}` ).join('\n');
             ctx.reply(`Here are the top posters:\n\n${list}`);
         }, (err) => {
-            console.log(err);
+            log.error('getting statistics failed (user_overview)', err);
             ctx.reply("I'm broken 💩");
         });
 }

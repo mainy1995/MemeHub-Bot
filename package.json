@@ -22,11 +22,12 @@
   "author": "mainy1995 <yannik.meinke@web.de>",
   "license": "MIT",
   "dependencies": {
-    "micro-bot": "^2.5.1",
-    "mongodb": "^3.2.3",
-    "mysql": "^2.16.0",
-    "node-cron": "^2.0.3",
-    "telegraf-keyboard": "^1.1.2"
+    "cron": "^1.7.2",
+    "moment": "^2.24.0",
+    "mongodb": "^3.3.4",
+    "telegraf": "^3.33.3",
+    "telegraf-keyboard": "^1.1.2",
+    "watchr": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^5.9.0",
