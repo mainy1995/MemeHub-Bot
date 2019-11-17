@@ -2,11 +2,11 @@
     "levels": {
         "ERROR": {
             "console": true,
-            "message": false
+            "message": true
         },
         "WARNING": {
             "console": true,
-            "message": false
+            "message": true
         },
         "INFO": {
             "console": true,

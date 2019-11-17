@@ -335,6 +335,43 @@ async function save_repost(message_id) {
     }
 }
 
+async function get_meme_recent_best(vote_type, date_earliest, date_latest) {
+    const vote_key = `votes.${vote_type}`;
+    let match = { post_date: {
+        $gte: date_earliest,
+        $lt : date_latest
+    }};
+    match[vote_key] = { $exists: true };
+    let sort = {};
+    sort[vote_key] = -1;
+    const result = await memes.aggregate([
+        { $match: match },
+        { $sort: sort },
+        { $limit: 1},
+        { $lookup: {
+            from: collection_names.users,
+            localField: "poster_id",
+            foreignField: "_id",
+            as: "users"
+        }},
+        { $project: {
+            user: { $arrayElemAt: [ "$users", 0 ] },
+            media_id: "$_id",
+            type: true,
+            votes: true
+        }},
+        { $project: {
+            _id: false,
+            users: 0
+        }}
+    ]);
+    if (!await result.hasNext()) {
+        return null;
+    }
+
+    return await result.next()
+}
+
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
@@ -351,3 +388,4 @@ module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
 module.exports.get_user = get_user;
 module.exports.save_repost= save_repost;
+module.exports.get_meme_recent_best = get_meme_recent_best;

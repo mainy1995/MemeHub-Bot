@@ -8,8 +8,9 @@ const colors = {
 
 let config = {};
 let log = {};
-
+let setReady;
 let bot;
+const isReady = new Promise(resolve => setReady = resolve);
 
 /**
  * Sets the Telegraf object to use when sending messages without a context.
@@ -21,7 +22,10 @@ function set_bot(_bot) {
 
 function set_config(_config) { 
     _config.subscribe('config', c => config = c);
-    _config.subscribe('log', c => log = c);
+    _config.subscribe('log', c => {
+        log = c;
+        setReady();
+    });
 }
 
 /**
@@ -45,7 +49,8 @@ function log_success(text, data) {
     handle_log('SUCCESS', text, data);
 }
 
-function handle_log(level, text, data) {
+async function handle_log(level, text, data) {
+    await isReady;
     if (log.levels[level] && log.levels[level].console) print_log(level, text, data);
     if (log.levels[level] && log.levels[level].message) send_log_message(level, text, data);
 }

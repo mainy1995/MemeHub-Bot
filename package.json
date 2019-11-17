@@ -22,8 +22,9 @@
   "author": "mainy1995 <yannik.meinke@web.de>",
   "license": "MIT",
   "dependencies": {
-    "mongodb": "^3.2.3",
-    "node-cron": "^2.0.3",
+    "cron": "^1.7.2",
+    "moment": "^2.24.0",
+    "mongodb": "^3.3.4",
     "telegraf": "^3.33.3",
     "telegraf-keyboard": "^1.1.2",
     "watchr": "^5.1.0"

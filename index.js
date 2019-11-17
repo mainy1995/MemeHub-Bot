@@ -1,4 +1,5 @@
 require('./js/bot');
+require('./js/log');
 require('./js/best-of');
 require('./js/categories');
 require('./js/debug');
