@@ -3,18 +3,18 @@
     "channel_id": "-1001190219839",
     "recent_best": [
         { 
-            "cron_schedule": "10 38 * * * *",
+            "cron_schedule": "10 0 20 * * *",
             "vote_type": "like",
-            "age_minimum": { "minutes": -100 },
-            "age_maximum": { "minutes": 100},
-            "caption": "Das Beste meme"
+            "age_minimum": { "days": 1 },
+            "age_maximum": { "days": 2 },
+            "caption": "Das beste Meme von gestern, von"
         },
         {
-            "cron_schedule": "40 0 20 * * *",
+            "cron_schedule": "15 0 20 * * *",
             "vote_type": "weeb",
-            "age_minimum": { "minutes": 0 },
-            "age_maximum": { "minutes": 100 },
-            "caption": "Weeb meme der minute von"
+            "age_minimum": { "days": 1 },
+            "age_maximum": { "days": 2 },
+            "caption": "WEEEEEEB"
         }
     ]
 }
