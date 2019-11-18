@@ -1,0 +1,13 @@
+{
+    "users": {
+        "path": "E:\\Development\\MemeHub-Webserver\\users.json"
+    },
+    "nominees": {
+        "image_path": "E:\\Development\\MemeHub-Website\\public\\img\\memes",
+        "nominees_path": "E:\\Development\\MemeHub-Website\\public\\nominees.json",
+        "image_prefix": "/img/memes/",
+        "categories": [
+            "OC", "Gesellschaft", "Dank", "SpongeBob", "Mathe", "Weeb", "Games", "Spooktober"
+        ]
+    }
+}

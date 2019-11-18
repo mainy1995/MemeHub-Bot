@@ -7,14 +7,24 @@
             "vote_type": "like",
             "age_minimum": { "days": 1 },
             "age_maximum": { "days": 2 },
-            "caption": "Das beste Meme von gestern, von"
+            "caption": "Das beste Meme von gestern"
         },
         {
-            "cron_schedule": "15 0 20 * * *",
+            "cron_schedule": "15 0 20 * * 1",
             "vote_type": "weeb",
             "age_minimum": { "days": 1 },
             "age_maximum": { "days": 2 },
             "caption": "WEEEEEEB"
+        }
+    ],
+    "random_good": [
+        {
+            "cron_schedule": "10 0 15 * * *",
+            "age_minimum": { "weeks": 4 },
+            "vote_minimum": {
+                "like": 10
+            },
+            "caption": "Here's a good one"
         }
     ]
 }
