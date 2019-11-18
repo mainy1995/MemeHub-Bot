@@ -376,6 +376,44 @@ async function get_meme_recent_best(vote_type, date_earliest, date_latest) {
     return await result.next()
 }
 
+async function get_meme_random_good(vote_minimum, date_latest) {
+    const match1 = { post_date: { $lt : date_latest }};
+    const match2 = { };
+    const project1 = { votes: 1, poster_id: 1, type: 1 };
+    for (vote in vote_minimum) {
+        match1[`votes.${vote}`] = { $exists: true };
+        project1[`vote_count_${vote}`] = { $size: `$votes.${vote}` };
+        match2[`vote_count_${vote}`] = { $gte: vote_minimum[vote] };
+    }
+    const result = await memes.aggregate([
+        { $match: match1 },
+        { $project: project1 },
+        { $match: match2 },
+        { $sample: { size: 1 }},
+        { $lookup: {
+            from: collection_names.users,
+            localField: "poster_id",
+            foreignField: "_id",
+            as: "users"
+        }},
+        { $project: {
+            user: { $arrayElemAt: [ "$users", 0 ] },
+            media_id: "$_id",
+            type: true,
+            votes: true
+        }},
+        { $project: {
+            _id: false,
+            users: 0
+        }}
+    ]);
+    if (!await result.hasNext()) {
+        return null;
+    }
+
+    return await result.next()
+}
+
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
@@ -393,3 +431,4 @@ module.exports.connected = connected;
 module.exports.get_user = get_user;
 module.exports.save_repost= save_repost;
 module.exports.get_meme_recent_best = get_meme_recent_best;
+module.exports.get_meme_random_good = get_meme_random_good;
