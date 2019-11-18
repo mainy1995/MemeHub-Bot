@@ -342,11 +342,15 @@ async function get_meme_recent_best(vote_type, date_earliest, date_latest) {
         $lt : date_latest
     }};
     match[vote_key] = { $exists: true };
-    let sort = {};
-    sort[vote_key] = -1;
     const result = await memes.aggregate([
         { $match: match },
-        { $sort: sort },
+        { $project: {
+            relevant_votes: { $size: `$votes.${vote_type}` },
+            votes: 1,
+            poster_id: 1,
+            type: 1
+        }},
+        { $sort: { relevant_votes: -1 } },
         { $limit: 1},
         { $lookup: {
             from: collection_names.users,
