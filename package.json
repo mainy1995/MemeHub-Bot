@@ -23,8 +23,10 @@
   "license": "MIT",
   "dependencies": {
     "cron": "^1.7.2",
+    "docker-names": "^1.1.1",
     "moment": "^2.24.0",
     "mongodb": "^3.3.4",
+    "node-shutdown-events": "^0.1.1",
     "telegraf": "^3.33.3",
     "telegraf-keyboard": "^1.1.2",
     "uuid": "^3.3.3",
