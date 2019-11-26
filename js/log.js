@@ -55,32 +55,32 @@ function set_config(_config) {
  * @param {*} problem 
  * @param {*} error 
  */
-function log_error(problem, error) {
-    handle_log(levels.error, problem, error);
+async function log_error(problem, error) {
+    await handle_log(levels.error, problem, error);
 }
 
-function log_warning(problem, data) {
-    handle_log(levels.warning, problem, data);
+async function log_warning(problem, data) {
+    await handle_log(levels.warning, problem, data);
 }
 
-function log_notice(text, data) {
-    handle_log(levels.notice, text, data);
+async function log_notice(text, data) {
+    await handle_log(levels.notice, text, data);
 }
 
-function log_info(info, data) {
-    handle_log(levels.info, info, data);
+async function log_info(info, data) {
+    await handle_log(levels.info, info, data);
 }
 
-function log_debug(text, data) {
-    handle_log(levels.debug, text, data);
+async function log_debug(text, data) {
+    await handle_log(levels.debug, text, data);
 }
 
 async function handle_log(level, text, data) {
-    const timestamp = moment().format(log.timestamp.format);
     await isReady;
-    if (doesLog(log.console, level)) print_log(level, text, data, timestamp);
-    if (doesLog(log.telegram, level)) send_log_message(level, text, data, timestamp);
-    if (doesLog(log.file, level)) write_log(level, text, data, timestamp);
+    const timestamp = moment().format(log.timestamp.format);
+    if (doesLog(log.console, level)) await print_log(level, text, data, timestamp);
+    if (doesLog(log.telegram, level)) await send_log_message(level, text, data, timestamp);
+    if (doesLog(log.file, level)) await write_log(level, text, data, timestamp);
 }
 
 function doesLog(config, level) {
@@ -88,50 +88,50 @@ function doesLog(config, level) {
     return level <= levels[config.level || info];
 }
 
-function print_log(level, text, data, timestamp) {
+async function print_log(level, text, data, timestamp) {
     if (level === levels.notice) console.log(`${timestamp}${log.indentation.head}${colors[level]}${text}${colors.reset}`);
     else console.log(`${timestamp}${log.indentation.head}${colors[level]}${names[level]}:${colors.reset} ${text}`);
     if (data) console.log(`${indented(readable(data))}`);
 }
 
-function send_log_message(level, text, data, timestamp) {
+async function send_log_message(level, text, data, timestamp) {
     if (!log.telegram.chats) return;
-
+    text = text.replace("_", "\\_").replace("*", "\\*").replace("`", "\\`");
     let message = `_${timestamp}_\n*${names[level]}:* ${text}`;
     if (data) message = `${message}\n\`${readable(data)}\``;
 
     try {
         if (!bot) throw 'Telegraf bot object not set in util.js';
         for(id of log.telegram.chats) {
-            bot.telegram.sendMessage(id, message, { parse_mode: 'Markdown'});
+            await bot.telegram.sendMessage(id, message, { parse_mode: 'Markdown'});
         }
     }
     catch(e) {
-        print_log(levels.error, 'Failed sending log message', e);
+        await print_log(levels.error, 'Failed sending log message', e);
     }
 }
 
-function write_log(level, text, data, timestamp = '') {
+async function write_log(level, text, data, timestamp = '') {
     try {
         const file_path = `${log.file.path}/${moment().format(log.file.format)}.${log.file.extension}`;
         let message = `${timestamp}${log.indentation.head}${names[level]}: ${text}\n`;
         if (data) message = `${message}${indented(readable(data))}\n`;
-        append_to_file(file_path, message);
+        await append_to_file(file_path, message);
     }
     catch (e) {
-        print_log(levels.error, 'Failed writing to log file', e);
+        await print_log(levels.error, 'Failed writing to log file', e);
     }
 }
 
 async function append_to_file(file, text) {
     if (!file_streams[file]) {
-        close_all_files();
+        await close_all_files();
         file_streams[file] = await fs.createWriteStream(file, {flags: 'a'});
     }
-    file_streams[file].write(text);
+    await file_streams[file].write(text);
 }
 
-function close_all_files() {
+async function close_all_files() {
     for (file in file_streams) {
         file_streams[file].end();
     }
@@ -158,6 +158,7 @@ module.exports.set_bot = set_bot;
 module.exports.set_config = set_config;
 module.exports.error = log_error;
 module.exports.warning = log_warning;
+module.exports.warn = log_warning;
 module.exports.success = log_notice;
 module.exports.notice = log_notice;
 module.exports.info = log_info;

@@ -15,6 +15,12 @@ _config.subscribe('config', c => {
     init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
 });
 
+process.on('shutdown', async () => {
+    if (!connection) return;
+    log.info('Disconnecting from mongo db');
+    return connection.close();
+})
+
 function init(coll_names, db_name, connection_string) {
     collection_names = coll_names;
     if (connection) {

@@ -3,7 +3,7 @@ const _config = require('./config');
 const log = require('./log');
 const dockerNames = require('docker-names');
 const ShutdownHandler = require("node-shutdown-events");
-new ShutdownHandler({ exitTimeout: 50000 });
+new ShutdownHandler({ exitTimeout: 60000, log: { warn: () => {}, error: () => {}, info: () => {}} });
 
 const subscribers = [];
 let bot;
@@ -53,10 +53,10 @@ function handle_error(error, context) {
 
 process.on("shutdown", async () => {
     if (!has_bot) return;
-
-    log.warning(`Stopping bot ${bot_name}`, 'Shutdown event received');
-    return bot.stop();
+    await log.notice(`Stopping bot ${bot_name}`, 'Shutdown event received');
+    bot.stop(() => {
+        log.info(`Shutdown complete for bot ${bot_name}`);
+    });
 });
-
 
 module.exports.subscribe = subscribe;

@@ -6,6 +6,7 @@ const fs = require('fs');
 const subscribers = {};
 /** Mapping of config names to the current configs */
 const configs = {};
+let stalker = [];
 
 /**
  * Subscribes to a config file.
@@ -22,10 +23,16 @@ function subscribe(config_name, update_callback) {
     init_config(config_name);
 }
 
+process.on('shutdown9', () => {
+    for (s of stalker) {
+        s.close();
+    }
+});
+
 async function init_config(config_name) {
     read_config(config_name);
 
-    watchr.open(
+    let s = watchr.open(
         `config/${config_name}.json`, 
         (changeType) =>{
             if (changeType === 'delete') {
@@ -53,6 +60,8 @@ async function init_config(config_name) {
                 return;
             }
         });
+
+    stalker.push(s);
 }
 
 function read_config(config_name) {

@@ -21,6 +21,8 @@ _config.subscribe('best-of', best_of => {
     schedule_all(best_of);
 });
 
+process.on("shutdown", stop_all);
+
 function schedule_all(best_of) {
     tasks = [
         ...best_of.recent_best.map(t => cron.job(t.cron_schedule, () => execute_best_of(t, get_recent_best), null, true)),
