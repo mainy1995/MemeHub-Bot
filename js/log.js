@@ -43,8 +43,9 @@ function set_bot(_bot) {
 
 function set_config(_config) { 
     _config.subscribe('config', c => config = c);
-    _config.subscribe('log', c => {
+    _config.subscribe('log', async c => {
         log = c;
+        await ensure_log_file_dir();
         setReady();
     });
 }
@@ -136,6 +137,16 @@ function close_all_files() {
     }
 }
 
+function ensure_log_file_dir() {
+    return new Promise((resolve, _) => {
+        if (!log.file || !log.file.path) return resolve();
+        const dir = log.file.path;
+        fs.exists(dir, exists => {
+            if (!exists) fs.mkdir(dir, resolve);
+            else resolve()
+        });
+    });
+}
 
 function readable(data) {
     if (typeof data === 'string') return data;
