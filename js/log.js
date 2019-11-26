@@ -43,9 +43,9 @@ function set_bot(_bot) {
 
 function set_config(_config) { 
     _config.subscribe('config', c => config = c);
-    _config.subscribe('log', async c => {
+    _config.subscribe('log', c => {
         log = c;
-        await ensure_log_file_dir();
+        ensure_log_file_dir();
         setReady();
     });
 }
