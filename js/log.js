@@ -138,14 +138,11 @@ function close_all_files() {
 }
 
 function ensure_log_file_dir() {
-    return new Promise((resolve, _) => {
-        if (!log.file || !log.file.path) return resolve();
-        const dir = log.file.path;
-        fs.exists(dir, exists => {
-            if (!exists) fs.mkdir(dir, resolve);
-            else resolve()
-        });
-    });
+    if (!log.file || !log.file.path) return;
+    const dir = log.file.path;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
 }
 
 function readable(data) {
