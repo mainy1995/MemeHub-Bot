@@ -1,25 +1,26 @@
 {
-    "levels": {
-        "ERROR": {
-            "console": true,
-            "message": true
-        },
-        "WARNING": {
-            "console": true,
-            "message": true
-        },
-        "INFO": {
-            "console": true,
-            "message": false
-        },
-        "SUCCESS": {
-            "console": true,
-            "message": false
-        }
+    "console": {
+        "enabled": true,
+        "level": "info"
+    },
+    "file": {
+        "enabled": true,
+        "level": "info",
+        "path": "logs",
+        "format": "Y-MM-DD",
+        "extension": "log"
+    },
+    "telegram": {
+        "enabled": true,
+        "level": "warning",
+        "chats": [ -1001198195223 ]
     },
     "indentation": {
-        "head": "  ",
+        "head": " ",
         "data": "   ] ",
         "data_inner": "  "
+    },
+    "timestamp": {
+        "format": "HH:mm:ss.SSS"
     }
 }
