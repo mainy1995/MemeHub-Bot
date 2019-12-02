@@ -19,7 +19,7 @@ process.on('shutdown', async () => {
     if (!connection) return;
     log.info('Disconnecting from mongo db');
     return connection.close();
-})
+});
 
 function init(coll_names, db_name, connection_string) {
     collection_names = coll_names;
