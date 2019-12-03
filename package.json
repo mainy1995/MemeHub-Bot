@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "cron": "^1.7.2",
+    "csv-writer": "^1.5.0",
     "docker-names": "^1.1.1",
     "moment": "^2.24.0",
     "mongodb": "^3.3.4",

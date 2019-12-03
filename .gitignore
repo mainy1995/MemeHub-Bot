@@ -41,3 +41,5 @@ start_bot.ps1
 package-lock.json
 .vscode/
 config.json
+dump.csv
+log.json
