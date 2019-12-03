@@ -16,7 +16,9 @@ _config.subscribe('config', c => {
 });
 
 process.on('shutdown', async () => {
+    await connected;
     if (!connection) return;
+
     log.info('Disconnecting from mongo db');
     return connection.close();
 });
