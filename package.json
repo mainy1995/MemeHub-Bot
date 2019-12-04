@@ -13,7 +13,7 @@
     "now-start": "micro-bot -d ${NOW_URL}",
     "lint": "eslint .",
     "test": "npm run lint",
-    "debug": "micro-bot --nolazy --inspect-brk=9229",
+    "debug": "node --nolazy --inspect-brk=9229 index.js",
     "migrate": "node js/migration.js"
   },
   "engines": {

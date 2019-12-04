@@ -3,19 +3,24 @@ const log = require('./log');
 const _config = require('./config');
 const maintain = require('./meme-maintaining');
 const MongoClient = require('mongodb').MongoClient;
+const lc = require('./lifecycle');
 
- let client;
- let memes;
- let users;
- let connection;
- let connected;
- let collection_names;
+let client;
+let memes;
+let users;
+let connection;
+let connected;
+let collection_names;
 
 _config.subscribe('config', c => {
     init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
 });
 
-process.on('shutdown', async () => {
+lc.on('start', async () => {
+    await connected;
+})
+
+lc.on('stop', async () => {
     await connected;
     if (!connection) return;
 

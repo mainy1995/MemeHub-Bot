@@ -1,6 +1,7 @@
 const log = require('./log');
 const watchr = require('watchr');
 const fs = require('fs');
+const lc = require('./lifecycle');
 
 /** Mapping of config names to callback functions subscribed to this config */
 const subscribers = {};
@@ -23,7 +24,7 @@ function subscribe(config_name, update_callback) {
     init_config(config_name);
 }
 
-process.on('shutdown9', () => {
+lc.on('stop', () => {
     for (s of stalker) {
         s.close();
     }

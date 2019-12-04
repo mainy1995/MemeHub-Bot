@@ -2,39 +2,50 @@ const Telegraf = require('telegraf');
 const _config = require('./config');
 const log = require('./log');
 const dockerNames = require('docker-names');
-const ShutdownHandler = require("node-shutdown-events");
-new ShutdownHandler({ exitTimeout: 60000, log: { warn: () => {}, error: () => {}, info: () => {}} });
+const lc = require('./lifecycle');
 
 const subscribers = [];
 let bot;
 let bot_name;
 let has_bot = false;
-_config.subscribe('config', async config => {
+let config;
+_config.subscribe('config', async c => {
     if (has_bot) {
         has_bot = false;
         log.warning(`Stopping bot ${bot_name}`, 'Config has changed');
-        bot.stop(() => start_bot(config));
-        return;
+        await bot.stop();
     }
-
-    start_bot(config);
+    config = c;
 });
 
-function start_bot(config) {
+lc.after('init', async () => {
+    lc.trigger('start');
+})
+
+lc.early('start', async () => {
     bot = new Telegraf(config.bot_token);
     bot_name = dockerNames.getRandomName();
     bot.catch(handle_error);
     log.set_bot(bot);
     log.set_config(_config);
+});
 
-    bot.launch().then(() => {
-        log.success(`Bot launched: ${bot_name}`);
-        has_bot = true;
-        notify_subscribers(bot);
-    }, (err) => {
-        log.error(`Cannot launch bot: ${bot_name}`, err);
-    });
-}
+lc.after('start', async () => {
+    await bot.launch()
+    log.success(`Bot launched: ${bot_name}`);
+    has_bot = true;
+    notify_subscribers(bot);
+});
+
+lc.on('stop', async () => {
+    if (!has_bot) return;
+    await log.notice(`Stopping bot ${bot_name}`, 'Shutdown event received');
+    await bot.stop();
+});
+
+lc.after('stop', async () => {
+    await log.info(`Shutdown complete for bot ${bot_name}`);
+});
 
 function subscribe(callback) {
     subscribers.push(callback);
@@ -51,12 +62,6 @@ function handle_error(error, context) {
     log.error("Uncaught error", { error, context});
 }
 
-process.on("shutdown", async () => {
-    if (!has_bot) return;
-    await log.notice(`Stopping bot ${bot_name}`, 'Shutdown event received');
-    bot.stop(() => {
-        log.info(`Shutdown complete for bot ${bot_name}`);
-    });
-});
+setTimeout(async () => { lc.trigger('init'); }, 1000);
 
 module.exports.subscribe = subscribe;

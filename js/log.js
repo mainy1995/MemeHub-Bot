@@ -26,7 +26,6 @@ const names = {
     4: "Debug"
 }
 
-let config = {};
 let log = {};
 let setReady;
 let bot;

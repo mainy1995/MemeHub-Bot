@@ -3,6 +3,7 @@ const db = require('./mongo-db');
 const log = require('./log');
 const _config = require('./config');
 const _bot = require('./bot');
+const lc = require('./lifecycle');
 
 let config = {};
 _config.subscribe('debug', c => config = c);
@@ -11,6 +12,12 @@ _bot.subscribe(bot => {
     bot.command('chatinfo', reply_with_chatinfo);
     bot.command('updateusername', trigger_update_user_name);
 });
+
+lc.hook(async (stage, event) => {
+    if (!config.log_lifecycle_events) return;
+    log.info(`Lifecycle ${stage}:${event}`);
+});
+
 
 async function reply_with_chatinfo(ctx) {
     if (!config.command_chatinfo) return;
