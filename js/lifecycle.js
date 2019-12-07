@@ -3,7 +3,7 @@ new ShutdownHandler({ exitTimeout: 60000, log: { warn: () => {}, error: () => {}
 
 const listeners = { early: {}, on: {}, late: {}, after: {}};
 const hooks = [async (stage, event) => {
-    for(const listener of listeners[stage][event] || []) {
+    await Promise.all((listeners[stage][event] || []).map(async listener => {
         try {
             await listener();
         }
@@ -11,8 +11,7 @@ const hooks = [async (stage, event) => {
             console.log("Failed calling lifecycle listener!");
             console.log(err);
         }
-        
-    }
+    }));
 }];
 
 function register(stage, event, callback) {

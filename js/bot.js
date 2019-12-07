@@ -3,6 +3,7 @@ const _config = require('./config');
 const log = require('./log');
 const dockerNames = require('docker-names');
 const lc = require('./lifecycle');
+const fs = require('fs');
 
 const subscribers = [];
 let bot;
@@ -45,6 +46,7 @@ lc.on('stop', async () => {
 
 lc.after('stop', async () => {
     await log.info(`Shutdown complete for bot ${bot_name}`);
+    process.exitCode = 0;
 });
 
 function subscribe(callback) {
@@ -59,7 +61,19 @@ function notify_subscribers(bot) {
 }
 
 function handle_error(error, context) {
-    log.error("Uncaught error", { error, context});
+    try {
+        log.error("Uncaught error", { error, context});
+    }
+    catch (err) {
+        const text = `Critical Error: Failed logging an unahandled error!
+            Original Error: ${error}
+            Original Context: ${context}
+            Logging Error: ${err}
+        `;
+        
+        console.log(text);
+        fs.writeFileSync("critical_error.txt", text);
+    }
 }
 
 setTimeout(async () => { lc.trigger('init'); }, 1000);

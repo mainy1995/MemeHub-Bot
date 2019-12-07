@@ -20,12 +20,12 @@ lc.on('start', async () => {
     await connected;
 })
 
-lc.on('stop', async () => {
+lc.late('stop', async () => {
     await connected;
     if (!connection) return;
 
     log.info('Disconnecting from mongo db');
-    return connection.close();
+    await connection.close();
 });
 
 function init(coll_names, db_name, connection_string) {
