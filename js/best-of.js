@@ -5,6 +5,7 @@ const db = require('./mongo-db');
 const log = require('./log');
 const cron = require('cron');
 const util = require('./util');
+const lc = require('./lifecycle');
 
 
 let bot;
@@ -21,7 +22,7 @@ _config.subscribe('best-of', best_of => {
     schedule_all(best_of);
 });
 
-process.on("shutdown", stop_all);
+lc.on("stop", stop_all);
 
 function schedule_all(best_of) {
     tasks = [
@@ -30,7 +31,7 @@ function schedule_all(best_of) {
     ];
 }
 
-function stop_all() {
+async function stop_all() {
     for (task of tasks) {
         task.stop();
     }

@@ -17,4 +17,10 @@ async function can_delete_messages(user) {
     return admins.some(a => a.user.id == user.id && (a.status == 'creator' || a.can_delete_messages));
 }
 
+async function is_admin(user) {
+    const admins = await getAdmins();
+    return admins.some(a => a.user.id == user.id);
+}
+
 module.exports.can_delete_messages = can_delete_messages;
+module.exports.is_admin = is_admin;

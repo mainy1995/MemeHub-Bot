@@ -3,23 +3,30 @@ const log = require('./log');
 const _config = require('./config');
 const maintain = require('./meme-maintaining');
 const MongoClient = require('mongodb').MongoClient;
+const lc = require('./lifecycle');
 
- let client;
- let memes;
- let users;
- let connection;
- let connected;
- let collection_names;
+let client;
+let memes;
+let users;
+let connection;
+let connected;
+let collection_names;
 
 _config.subscribe('config', c => {
     init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
 });
 
-process.on('shutdown', async () => {
-    if (!connection) return;
-    log.info('Disconnecting from mongo db');
-    return connection.close();
+lc.on('start', async () => {
+    await connected;
 })
+
+lc.late('stop', async () => {
+    await connected;
+    if (!connection) return;
+
+    log.info('Disconnecting from mongo db');
+    await connection.close();
+});
 
 function init(coll_names, db_name, connection_string) {
     collection_names = coll_names;
