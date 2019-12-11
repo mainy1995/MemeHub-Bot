@@ -33,7 +33,7 @@ async function trigger_update_user_name(ctx) {
 
 async function log_all_updates(ctx, next) {
     if (!config.log_all_updates) {
-        next()
+        next();
         return;
     }
 

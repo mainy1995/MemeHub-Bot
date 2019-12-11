@@ -32,7 +32,7 @@ async function handle_meme_request(ctx) {
         };
         
         const username = util.name_from_user(options.user);
-        log.info(`Meme request from user "${username}"`);
+        log.info(`Meme request from user "${username}"`, options);
         
         if (!is_private_chat(ctx)) {
             if (is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
