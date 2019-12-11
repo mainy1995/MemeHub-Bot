@@ -33,29 +33,39 @@ async function export_nominees() {
         match[`votes.${category == 'Weeb' ? 'weeb' : 'like'}`] = { $exists: true };
         const result = await collection.aggregate([
             { $match: match },
-            { $project: {
-                id: '$_id',
-                user_id: '$poster_id',
-                votes: { $size: votes_field },
-                _id: false
-            }},
-            { $sort: { votes: -1 }},
+            {
+                $project: {
+                    id: '$_id',
+                    user_id: '$poster_id',
+                    votes: { $size: votes_field },
+                    _id: false
+                }
+            },
+            { $sort: { votes: -1 } },
             { $limit: 10 },
-            { $project: {
-                id: 1,
-                user_id: 1
-            }}
+            {
+                $project: {
+                    id: 1,
+                    user_id: 1
+                }
+            }
         ]);
 
         const memes = await result.toArray();
         const with_download = [];
         for (const meme of memes) {
-            const file = await download_image(bot, meme.id);
-            with_download.push({
-                id: meme.id,
-                file,
-                user: users.find(u => u.id == meme.user_id).name
-            })
+            try {
+                const file = await download_image(bot, meme.id);
+                with_download.push({
+                    id: meme.id,
+                    file,
+                    user: users.find(u => u.id == meme.user_id).name
+                })
+            }
+            catch (err) {
+                console.error("failed downloading file!");
+                console.error(err);
+            }
         }
         nominees[`#${category}`] = with_download;
         console.log(`Got ${nominees[`#${category}`].length} Nominees for ${category}!`);
@@ -73,7 +83,7 @@ async function export_users() {
     await client.connect();
     const db = client.db(config.mongodb.database);
     console.log('Connectet!');
-    
+
     const users = await get_users(db);
     const final_object = {};
     users.forEach(user => final_object[uuidv4()] = user);
@@ -89,12 +99,14 @@ async function get_users(db) {
     const collection = db.collection(config.mongodb.collection_names.users);
     console.log('Getting all users...');
     const result = collection.aggregate([
-        { $match: {}},
-        { $project: {
-            id: '$_id',
-            name: '$first_name',
-            _id: false
-        }}
+        { $match: {} },
+        {
+            $project: {
+                id: '$_id',
+                name: '$first_name',
+                _id: false
+            }
+        }
     ]);
 
     const users = await result.toArray();
@@ -104,13 +116,22 @@ async function get_users(db) {
 
 async function download_image(bot, id) {
     const file_data = await bot.telegram.getFile(id);
-    const file_type = file_data.file_path.split('.').slice(-1)[0];
-    if (!file_type in ['jpg', 'png', 'mp4', 'gif']) throw 'unknown file tpye! ' + file_data.file_path;
-    const local_file_path = `${mha_config.nominees.image_path}\\${id}.${file_type}`
+    const file_type = get_file_type(file_data, id);
+    if (!['jpg', 'png', 'mp4', 'gif'].includes(file_type)) throw 'unknown file type! ' + file_data.file_path;
+    const local_file_path = `${mha_config.nominees.image_path}/${id}.${file_type}`
     const local_file = fs.createWriteStream(local_file_path);
     const result = await doRequest(`https://api.telegram.org/file/bot${config.bot_token}/${file_data.file_path}`);
     result.pipe(local_file);
     return `${mha_config.nominees.image_prefix}${id}.${file_type}`;
+}
+
+function get_file_type(file_data, id) {
+    const segments = file_data.file_path.split('.');
+    if (segments.length < 2) {
+        console.error(`No file extension found for meme "${id}"! using jpg.`);
+        return "jpg";
+    }
+    return segments.slice(-1)[0];
 }
 
 async function doRequest(url) {
@@ -119,7 +140,7 @@ async function doRequest(url) {
         req.on('response', res => {
             resolve(res);
         });
-    
+
         req.on('error', err => {
             reject(err);
         });
