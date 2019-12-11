@@ -1,0 +1,13 @@
+{
+    "users": {
+        "path": "/path/to/users.json"
+    },
+    "nominees": {
+        "image_path": "/path/to/img/memes",
+        "nominees_path": "/path/to/nominees.json",
+        "image_prefix": "/img/memes/",
+        "categories": [
+            "OC", "Gesellschaft", "Dank", "SpongeBob", "Mathe", "Weeb", "Games", "Spooktober"
+        ]
+    }
+}
