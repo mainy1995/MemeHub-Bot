@@ -7,7 +7,7 @@ send_methods = {
 
 /**
  * Returns the file id of the largest photo in a message or null if no photo is present.
- * @param {the message which contains the photo} message 
+ * @param {the message which contains the photo} message
  */
 function photo_id(message) {
     if (!has_photo(message)) return null;
@@ -16,7 +16,7 @@ function photo_id(message) {
 
 /**
  * Returns the file id of the animation in a message or null if none is present.
- * @param {The message which contains the animation} message 
+ * @param {The message which contains the animation} message
  */
 function animation_id(message) {
     if (!has_animation(message)) return null;
@@ -25,7 +25,7 @@ function animation_id(message) {
 
 /**
  * Returns the file id of the video in a message or null if none is present.
- * @param {The message which contains the video} message 
+ * @param {The message which contains the video} message
  */
 function video_id(message) {
     if (!has_video(message)) return null;
@@ -34,7 +34,7 @@ function video_id(message) {
 
 /**
  * Returns the file id of any media in a message or null if none is present.
- * @param {The message which may contain some kind of media} message 
+ * @param {The message which may contain some kind of media} message
  */
 function any_media_id(message) {
     if (has_photo(message)) return photo_id(message);
@@ -45,7 +45,7 @@ function any_media_id(message) {
 
 /**
  * Checks weather a message contains a photo.
- * @param {The message to check} message 
+ * @param {The message to check} message
  */
 function has_photo(message) {
     if (!message) return false;
@@ -54,7 +54,7 @@ function has_photo(message) {
 
 /**
  * Checks weather a message contains an animation.
- * @param {The message to check} message 
+ * @param {The message to check} message
  */
 function has_animation(message) {
     if (!message) return false;
@@ -63,7 +63,7 @@ function has_animation(message) {
 
 /**
  * Checks weather a message contains a video.
- * @param {The message to check} message 
+ * @param {The message to check} message
  */
 function has_video(message) {
     if (!message) return false;
@@ -72,8 +72,8 @@ function has_video(message) {
 
 /**
  * Sends supported media types to the given chat.
- * @param {The message context} ctx 
- * @param {The chat to send to} chat_id 
+ * @param {The message context} ctx
+ * @param {The chat to send to} chat_id
  * @param {The id of the media to send} media_id
  * @param {Extra parameters passed to the send method} extra
  */
@@ -94,12 +94,12 @@ function get_media_type_from_message(message) {
 
 /**
  * Takes a string and returns a single valid categroy, consisting of only alphanumeric characters and _.
- * @param {The caption written by the user.} caption 
+ * @param {The caption written by the user.} caption
  */
 function escape_category(caption) {
     if (!caption) return null;
     if (typeof caption !== 'string') return null;
-    return caption.replace(/\W/g, ''); // Removes all characters that are not alphanumeric or _
+    return caption.replace(/[^\wäöüß]/gi, ''); // Removes all characters that are not alphanumeric or _
 }
 
 function name_from_user(user) {
