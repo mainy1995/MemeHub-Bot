@@ -71,10 +71,11 @@ async function export_nominees() {
         nominees[`#${category}`] = with_download;
         console.log(`Got ${nominees[`#${category}`].length} Nominees for ${category}!`);
     }
-    fs.writeFile(mha_config.nominees.nominees_path, JSON.stringify(nominees, null, '  '), err => {
-        if (err) throw err;
-        console.log('Done!');
-    });
+    const json = JSON.stringify(nominees, null, '  ');
+    for (const file of mha_config.nominees.nominees_paths) {
+        await fs.promises.writeFile(file, json);
+    }
+    console.log('Done!');
 }
 
 async function export_users() {
@@ -90,10 +91,11 @@ async function export_users() {
     users.forEach(user => final_object[uuidv4()] = user);
 
     console.log('Writing to file...');
-    fs.writeFile(mha_config.users.path, JSON.stringify(final_object, null, '  '), err => {
-        if (err) throw err;
-        console.log('Done!');
-    });
+    const json = JSON.stringify(final_object, null, '  ');
+    for (const file of mha_config.users.paths) {
+        await fs.promises.writeFile(file, json);
+    }
+    console.log('Done!');
 }
 
 async function get_users(db) {

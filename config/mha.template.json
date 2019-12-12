@@ -1,13 +1,26 @@
 {
     "users": {
-        "path": "/path/to/users.json"
+        "paths": [
+            "/path1/to/users.json",
+            "/path2/to/users.json"
+        ]
     },
     "nominees": {
         "image_path": "/path/to/img/memes",
-        "nominees_path": "/path/to/nominees.json",
+        "nominees_paths": [
+            "/path1/to/nominees.json",
+            "/path2/to/nominees.json"
+        ],
         "image_prefix": "/img/memes/",
         "categories": [
-            "OC", "Gesellschaft", "Dank", "SpongeBob", "Mathe", "Weeb", "Games", "Spooktober"
+            "OC",
+            "Gesellschaft",
+            "Dank",
+            "SpongeBob",
+            "Mathe",
+            "Weeb",
+            "Games",
+            "Spooktober"
         ]
     }
 }
