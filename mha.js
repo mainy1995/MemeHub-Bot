@@ -21,6 +21,7 @@ async function export_nominees() {
     const db = client.db(config.mongodb.database);
     console.log('Connectet!');
 
+    await fs.promises.mkdir(mha_config.nominees.image_path, { recursive: true });
     const bot = new Telegraf(config.bot_token);
     const users = await get_users(db);
     const nominees = {};
