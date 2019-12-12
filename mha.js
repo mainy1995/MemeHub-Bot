@@ -12,6 +12,9 @@ if (process.argv[2] === 'users') {
 if (process.argv[2] === 'nominees') {
     export_nominees();
 }
+if (process.argv[2] === 'media') {
+    export_media();
+}
 
 async function export_nominees() {
     console.log('Exporting nominees...');
@@ -21,13 +24,9 @@ async function export_nominees() {
     const db = client.db(config.mongodb.database);
     console.log('Connectet!');
 
-    await fs.promises.mkdir(mha_config.nominees.image_path, { recursive: true });
-    const bot = new Telegraf(config.bot_token);
-    const users = await get_users(db);
     const nominees = {};
     const collection = db.collection(config.mongodb.collection_names.memes);
     for (category of mha_config.nominees.categories) {
-
         console.log(`Getting memes of category ${category}...`);
         const votes_field = category == "Weeb" ? "$votes.weeb" : "$votes.like";
         const match = { category };
@@ -53,22 +52,7 @@ async function export_nominees() {
         ]);
 
         const memes = await result.toArray();
-        const with_download = [];
-        for (const meme of memes) {
-            try {
-                const file = await download_image(bot, meme.id);
-                with_download.push({
-                    id: meme.id,
-                    file,
-                    user: users.find(u => u.id == meme.user_id).name
-                })
-            }
-            catch (err) {
-                console.error("failed downloading file!");
-                console.error(err);
-            }
-        }
-        nominees[`#${category}`] = with_download;
+        nominees[`#${category}`] = memes.map(meme => meme.id);
         console.log(`Got ${nominees[`#${category}`].length} Nominees for ${category}!`);
     }
     const json = JSON.stringify(nominees, null, '  ');
@@ -98,6 +82,30 @@ async function export_users() {
     console.log('Done!');
 }
 
+async function export_media() {
+    const bot = new Telegraf(config.bot_token);
+    const nominees = require(mha_config.media.nominees_path);
+    console.log(`Downloading media for ${Object.keys(nominees).length} nominees...`);
+    await fs.promises.mkdir(mha_config.media.media_path, { recursive: true });
+    const media = {}
+    for (const category in nominees) {
+        for (const id of nominees[category]) {
+            try {
+                media[id] = await download_image(bot, id);
+            }
+            catch (err) {
+                console.error(`failed downloading file for id "${id}"`);
+                console.error(err);
+            }
+        }
+    }
+    const json = JSON.stringify(media, null, '  ');
+    for (file of mha_config.media.media_files) {
+        await fs.promises.writeFile(file, json);
+    }
+    console.log("Done!");
+}
+
 async function get_users(db) {
     const collection = db.collection(config.mongodb.collection_names.users);
     console.log('Getting all users...');
@@ -121,11 +129,11 @@ async function download_image(bot, id) {
     const file_data = await bot.telegram.getFile(id);
     const file_type = get_file_type(file_data, id);
     if (!['jpg', 'png', 'mp4', 'gif'].includes(file_type)) throw 'unknown file type! ' + file_data.file_path;
-    const local_file_path = `${mha_config.nominees.image_path}/${id}.${file_type}`
+    const local_file_path = `${mha_config.media.media_path}${id}.${file_type}`
     const local_file = fs.createWriteStream(local_file_path);
     const result = await doRequest(`https://api.telegram.org/file/bot${config.bot_token}/${file_data.file_path}`);
     result.pipe(local_file);
-    return `${mha_config.nominees.image_prefix}${id}.${file_type}`;
+    return `${mha_config.media.media_prefix}${id}.${file_type}`;
 }
 
 function get_file_type(file_data, id) {

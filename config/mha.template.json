@@ -6,12 +6,10 @@
         ]
     },
     "nominees": {
-        "image_path": "/path/to/img/memes",
         "nominees_paths": [
             "/path1/to/nominees.json",
             "/path2/to/nominees.json"
         ],
-        "image_prefix": "/img/memes/",
         "categories": [
             "OC",
             "Gesellschaft",
@@ -22,5 +20,13 @@
             "Games",
             "Spooktober"
         ]
+    },
+    "media": {
+        "media_path": "/path/to/media/memes/",
+        "nominees_path": "/path/to/nominees.json",
+        "media_files": [
+            "/path/to/media.json"
+        ],
+        "meida_prefix": "/media/memes/"
     }
 }
