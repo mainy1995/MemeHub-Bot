@@ -1,6 +1,4 @@
 const _bot = require('./bot');
-
-
 const Stage = require('telegraf/stage');
 const Scene = require('telegraf/scenes/base');
 const Session = require('telegraf/session');
@@ -18,6 +16,7 @@ _config.subscribe('categories', categories => {
     let category_options = categories.options;
     category_options = category_options.map(c => "#" + util.escape_category(c));
     category_options.push('No category');
+    category_options.push('Cancel');
     const chunk_size = categories.keyboard_width;
     keyboard = new Keyboard();
     for (let i = 0; i < category_options.length; i += chunk_size) {
@@ -32,14 +31,21 @@ _bot.subscribe(bot => { // Has to be done before require forwarding
 function init() {
     const selectCategory = new Scene('selectCategory');
     selectCategory.enter(start);
-    selectCategory.leave(end);
+    selectCategory.leave(() => { });
     selectCategory.hears('No category', noCategory);
+    selectCategory.hears('Cancel', abort);
     selectCategory.on('message', receive);
     stage.register(selectCategory);
 }
 
+/**
+ * Asks the user for a category. Returns a promise that resolves as soon as the users answers.
+ * Resolving without any category means that the user chose "No category".
+ * When the promise gets rejected, the meme should not be further processed.
+ * @param {The current telegraf context} ctx
+ */
 async function ask(ctx) {
-    try {    
+    try {
         ctx.scene.enter('selectCategory');
         return new Promise((resolve, reject) => promises[ctx.message.from.id] = { resolve, reject });
     }
@@ -55,31 +61,39 @@ function start(ctx) {
 function receive(ctx) {
     const category = util.escape_category(ctx.message.text);
     if (!category) {
-        ctx.reply("That is 🚫not🚫 a valid category 🖕");
-        promises[ctx.message.from.id].reject('Invalid category provided');
+        finish(ctx, "That is 🚫not🚫 a valid category 🖕");
         return;
     }
-    finish(ctx, category);
-}
-
-function end(ctx) {
-    ctx.reply("Thanks!", { reply_markup: { remove_keyboard: true }});
+    finish(ctx, `${category} it is!`, category);
 }
 
 function noCategory(ctx) {
-    finish(ctx);
+    finish(ctx, "Okay ☹️");
 }
 
-function finish(ctx, category) {
-    if (!ctx.message.from.id in promises) {
-        ctx.reply('Look like you did not send me a meme yet 😭');
-        log.warning('Selecting category failed', 'No continuation promise presen');
-        return;
-    }
-
-    promises[ctx.message.from.id].resolve(category);
-    delete promises[ctx.message.from.id];
+function abort(ctx) {
+    ctx.reply("Okay, I'm not sending your meme!", { reply_markup: { remove_keyboard: true } });
+    if (ctx.message.from.id in promises) promises[ctx.message.from.id].reject("Reqeust canceled by user");
     ctx.scene.leave();
+}
+
+function finish(ctx, message, category) {
+    try {
+        ctx.reply(message, { reply_markup: { remove_keyboard: true } });
+        if (!ctx.message.from.id in promises) {
+            ctx.reply('Look like you did not send me a meme yet 😭');
+            throw 'No continuation promise present';
+        }
+
+        promises[ctx.message.from.id].resolve(category);
+        delete promises[ctx.message.from.id];
+    }
+    catch (error) {
+        log.warning("Selecting category failed", error)
+    }
+    finally {
+        ctx.scene.leave();
+    }
 }
 
 module.exports.ask = ask;
