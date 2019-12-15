@@ -3,14 +3,21 @@ const db = require('./mongo-db');
 const log = require('./log');
 const _config = require('./config');
 const _bot = require('./bot');
+
 const lc = require('./lifecycle');
 
+
 let config = {};
+let mha_users = {};
+let mha = {};
 _config.subscribe('debug', c => config = c);
+_config.subscribe('mha', m => mha = m);
+_config.subscribe('users', u => mha_users = u);
 _bot.subscribe(bot => {
     bot.use(log_all_updates);
     bot.command('chatinfo', reply_with_chatinfo);
     bot.command('updateusername', trigger_update_user_name);
+    bot.command('mha', show_voting_token);
 });
 
 lc.hook(async (stage, event) => {
@@ -39,4 +46,21 @@ async function log_all_updates(ctx, next) {
 
     log.info('Incoming update', ctx.update);
     next();
+}
+
+async function show_voting_token(ctx) {
+    if (!config.command_voting_token) return;
+    if (ctx.chat.type !== "private") return;
+    const user = ctx.update.message.from.id;
+    const tokens = Object.keys(mha_users).filter(k => mha_users[k].id == user);
+    if (tokens.length < 1) {
+        ctx.reply("You are not allowed to vote 🙃");
+        return;
+    }
+
+    if (tokens.length > 1) {
+        await log.warning("Found multiple token for user to vote with", { context: ctx });
+    }
+
+    ctx.reply(`You can cast your vote here:\n${mha.broadcast.url_base}${tokens[0]}`);
 }

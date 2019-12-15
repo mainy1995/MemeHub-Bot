@@ -15,6 +15,9 @@ if (process.argv[2] === 'nominees') {
 if (process.argv[2] === 'media') {
     export_media();
 }
+if (process.argv[2] === 'broadcast') {
+    broadcast();
+}
 
 async function export_nominees() {
     console.log('Exporting nominees...');
@@ -104,6 +107,21 @@ async function export_media() {
         await fs.promises.writeFile(file, json);
     }
     console.log("Done!");
+}
+
+async function broadcast() {
+    const users = require("./config/users.json");
+    const bot = new Telegraf(config.bot_token);
+    for (token in users) {
+        try {
+            const id = users[token].id;
+            await bot.telegram.sendMessage(id, `${mha_config.broadcast.message}${mha_config.broadcast.url_base}${token}`, { parse_mode: 'markdown' });
+        }
+        catch (err) {
+            console.log('Cannot broadcast message.');
+            console.log(err);
+        }
+    }
 }
 
 async function get_users(db) {
