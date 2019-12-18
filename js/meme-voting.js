@@ -37,6 +37,13 @@ async function handle_vote_request(ctx) {
 
     if (!vote_types.find(t => t.id == vote_type)) {
         log.warning("Cannot handle vote request", `Unknown vote type: "${vote_type}"`);
+        ctx.answerCbQuery();
+        return;
+    }
+
+    if (!file_id) {
+        log.warn('Cannot handle vote request', { detail: 'could not identify media id', callback_query: ctx.update.callback_query });
+        ctx.answerCbQuery();
         return;
     }
 
@@ -49,16 +56,16 @@ async function handle_vote_request(ctx) {
         setTimeout(() => achievements.check_vote_achievements(ctx, file_id, vote_type), 200);
 
         const votes = await db.count_votes(file_id);
-        
+
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
             .catch(err => log.error('Cannot update vote count', err));
         ctx.answerCbQuery();
     }
-    catch(err) {
+    catch (err) {
         log.error('Vote handling failed', err);
         ctx.answerCbQuery();
     }
-    
+
 }
 
 async function handle_legacy_like_request(ctx) {
