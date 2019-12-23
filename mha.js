@@ -18,6 +18,9 @@ if (process.argv[2] === 'media') {
 if (process.argv[2] === 'broadcast') {
     broadcast();
 }
+if (process.argv[2] === 'mentions') {
+    mentions();
+}
 
 async function export_nominees() {
     console.log('Exporting nominees...');
@@ -122,6 +125,25 @@ async function broadcast() {
             console.log(err);
         }
     }
+}
+
+async function mentions() {
+    console.log('Aggregating mentions...');
+    console.log('Connecting to mongodb...');
+    const client = new MongoClient(config.mongodb.connection_string, { useNewUrlParser: true, useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(config.mongodb.database);
+    const mentions = require('./js/mentions');
+    const memes = db.collection(config.mongodb.collection_names.memes);
+
+    await mentions.most_voting(memes);
+    await mentions.best_average(memes);
+    await mentions.most_likes(memes);
+    await mentions.most_memes(memes);
+    await mentions.most_weeb_votes(memes);
+    await mentions.most_oc(memes);
+    await mentions.lowest_average_likes(memes);
+    await mentions.best_meme(memes);
 }
 
 async function get_users(db) {
