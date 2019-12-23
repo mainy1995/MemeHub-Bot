@@ -246,7 +246,7 @@ module.exports.most_weeb_votes = async function (memes) {
             }
         }
     ]);
-    await showResults("Most total likes", result, m => m.likes);
+    await showResults("Most total weeb votes", result, m => m.likes);
 }
 
 module.exports.most_oc = async function (memes) {
