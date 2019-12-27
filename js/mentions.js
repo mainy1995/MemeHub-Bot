@@ -301,7 +301,8 @@ module.exports.lowest_average_likes = async function (memes) {
             $match: {
                 post_date: {
                     $gt: moment('2019-01-01T00:00:00.000Z').toDate()
-                }
+                },
+                category: { $ne: "Weeb" }
             }
         }, {
             $group: {

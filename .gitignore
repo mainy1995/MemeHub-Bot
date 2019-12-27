@@ -46,3 +46,5 @@ log.json
 mha.json
 nominees.json
 users.json
+report.csv
+report_enriched.csv
