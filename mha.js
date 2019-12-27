@@ -5,6 +5,8 @@ const MongoClient = require('mongodb').MongoClient;
 const uuidv4 = require('uuid/v4');
 const fs = require('fs');
 const https = require('https');
+const CsvReadableStream = require('csv-reader');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 if (process.argv[2] === 'users') {
     export_users();
@@ -20,6 +22,9 @@ if (process.argv[2] === 'broadcast') {
 }
 if (process.argv[2] === 'mentions') {
     mentions();
+}
+if (process.argv[2] === 'evaluate') {
+    evaluate();
 }
 
 async function export_nominees() {
@@ -146,6 +151,50 @@ async function mentions() {
     await mentions.best_meme(memes);
 }
 
+async function evaluate() {
+    const inputStream = fs.createReadStream('report.csv', 'utf8');
+    const client = new MongoClient(config.mongodb.connection_string, { useNewUrlParser: true, useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db(config.mongodb.database);
+    const memes = db.collection(config.mongodb.collection_names.memes);
+    const csvWriter = createCsvWriter({
+        path: 'report_enriched.csv',
+        alwaysQuote: false,
+        fieldDelimiter: ",",
+        header: [
+            { id: 'id', title: 'id' },
+            { id: 'category', title: 'Kategorie' },
+            { id: 'votes', title: 'Votes' },
+            { id: 'user', title: 'User' },
+            { id: 'likes', title: 'likes' },
+            { id: 'weebs', title: 'weebs' }
+        ]
+    });
+    const csv = [];
+    inputStream
+        .pipe(CsvReadableStream({ parseNumbers: true, parseBooleans: true, trim: true }))
+        .on('data', async function (row) {
+            // console.log(row);
+            if (row[0] === 'id') return;
+
+            csv.push({
+                id: row[0],
+                category: row[1],
+                votes: row[2],
+            });
+        })
+        .on('end', async function () {
+            for (const meme of csv) {
+                const stats = await getMemeStats(memes, meme.id);
+                meme.user = `@${stats.user.username}`;
+                meme.likes = stats.likes;
+                meme.weebs = stats.weebs;
+            }
+            await csvWriter.writeRecords(csv);
+            console.log('done');
+        });
+}
+
 async function get_users(db) {
     const collection = db.collection(config.mongodb.collection_names.users);
     console.log('Getting all users...');
@@ -197,3 +246,43 @@ async function doRequest(url) {
         });
     });
 }
+
+async function getMemeStats(memes, id) {
+    const result = await memes.aggregate([
+        {
+            $match: {
+                _id: id,
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'poster_id',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        {
+            $replaceRoot: {
+                newRoot: {
+                    user: {
+                        $arrayElemAt: ["$user", 0]
+                    },
+                    likes: {
+                        $size: {
+                            $ifNull: ["$votes.like", []]
+                        }
+                    },
+                    weebs: {
+                        $size: {
+                            $ifNull: ["$votes.weeb", []]
+                        }
+                    }
+
+                }
+            }
+        }
+    ]);
+    return await result.next();
+}
+
