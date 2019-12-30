@@ -4,6 +4,7 @@ const log = require('./log');
 const dockerNames = require('docker-names');
 const lc = require('./lifecycle');
 const fs = require('fs');
+const commandParts = require('telegraf-command-parts');
 
 const subscribers = [];
 let bot;
@@ -26,6 +27,7 @@ lc.after('init', async () => {
 lc.early('start', async () => {
     bot = new Telegraf(config.bot_token);
     bot_name = dockerNames.getRandomName();
+    bot.use(commandParts());
     bot.catch(handle_error);
     log.set_bot(bot);
     log.set_config(_config);
@@ -62,7 +64,7 @@ function notify_subscribers(bot) {
 
 function handle_error(error, context) {
     try {
-        log.error("Uncaught error", { error, context});
+        log.error("Uncaught error", { error, context });
     }
     catch (err) {
         const text = `Critical Error: Failed logging an unahandled error!
@@ -70,7 +72,7 @@ function handle_error(error, context) {
             Original Context: ${context}
             Logging Error: ${err}
         `;
-        
+
         console.log(text);
         fs.writeFileSync("critical_error.txt", text);
     }

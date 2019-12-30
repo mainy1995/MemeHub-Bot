@@ -82,7 +82,7 @@ function send_any_media(ctx, chat_id, media_id, extra) {
 }
 
 function send_media_by_type(ctx, chat_id, media_id, media_type, extra) {
-    if (!media_type in send_methods) return Promise.reject();
+    if (!media_type in send_methods) return Promise.reject("unknown media type");
     return ctx.telegram[send_methods[media_type]](chat_id, media_id, extra);
 }
 

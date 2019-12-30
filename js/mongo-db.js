@@ -42,15 +42,15 @@ function init(coll_names, db_name, connection_string) {
                 log.error("Cannot connect to mongo db", err);
                 reject(err);
             }
-            
+
             connection = con;
             const db = client.db(db_name);
-            
+
             var collections = await Promise.all([
-                db.createCollection(collection_names.memes), 
+                db.createCollection(collection_names.memes),
                 db.createCollection(collection_names.users)
             ]);
-            
+
             memes = collections[0];
             users = collections[1];
             log.success('Connected to mongodb');
@@ -66,20 +66,22 @@ function init(coll_names, db_name, connection_string) {
 function save_user(user) {
     users.updateOne(
         { _id: user.id },
-        { $set: {
-            username: user.username,
-            first_name: user.first_name,
-            last_name: user.last_name
-        }},
+        {
+            $set: {
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name
+            }
+        },
         { upsert: true }
-    ).catch((err) => log.error("Cannot save user in mongo db", { error: err, user}))
-    .then((result) => {
-        // Check, if username is new
-        if (result.modifiedCount == 1 && result.matchedCount == 1) {
-            log.info('Detected username change. Updating old posts', user);
-            maintain.update_user_name(user);
-        }
-    });
+    ).catch((err) => log.error("Cannot save user in mongo db", { error: err, user }))
+        .then((result) => {
+            // Check, if username is new
+            if (result.modifiedCount == 1 && result.matchedCount == 1) {
+                log.info('Detected username change. Updating old posts', user);
+                maintain.update_user_name(user);
+            }
+        });
 }
 
 /**
@@ -101,11 +103,11 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
             votes: {},
             post_date: post_date
         })
-        .then(resolve)
-        .catch((error) => {
-            log.error("Cannot save meme in mongo db", { error, request: { user_id, file_id, file_type, message_id, category, group_message_id, post_date }});
-            reject(error);
-        });
+            .then(resolve)
+            .catch((error) => {
+                log.error("Cannot save meme in mongo db", { error, request: { user_id, file_id, file_type, message_id, category, group_message_id, post_date } });
+                reject(error);
+            });
     });
 }
 
@@ -121,11 +123,11 @@ function save_meme_group_message(ctx) {
     }
     memes.updateOne(
         { _id: file_id },
-        { $set: { group_message_id: ctx.message_id }}
+        { $set: { group_message_id: ctx.message_id } }
     )
-    .catch((error) => {
-        log.error("Cannot store group message id in mongo db", { error, file_id });
-    });
+        .catch((error) => {
+            log.error("Cannot store group message id in mongo db", { error, file_id });
+        });
 }
 
 async function save_vote(user_id, file_id, vote_type) {
@@ -133,7 +135,7 @@ async function save_vote(user_id, file_id, vote_type) {
     let find = {};
     find['_id'] = file_id;
     find[vote_path] = user_id;
-    
+
     try {
         const meme = await memes.findOne(find);
         let toggle = {}
@@ -145,10 +147,10 @@ async function save_vote(user_id, file_id, vote_type) {
         }
         await memes.updateOne({ _id: file_id }, { $addToSet: toggle });
     }
-    catch (error) { 
-        log.error("Cannot save vote in mongo db", { error, request: { user_id, file_id, vote_type } }); 
+    catch (error) {
+        log.error("Cannot save vote in mongo db", { error, request: { user_id, file_id, vote_type } });
     }
-    
+
 }
 
 async function* get_memes_by_user(user_id, options, include_reposts) {
@@ -162,7 +164,7 @@ async function* get_memes_by_user(user_id, options, include_reposts) {
             yield await result.next();
         }
     }
-    catch (error) { 
+    catch (error) {
         log.error("Cannot get memes by user from mongo db", { error, request: { user_id, options } });
         throw error;
     }
@@ -170,7 +172,7 @@ async function* get_memes_by_user(user_id, options, include_reposts) {
 
 async function count_votes(file_id) {
     try {
-        const meme = await memes.findOne({ _id: file_id });       
+        const meme = await memes.findOne({ _id: file_id });
         if (!meme) throw "meme not found";
         if (!meme.votes) return [];
 
@@ -178,11 +180,11 @@ async function count_votes(file_id) {
         for (type of Object.keys(meme.votes)) {
             votes[type] = meme.votes[type].length;
         }
-        
+
         return votes;
     }
-    catch (error) { 
-        log.error("Cannot count votes in mongo db", { error, request: { file_id }});
+    catch (error) {
+        log.error("Cannot count votes in mongo db", { error, request: { file_id } });
         throw error;
     }
 }
@@ -190,11 +192,13 @@ async function count_votes(file_id) {
 async function count_user_total_votes_by_type(user_id, vote_type) {
     try {
         const cursor = await memes.aggregate([
-            { $match: { poster_id: user_id }},
-            { $project: {
-                _id: false,
-                votes_of_type: `$votes.${vote_type}`
-            }},
+            { $match: { poster_id: user_id } },
+            {
+                $project: {
+                    _id: false,
+                    votes_of_type: `$votes.${vote_type}`
+                }
+            },
             { $unwind: "$votes_of_type" },
             { $count: "upvotes" }
         ]);
@@ -203,8 +207,8 @@ async function count_user_total_votes_by_type(user_id, vote_type) {
         if (!result) return 0;
         return result.upvotes;
     }
-    catch(error) {
-        log.error("Cannot count user total votes by type in mongo db", { error, request: { user_id, vote_type }});
+    catch (error) {
+        log.error("Cannot count user total votes by type in mongo db", { error, request: { user_id, vote_type } });
         throw error;
     }
 }
@@ -212,16 +216,20 @@ async function count_user_total_votes_by_type(user_id, vote_type) {
 function get_user_top_meme(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
-            { $match: { 
-                poster_id: user_id,
-                'votes.like': { $exists: true }
-            }},
-            { $project: {
-                _id: false,
-                media_id: "$_id",
-                upvotes: { $size: "$votes.like" },
-                type: true
-            }},
+            {
+                $match: {
+                    poster_id: user_id,
+                    'votes.like': { $exists: true }
+                }
+            },
+            {
+                $project: {
+                    _id: false,
+                    media_id: "$_id",
+                    upvotes: { $size: "$votes.like" },
+                    type: true
+                }
+            },
             { $sort: { upvotes: -1 } }
         ], {}, (err, cursor) => {
             if (err) {
@@ -234,7 +242,7 @@ function get_user_top_meme(user_id) {
                     reject(err);
                     return;
                 }
-                
+
                 resolve(result);
             });
         });
@@ -256,7 +264,7 @@ function get_user_from_meme(file_id) {
 }
 
 async function get_user(user_id) {
-    const user = await users.findOne({ _id: user_id});
+    const user = await users.findOne({ _id: user_id });
     user.id = user._id;
     return user;
 }
@@ -264,30 +272,36 @@ async function get_user(user_id) {
 function get_user_average_upvotes(user_id) {
     return new Promise((resolve, reject) => {
         memes.aggregate([
-            { $match: { 
-                poster_id: user_id,
-                'votes.like': { $exists: true }
-            }},
-            { $project: {
-                upvotes: { $size: "$votes.like" }
-            }},
-            { $group: { 
-                _id: "$poster_id",
-                average_upvotes: { $avg: "$upvotes" }
-             }}
+            {
+                $match: {
+                    poster_id: user_id,
+                    'votes.like': { $exists: true }
+                }
+            },
+            {
+                $project: {
+                    upvotes: { $size: "$votes.like" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$poster_id",
+                    average_upvotes: { $avg: "$upvotes" }
+                }
+            }
         ], {}, (err, cursor) => {
             if (err) {
                 reject(err);
                 return;
             }
-            
+
             cursor.next((err, result) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                if(!result) {
+                if (!result) {
                     resolve(0);
                     return;
                 }
@@ -305,7 +319,7 @@ function get_user_meme_count(user_id) {
                 reject(err);
                 return;
             }
-            
+
             resolve(data);
         });
     });
@@ -313,21 +327,27 @@ function get_user_meme_count(user_id) {
 
 async function get_user_meme_counts(limit = 5) {
     const result = await memes.aggregate([
-        { $group: { 
-            _id: "$poster_id",
-            memes: { $sum: 1 }
-        }},
-        { $sort: { memes: -1 }},
+        {
+            $group: {
+                _id: "$poster_id",
+                memes: { $sum: 1 }
+            }
+        },
+        { $sort: { memes: -1 } },
         { $limit: limit },
-        { $lookup: {
-            from: collection_names.users,
-            localField: "_id",
-            foreignField: "_id",
-            as: "users"
-        }},
-        { $replaceRoot: {
-                newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$users", 0 ] }, "$$ROOT" ] } 
-        }},
+        {
+            $lookup: {
+                from: collection_names.users,
+                localField: "_id",
+                foreignField: "_id",
+                as: "users"
+            }
+        },
+        {
+            $replaceRoot: {
+                newRoot: { $mergeObjects: [{ $arrayElemAt: ["$users", 0] }, "$$ROOT"] }
+            }
+        },
         { $project: { users: 0 } }
     ]);
     return result.toArray();
@@ -335,13 +355,13 @@ async function get_user_meme_counts(limit = 5) {
 
 async function save_repost(message_id) {
     try {
-        const meme = await memes.findOne({ group_message_id: message_id});
+        const meme = await memes.findOne({ group_message_id: message_id });
 
         if (!meme) {
             log.error("Cannot flag meme as repost, as it does not exist", { message_id });
         }
-        
-        await memes.updateOne({group_message_id: message_id },{ $set:{ isRepost: true}});
+
+        await memes.updateOne({ group_message_id: message_id }, { $set: { isRepost: true } });
     }
     catch (error) {
         log.error("Cannot save repost flag", { error, request: { message_id } });
@@ -350,37 +370,47 @@ async function save_repost(message_id) {
 
 async function get_meme_recent_best(vote_type, date_earliest, date_latest) {
     const vote_key = `votes.${vote_type}`;
-    let match = { post_date: {
-        $gte: date_earliest,
-        $lt : date_latest
-    }};
+    let match = {
+        post_date: {
+            $gte: date_earliest,
+            $lt: date_latest
+        }
+    };
     match[vote_key] = { $exists: true };
     const result = await memes.aggregate([
         { $match: match },
-        { $project: {
-            relevant_votes: { $size: `$votes.${vote_type}` },
-            votes: 1,
-            poster_id: 1,
-            type: 1
-        }},
+        {
+            $project: {
+                relevant_votes: { $size: `$votes.${vote_type}` },
+                votes: 1,
+                poster_id: 1,
+                type: 1
+            }
+        },
         { $sort: { relevant_votes: -1 } },
-        { $limit: 1},
-        { $lookup: {
-            from: collection_names.users,
-            localField: "poster_id",
-            foreignField: "_id",
-            as: "users"
-        }},
-        { $project: {
-            user: { $arrayElemAt: [ "$users", 0 ] },
-            media_id: "$_id",
-            type: true,
-            votes: true
-        }},
-        { $project: {
-            _id: false,
-            users: 0
-        }}
+        { $limit: 1 },
+        {
+            $lookup: {
+                from: collection_names.users,
+                localField: "poster_id",
+                foreignField: "_id",
+                as: "users"
+            }
+        },
+        {
+            $project: {
+                user: { $arrayElemAt: ["$users", 0] },
+                media_id: "$_id",
+                type: true,
+                votes: true
+            }
+        },
+        {
+            $project: {
+                _id: false,
+                users: 0
+            }
+        }
     ]);
     if (!await result.hasNext()) {
         return null;
@@ -389,9 +419,44 @@ async function get_meme_recent_best(vote_type, date_earliest, date_latest) {
     return await result.next()
 }
 
+async function get_meme_by_id(id) {
+    const result = await memes.aggregate([
+        { $match: { _id: id } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'poster_id',
+                foreignField: '_id',
+                as: 'user'
+            }
+        }, {
+            $replaceRoot: {
+                newRoot: {
+                    user: {
+                        $arrayElemAt: [
+                            '$user',
+                            0
+                        ]
+                    },
+                    _id: '$_id',
+                    type: '$type',
+                    votes: '$votes',
+                    category: '$category'
+                }
+            }
+        }
+    ]);
+
+    if (await result.hasNext()) {
+        return await result.next();
+    }
+
+    throw "Cannot find meme";
+}
+
 async function get_meme_random_good(vote_minimum, date_latest) {
-    const match1 = { post_date: { $lt : date_latest }};
-    const match2 = { };
+    const match1 = { post_date: { $lt: date_latest } };
+    const match2 = {};
     const project1 = { votes: 1, poster_id: 1, type: 1 };
     for (vote in vote_minimum) {
         match1[`votes.${vote}`] = { $exists: true };
@@ -402,23 +467,29 @@ async function get_meme_random_good(vote_minimum, date_latest) {
         { $match: match1 },
         { $project: project1 },
         { $match: match2 },
-        { $sample: { size: 1 }},
-        { $lookup: {
-            from: collection_names.users,
-            localField: "poster_id",
-            foreignField: "_id",
-            as: "users"
-        }},
-        { $project: {
-            user: { $arrayElemAt: [ "$users", 0 ] },
-            media_id: "$_id",
-            type: true,
-            votes: true
-        }},
-        { $project: {
-            _id: false,
-            users: 0
-        }}
+        { $sample: { size: 1 } },
+        {
+            $lookup: {
+                from: collection_names.users,
+                localField: "poster_id",
+                foreignField: "_id",
+                as: "users"
+            }
+        },
+        {
+            $project: {
+                user: { $arrayElemAt: ["$users", 0] },
+                media_id: "$_id",
+                type: true,
+                votes: true
+            }
+        },
+        {
+            $project: {
+                _id: false,
+                users: 0
+            }
+        }
     ]);
     if (!await result.hasNext()) {
         return null;
@@ -442,6 +513,7 @@ module.exports.get_user_from_meme = get_user_from_meme;
 module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
 module.exports.get_user = get_user;
-module.exports.save_repost= save_repost;
+module.exports.save_repost = save_repost;
 module.exports.get_meme_recent_best = get_meme_recent_best;
 module.exports.get_meme_random_good = get_meme_random_good;
+module.exports.get_meme_by_id = get_meme_by_id;

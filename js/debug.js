@@ -3,8 +3,9 @@ const db = require('./mongo-db');
 const log = require('./log');
 const _config = require('./config');
 const _bot = require('./bot');
-
+const forwarding = require('./meme-forwarding');
 const lc = require('./lifecycle');
+const util = require('./util');
 
 
 let config = {};
@@ -18,6 +19,7 @@ _bot.subscribe(bot => {
     bot.command('chatinfo', reply_with_chatinfo);
     bot.command('updateusername', trigger_update_user_name);
     bot.command('mha', show_voting_token);
+    bot.command('meme', show_meme);
 });
 
 lc.hook(async (stage, event) => {
@@ -63,4 +65,21 @@ async function show_voting_token(ctx) {
     }
 
     ctx.reply(`You can cast your vote here:\n${mha.broadcast.url_base}${tokens[0]}`);
+}
+
+async function show_meme(ctx) {
+    const id = ctx.state.command.splitArgs[0];
+
+    if (!id) {
+        ctx.reply("You need to include an id in your request");
+        return;
+    }
+    try {
+        const meme = await db.get_meme_by_id(id);
+        console.log(meme);
+        forwarding.forward_meme(ctx, meme._id, meme.type, meme.user, meme.category, ctx.chat.id);
+    }
+    catch (error) {
+        log.error("Cannot show meme", error);
+    }
 }

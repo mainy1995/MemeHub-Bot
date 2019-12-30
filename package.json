@@ -25,6 +25,7 @@
     "mongodb": "^3.4.0",
     "node-shutdown-events": "^0.1.1",
     "telegraf": "^3.34.1",
+    "telegraf-command-parts": "^1.0.3",
     "telegraf-keyboard": "^1.1.2",
     "uuid": "^3.3.3",
     "watchr": "^5.6.0"
