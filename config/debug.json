@@ -3,5 +3,5 @@
     "log_lifecycle_events": true,
     "command_chatinfo": true,
     "command_update_username": false,
-    "command_voting_token": true
+    "command_voting_token": false
 }

@@ -81,9 +81,9 @@ function send_any_media(ctx, chat_id, media_id, extra) {
     return send_media_by_type(ctx, chat_id, media_id, get_media_type_from_message(ctx.message), extra);
 }
 
-function send_media_by_type(ctx, chat_id, media_id, media_type, extra) {
-    if (!media_type in send_methods) return Promise.reject("unknown media type");
-    return ctx.telegram[send_methods[media_type]](chat_id, media_id, extra);
+async function send_media_by_type(ctx, chat_id, media_id, media_type, extra) {
+    if (!media_type in send_methods) throw "unknown media type";
+    return await ctx.telegram[send_methods[media_type]](chat_id, media_id, extra);
 }
 
 function get_media_type_from_message(message) {

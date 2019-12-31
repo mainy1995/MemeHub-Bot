@@ -6,6 +6,7 @@ const _bot = require('./bot');
 const forwarding = require('./meme-forwarding');
 const lc = require('./lifecycle');
 const util = require('./util');
+const admins = require('./admins');
 
 
 let config = {};
@@ -69,17 +70,23 @@ async function show_voting_token(ctx) {
 
 async function show_meme(ctx) {
     const id = ctx.state.command.splitArgs[0];
-
+    if (!admins.is_admin(ctx.from)) {
+        ctx.reply("You are not allowed to uses this command.");
+        return;
+    }
     if (!id) {
         ctx.reply("You need to include an id in your request");
         return;
     }
     try {
         const meme = await db.get_meme_by_id(id);
-        console.log(meme);
-        forwarding.forward_meme(ctx, meme._id, meme.type, meme.user, meme.category, ctx.chat.id);
+        const extra = {
+            caption: forwarding.build_caption(meme.user, meme.category)
+        };
+        await util.send_media_by_type(ctx, ctx.chat.id, meme._id, meme.type, extra);
     }
     catch (error) {
         log.error("Cannot show meme", error);
+        await ctx.reply("Something went wrong");
     }
 }

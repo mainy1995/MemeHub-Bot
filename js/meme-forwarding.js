@@ -116,31 +116,20 @@ function process_meme(ctx, options) {
  * @param {The category of the meme or null for no category} category
  * @returns {The promise that is returned by the send method}
  */
-function forward_meme_to_group(ctx, file_id, file_type, user, category) {
-
-    return forward_meme(ctx, file_id, file_type, user, category, group_id)
-        .catch((error) => {
-            log.error("Cannot not send meme to group", error);
-        })
-        .then((ctx) => {
-            db.save_meme_group_message(ctx);
-        });
-}
-
-function forward_meme(ctx, file_id, file_type, user, category, chat_id) {
-    const caption = build_caption(user, category);
-    return util.send_media_by_type(
-        ctx,
-        chat_id,
-        file_id,
-        file_type,
-        {
-            caption: caption,
-            reply_markup: {
-                inline_keyboard: voting.create_keyboard([])
-            }
+async function forward_meme_to_group(ctx, file_id, file_type, user, category) {
+    const extra = {
+        caption: build_caption(user, category),
+        reply_markup: {
+            inline_keyboard: voting.create_keyboard([])
         }
-    );
+    }
+    try {
+        await util.send_media_by_type(ctx, group_id, file_id, file_type, extra);
+        await db.save_meme_group_message(ctx);
+    }
+    catch (error) {
+        await log.error("Cannot not send meme to group", error);
+    }
 }
 
 function build_caption(user, category) {
@@ -152,6 +141,5 @@ function build_caption(user, category) {
 module.exports.handle_meme_request = handle_meme_request;
 module.exports.process_meme = process_meme;
 module.exports.forward_meme_to_group = forward_meme_to_group;
-module.exports.forward_meme = forward_meme;
 module.exports.build_caption = build_caption;
 

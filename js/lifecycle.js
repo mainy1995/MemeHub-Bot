@@ -1,7 +1,7 @@
 const ShutdownHandler = require("node-shutdown-events");
-new ShutdownHandler({ exitTimeout: 60000, log: { warn: () => {}, error: () => {}, info: () => {}} });
+new ShutdownHandler({ exitTimeout: 60000, log: { warn: console.log, error: console.log, info: console.log } });
 
-const listeners = { early: {}, on: {}, late: {}, after: {}};
+const listeners = { early: {}, on: {}, late: {}, after: {} };
 const hooks = [async (stage, event) => {
     await Promise.all((listeners[stage][event] || []).map(async listener => {
         try {
@@ -23,7 +23,7 @@ process.on("shutdown", async () => {
     await this.trigger('stop');
 });
 
-module.exports.trigger = async function(event) {
+module.exports.trigger = async function (event) {
     try {
         for (const stage of ['early', 'on', 'late', 'after']) {
             for (const hook of hooks) {
@@ -36,22 +36,22 @@ module.exports.trigger = async function(event) {
     }
 }
 
-module.exports.early = function(event, callback) {
+module.exports.early = function (event, callback) {
     register('early', event, callback);
 }
 
-module.exports.on = function(event, callback) {
+module.exports.on = function (event, callback) {
     register('on', event, callback);
 }
 
-module.exports.late = function(event, callback) {
+module.exports.late = function (event, callback) {
     register('late', event, callback);
 }
 
-module.exports.after = function(event, callback) {
+module.exports.after = function (event, callback) {
     register('after', event, callback);
 }
 
-module.exports.hook = function(callback) {
+module.exports.hook = function (callback) {
     hooks.unshift(callback);
 }
