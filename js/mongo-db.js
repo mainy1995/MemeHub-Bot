@@ -115,19 +115,21 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
  * Saves the message id of a recently send message. This is supposed to be used after sending a meme to the meme group.
  * @param {The message context that got returned from the message to the meme group} ctx 
  */
-function save_meme_group_message(ctx) {
+async function save_meme_group_message(ctx) {
     let file_id = util.any_media_id(ctx);
     if (!file_id) {
-        log.error("Cannot store group message id in mongo db", "missing file id");
+        await log.error("Cannot store group message id in mongo db", "missing file id");
         return;
     }
-    memes.updateOne(
-        { _id: file_id },
-        { $set: { group_message_id: ctx.message_id } }
-    )
-        .catch((error) => {
-            log.error("Cannot store group message id in mongo db", { error, file_id });
-        });
+    try {
+        await memes.updateOne(
+            { _id: file_id },
+            { $set: { group_message_id: ctx.message_id } }
+        );
+    }
+    catch (error) {
+        await log.error("Cannot store group message id in mongo db", { error, file_id });
+    };
 }
 
 async function save_vote(user_id, file_id, vote_type) {

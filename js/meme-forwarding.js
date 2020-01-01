@@ -124,8 +124,8 @@ async function forward_meme_to_group(ctx, file_id, file_type, user, category) {
         }
     }
     try {
-        await util.send_media_by_type(ctx, group_id, file_id, file_type, extra);
-        await db.save_meme_group_message(ctx);
+        const result = await util.send_media_by_type(ctx, group_id, file_id, file_type, extra);
+        await db.save_meme_group_message(result);
     }
     catch (error) {
         await log.error("Cannot not send meme to group", error);
