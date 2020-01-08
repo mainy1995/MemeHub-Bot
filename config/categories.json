@@ -1,6 +1,20 @@
 {
     "options": [
-        "OC", "Gesellschaft", "Dank", "SpongeBob", "Mathe", "Weeb", "Games"
+        "OC",
+        "Dank",
+        "SpongeBob",
+        "Mathe",
+        "Weeb",
+        "Games",
+        "Ballern",
+        "Stock",
+        "Filme",
+        "Alman",
+        "ErnieUndBert",
+        "Politik",
+        "Geschichte",
+        "NSFW",
+        "WW3"
     ],
-    "keyboard_width": 3
+    "keyboard_width": 4
 }
