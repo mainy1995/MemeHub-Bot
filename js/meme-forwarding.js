@@ -113,12 +113,12 @@ function process_meme(ctx, options) {
  * @param {The message context of the users meme request} ctx
  * @param {The id of the meme media} file_id
  * @param {The user that wants the meme to be forwarded} user
- * @param {The category of the meme or null for no category} category
+ * @param {The lsit of categories of the meme (empty for no category)} categories
  * @returns {The promise that is returned by the send method}
  */
-async function forward_meme_to_group(ctx, file_id, file_type, user, category) {
+async function forward_meme_to_group(ctx, file_id, file_type, user, categories) {
     const extra = {
-        caption: build_caption(user, category),
+        caption: build_caption(user, categories),
         reply_markup: {
             inline_keyboard: voting.create_keyboard([])
         }
@@ -132,9 +132,9 @@ async function forward_meme_to_group(ctx, file_id, file_type, user, category) {
     }
 }
 
-function build_caption(user, category) {
+function build_caption(user, categories) {
     let caption = `@${user.username}`
-    if (category) caption += ` | #${category}`;
+    if (categories && categories.length > 0) caption += ` | #${categories[0]}`;
     return caption;
 }
 

@@ -40,7 +40,7 @@ async function export_nominees() {
     for (category of mha_config.nominees.categories) {
         console.log(`Getting memes of category ${category}...`);
         const votes_field = category == "Weeb" ? "$votes.weeb" : "$votes.like";
-        const match = { category };
+        const match = { categories: category };
         match[`votes.${category == 'Weeb' ? 'weeb' : 'like'}`] = { $exists: true };
         const result = await collection.aggregate([
             { $match: match },

@@ -61,7 +61,7 @@ function init(coll_names, db_name, connection_string) {
 
 /**
  * Saves a user in the database.
- * @param {The user to save} user 
+ * @param {The user to save} user
  */
 function save_user(user) {
     users.updateOne(
@@ -86,10 +86,10 @@ function save_user(user) {
 
 /**
  * Saves a meme to the database.
- * @param {The id of the user how send the meme} user_id 
- * @param {The file id of the meme} file_id 
- * @param {The id of the message from the user} message_id 
- * @param {The category of the meme} category 
+ * @param {The id of the user how send the meme} user_id
+ * @param {The file id of the meme} file_id
+ * @param {The id of the message from the user} message_id
+ * @param {The category of the meme} category
  */
 function save_meme(user_id, file_id, file_type, message_id, category, group_message_id = null, post_date = new Date()) {
     return new Promise((resolve, reject) => {
@@ -99,7 +99,7 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
             poster_id: user_id,
             private_message_id: message_id,
             group_message_id: group_message_id,
-            category: category,
+            categories: [category],
             votes: {},
             post_date: post_date
         })
@@ -113,7 +113,7 @@ function save_meme(user_id, file_id, file_type, message_id, category, group_mess
 
 /**
  * Saves the message id of a recently send message. This is supposed to be used after sending a meme to the meme group.
- * @param {The message context that got returned from the message to the meme group} ctx 
+ * @param {The message context that got returned from the message to the meme group} ctx
  */
 async function save_meme_group_message(ctx) {
     let file_id = util.any_media_id(ctx);
@@ -443,7 +443,7 @@ async function get_meme_by_id(id) {
                     _id: '$_id',
                     type: '$type',
                     votes: '$votes',
-                    category: '$category'
+                    categories: '$categories'
                 }
             }
         }

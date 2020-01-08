@@ -81,7 +81,7 @@ async function show_meme(ctx) {
     try {
         const meme = await db.get_meme_by_id(id);
         const extra = {
-            caption: forwarding.build_caption(meme.user, meme.category)
+            caption: forwarding.build_caption(meme.user, meme.categories)
         };
         await util.send_media_by_type(ctx, ctx.chat.id, meme._id, meme.type, extra);
     }

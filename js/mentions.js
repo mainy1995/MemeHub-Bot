@@ -61,7 +61,7 @@ module.exports.best_average = async function (memes) {
                 post_date: {
                     $gt: moment('2019-01-01T00:00:00.000Z').toDate()
                 },
-                category: { $ne: "Weeb" }
+                categories: { $ne: "Weeb" }
             }
         }, {
             $group: {
@@ -257,7 +257,7 @@ module.exports.most_oc = async function (memes) {
                 post_date: {
                     $gt: moment('2019-01-01T00:00:00.000Z').toDate()
                 },
-                category: "OC"
+                categories: "OC"
             }
         }, {
             $group: {
@@ -303,7 +303,7 @@ module.exports.lowest_average_likes = async function (memes) {
                 post_date: {
                     $gt: moment('2019-01-01T00:00:00.000Z').toDate()
                 },
-                category: { $ne: "Weeb" }
+                categories: { $ne: "Weeb" }
             }
         }, {
             $group: {

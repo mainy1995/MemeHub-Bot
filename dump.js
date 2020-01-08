@@ -10,7 +10,7 @@ const csvWriter = createCsvWriter({
     header: [
         { id: '_id', title: 'ID' },
         { id: 'type', title: 'Type' },
-        { id: 'category', title: 'Kategorie' },
+        { id: 'categories', title: 'Kategorien' },
         { id: 'poster_id', title: 'User ID' },
         { id: 'first_name', title: 'Vorname' },
         { id: 'last_name', title: 'Nachname' },
@@ -66,7 +66,7 @@ async function* get_dump(date_earliest, date_latest) {
                 $project: {
                     _id: 1,
                     type: 1,
-                    category: 1,
+                    categories: 1,
                     poster_id: 1,
                     first_name: 1,
                     last_name: 1,
