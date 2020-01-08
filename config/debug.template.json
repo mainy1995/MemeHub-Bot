@@ -1,0 +1,7 @@
+{
+    "log_all_updates": false,
+    "log_lifecycle_events": true,
+    "command_chatinfo": true,
+    "command_update_username": false,
+    "command_voting_token": false
+}

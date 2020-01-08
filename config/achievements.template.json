@@ -1,0 +1,38 @@
+{
+    "post_count": [
+        {
+            "count": 1,
+            "message": "Your message for one post"
+        },
+        {
+            "count": 10,
+            "message": "More posts!"
+        },
+        {
+            "count": 100,
+            "message": "And so on..."
+        }
+    ],
+    "vote_count": {
+        "type1": [
+            {
+                "count": 1,
+                "message": "for one type1 vote"
+            },
+            {
+                "count": 50,
+                "message": "and for 50"
+            }
+        ],
+        "type2": [
+            {
+                "count": 10,
+                "message": "you know the drill"
+            },
+            {
+                "count": 1000000,
+                "message": "It's up to your imagination 🚀"
+            }
+        ]
+    }
+}

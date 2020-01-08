@@ -1,0 +1,40 @@
+{
+    "enabled": false,
+    "channel_id": "The ID of your best of channel",
+    "recent_best": [
+        {
+            "cron_schedule": "10 0 20 * * *",
+            "vote_type": "type1",
+            "age_minimum": {
+                "days": 1
+            },
+            "age_maximum": {
+                "days": 2
+            },
+            "caption": "Every day for type1"
+        },
+        {
+            "cron_schedule": "15 0 20 * * 1",
+            "vote_type": "type2",
+            "age_minimum": {
+                "days": 1
+            },
+            "age_maximum": {
+                "days": 2
+            },
+            "caption": "once a week for type2"
+        }
+    ],
+    "random_good": [
+        {
+            "cron_schedule": "10 0 15 * * *",
+            "age_minimum": {
+                "weeks": 4
+            },
+            "vote_minimum": {
+                "type1": 10
+            },
+            "caption": "Here's a good one"
+        }
+    ]
+}

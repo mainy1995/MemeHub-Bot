@@ -40,11 +40,18 @@ start_bot.bat
 start_bot.ps1
 package-lock.json
 .vscode/
-config.json
 dump.csv
+report.csv
+report_enriched.csv
+
+# config files
+config.json
 log.json
 mha.json
 nominees.json
 users.json
-report.csv
-report_enriched.csv
+categories.json
+best-of.json
+debug.json
+achievements.json
+vote-types.json
