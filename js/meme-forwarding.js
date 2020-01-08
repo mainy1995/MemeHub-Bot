@@ -94,7 +94,7 @@ function process_meme(ctx, options) {
     db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.category)
         .then(() => {
             ctx.reply("Sending you meme ✈️");
-            forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.category);
+            forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.category ? [options.category] : []);
             ctx.reply('👍');
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
         })
