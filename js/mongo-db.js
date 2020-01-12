@@ -91,24 +91,36 @@ function save_user(user) {
  * @param {The id of the message from the user} message_id
  * @param {The category of the meme} category
  */
-function save_meme(user_id, file_id, file_type, message_id, category, group_message_id = null, post_date = new Date()) {
-    return new Promise((resolve, reject) => {
-        memes.insertOne({
+async function save_meme(user_id, file_id, file_type, message_id, categories, group_message_id = null, post_date = new Date()) {
+    try {
+        const result = await memes.insertOne({
             _id: file_id,
             type: file_type,
             poster_id: user_id,
             private_message_id: message_id,
             group_message_id: group_message_id,
-            categories: [category],
+            categories,
             votes: {},
             post_date: post_date
-        })
-            .then(resolve)
-            .catch((error) => {
-                log.error("Cannot save meme in mongo db", { error, request: { user_id, file_id, file_type, message_id, category, group_message_id, post_date } });
-                reject(error);
-            });
-    });
+        });
+        if (result.insertedCount !== 1) throw "Meme not inserted";
+        return result.insertedId;
+    }
+    catch (error) {
+        log.error("Cannot save meme in mongo db", { error, request: { user_id, file_id, file_type, message_id, categories, group_message_id, post_date } });
+        throw error;
+    }
+}
+
+async function save_meme_categories(id, categories) {
+    const result = await memes.updateOne(
+        { _id: id },
+        { $set: { categories } }
+    );
+    if (result.matchedCount !== 1) {
+        log.warning(`Faild saving categories for meme with id ${_id}, matchedCount !== 1`, result)
+        throw "Could not find meme";
+    }
 }
 
 /**
@@ -443,7 +455,8 @@ async function get_meme_by_id(id) {
                     _id: '$_id',
                     type: '$type',
                     votes: '$votes',
-                    categories: '$categories'
+                    categories: '$categories',
+                    group_message_id: '$group_message_id'
                 }
             }
         }
@@ -454,6 +467,24 @@ async function get_meme_by_id(id) {
     }
 
     throw "Cannot find meme";
+}
+
+async function get_meme_categories(id) {
+    try {
+        const result = await memes.findOne({
+            _id: id
+        }, {
+            projection: { categories: 1 }
+        });
+
+        if (!result.categories) throw "Cannot find meme";
+
+        return result.categories;
+    }
+    catch (error) {
+        log.error("Faild getting meme categories from db", error);
+        throw error;
+    }
 }
 
 async function get_meme_random_good(vote_minimum, date_latest) {
@@ -500,10 +531,47 @@ async function get_meme_random_good(vote_minimum, date_latest) {
     return await result.next()
 }
 
+/**
+ * Adds multiple categories to the categories field of a meme in the db.
+ * Categories that exist will be ignored.
+ * If no meme can be found an error will be thrown.
+ * @param {The id of the meme} id
+ * @param {The categories to add} categories
+ */
+async function meme_add_categories(id, categories) {
+    const result = await memes.updateOne(
+        { _id: id },
+        { $addToSet: { categories: { $each: categories } } }
+    );
+    if (result.matchedCount < 1) {
+        log.warning("Cannot add categories to meme in db.", { detail: `No meme found with id ${id}.`, result });
+        throw "Cannot add categories";
+    }
+}
+
+/**
+ * Removes multiple categories from the categories field of a meme in the db.
+ * Categories that do not exist will be ignored.
+ * If no meme can be found an error will be thrown.
+ * @param {The id of the meme*} id
+ * @param {The categories to remove} categories
+ */
+async function meme_remove_categores(id, categories) {
+    const result = await memes.updateOne(
+        { _id: id },
+        { $pull: { categories: { $in: categories } } }
+    );
+    if (result.matchedCount < 1) {
+        log.warning("Cannot remove categories from meme in db.", { detail: `No meme found with id ${id}.`, result });
+        throw "Cannot remove categories";
+    }
+}
+
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
 module.exports.save_meme_group_message = save_meme_group_message;
+module.exports.save_meme_categories = save_meme_categories;
 module.exports.save_vote = save_vote;
 module.exports.get_memes_by_user = get_memes_by_user;
 module.exports.count_votes = count_votes;
@@ -519,3 +587,6 @@ module.exports.save_repost = save_repost;
 module.exports.get_meme_recent_best = get_meme_recent_best;
 module.exports.get_meme_random_good = get_meme_random_good;
 module.exports.get_meme_by_id = get_meme_by_id;
+module.exports.get_meme_categories = get_meme_categories;
+module.exports.meme_add_categories = meme_add_categories;
+module.exports.meme_remove_categores = meme_remove_categores;

@@ -4,5 +4,6 @@
         "YourCategory2",
         "YourCategory3"
     ],
-    "keyboard_width": 4
+    "keyboard_width": 4,
+    "maximum": 5
 }

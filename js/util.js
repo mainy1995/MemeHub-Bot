@@ -92,16 +92,6 @@ function get_media_type_from_message(message) {
     if (has_video(message)) return 'video';
 }
 
-/**
- * Takes a string and returns a single valid categroy, consisting of only alphanumeric characters and _.
- * @param {The caption written by the user.} caption
- */
-function escape_category(caption) {
-    if (!caption) return null;
-    if (typeof caption !== 'string') return null;
-    return caption.replace(/[^\wäöüß]/gi, ''); // Removes all characters that are not alphanumeric or _
-}
-
 function name_from_user(user) {
     let name = user.username;
     if (!!name) return `@${name}`;
@@ -116,6 +106,14 @@ function name_from_user(user) {
     return name;
 }
 
+function is_private_chat(ctx) {
+    return ctx.message.from.id == ctx.message.chat.id;
+}
+
+function is_reaction(ctx) {
+    return !!ctx.update.message.reply_to_message;
+}
+
 module.exports.photo_id = photo_id;
 module.exports.animation_id = animation_id;
 module.exports.any_media_id = any_media_id;
@@ -125,5 +123,6 @@ module.exports.has_video = has_video;
 module.exports.send_any_media = send_any_media;
 module.exports.send_media_by_type = send_media_by_type;
 module.exports.get_media_type_from_message = get_media_type_from_message;
-module.exports.escape_category = escape_category;
 module.exports.name_from_user = name_from_user;
+module.exports.is_private_chat = is_private_chat;
+module.exports.is_reaction = is_reaction;

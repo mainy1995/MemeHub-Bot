@@ -1,5 +1,6 @@
 const fs = require('fs');
 const moment = require('moment');
+const { serializeError } = require('serialize-error');
 
 const levels = {
     error: 0,
@@ -34,13 +35,13 @@ const isReady = new Promise(resolve => setReady = resolve);
 
 /**
  * Sets the Telegraf object to use when sending messages without a context.
- * @param {The Telegraf object to use when sending messages without a context} _bot 
+ * @param {The Telegraf object to use when sending messages without a context} _bot
  */
 function set_bot(_bot) {
     bot = _bot;
 }
 
-function set_config(_config) { 
+function set_config(_config) {
     _config.subscribe('config', c => config = c);
     _config.subscribe('log', c => {
         log = c;
@@ -51,8 +52,8 @@ function set_config(_config) {
 
 /**
  * universal error logging. prints the error to the console, but also sends a message to every chat in the error_chats array of the config
- * @param {*} problem 
- * @param {*} error 
+ * @param {*} problem
+ * @param {*} error
  */
 async function log_error(problem, error) {
     await handle_log(levels.error, problem, error);
@@ -101,11 +102,11 @@ async function send_log_message(level, text, data, timestamp) {
 
     try {
         if (!bot) throw 'Telegraf bot object not set in util.js';
-        for(id of log.telegram.chats) {
-            await bot.telegram.sendMessage(id, message, { parse_mode: 'Markdown'});
+        for (id of log.telegram.chats) {
+            await bot.telegram.sendMessage(id, message, { parse_mode: 'Markdown' });
         }
     }
-    catch(e) {
+    catch (e) {
         await print_log(levels.error, 'Failed sending log message', e);
     }
 }
@@ -125,7 +126,7 @@ async function write_log(level, text, data, timestamp = '') {
 async function append_to_file(file, text) {
     if (!file_streams[file]) {
         await close_all_files();
-        file_streams[file] = await fs.createWriteStream(file, {flags: 'a'});
+        file_streams[file] = await fs.createWriteStream(file, { flags: 'a' });
     }
     await file_streams[file].write(text);
 }
@@ -146,6 +147,7 @@ function ensure_log_file_dir() {
 
 function readable(data) {
     if (typeof data === 'string') return data;
+    if (data instanceof Error) data = serializeError(data);
     return JSON.stringify(data, null, log.indentation.data_inner);
 }
 

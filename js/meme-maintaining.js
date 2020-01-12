@@ -24,4 +24,19 @@ async function update_user_name(user) {
     }
 }
 
+async function update_meme_in_group(meme_id) {
+    try {
+        const meme = await db.get_meme_by_id(meme_id);
+        const caption = forwarding.build_caption(meme.user, meme.categories);
+        const votes = await db.count_votes(meme._id);
+        const keyboard = voting.create_keyboard(votes);
+
+        await bot.telegram.editMessageCaption(group_id, meme.group_message_id, null, caption, { reply_markup: { inline_keyboard: keyboard } });
+    }
+    catch (error) {
+        log.error("Could not update meme group message", { error, meme_id });
+    }
+}
+
 module.exports.update_user_name = update_user_name;
+module.exports.update_meme_in_group = update_meme_in_group;

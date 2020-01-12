@@ -28,14 +28,14 @@ async function handle_meme_request(ctx) {
             file_id: util.any_media_id(ctx.message),
             file_type: util.get_media_type_from_message(ctx.message),
             message_id: ctx.message.message_id,
-            category: util.escape_category(ctx.message.caption)
+            categories: categories.parse_categories(ctx.message.caption)
         };
 
         const username = util.name_from_user(options.user);
         log.info(`Meme request from user "${username}"`, options);
 
-        if (!is_private_chat(ctx)) {
-            if (is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
+        if (!util.is_private_chat(ctx)) {
+            if (util.is_reaction(ctx)) return; // Don't do anything if the message is a reaction (reply) to some other message
             ctx.deleteMessage(ctx.message.message_id);
             ctx.telegram.sendMessage(options.user.id, 'Please only send memes here in the private chat!');
             log.info("Aborting meme request due to wrong chat");
@@ -58,54 +58,31 @@ async function handle_meme_request(ctx) {
             return
         }
 
-
         await db.connected;
         db.save_user(options.user);
 
-        if (!options.category) {
-            categories.ask(ctx).then(category => {
-                options.category = category;
-                process_meme(ctx, options);
-            }).catch(reason => {
-                log.info("Choosing a category failed.", {
-                    reason,
-                    options
-                });
-            });
-            return;
-        };
-
-        process_meme(ctx, options);
-    }
-    catch (exception) {
-        log.error("Cannot handle meme request", { exception, request_message: ctx.message });
-    }
-}
-
-function is_private_chat(ctx) {
-    return ctx.message.from.id == ctx.message.chat.id;
-}
-
-function is_reaction(ctx) {
-    return !!ctx.update.message.reply_to_message;
-}
-
-function process_meme(ctx, options) {
-    db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.category)
-        .then(() => {
+        let meme_id = undefined;
+        try {
+            meme_id = await db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.categories);
             ctx.reply("Sending you meme ✈️");
-            forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.category ? [options.category] : []);
-            ctx.reply('👍');
+            forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.categories);
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
-        })
-        .catch((error) => {
+        }
+        catch (error) {
             if (!!error && error.code == 11000) {
                 ctx.telegram.sendMessage(options.user.id, 'REPOST DU SPAST 😡');
                 return;
             }
             log.error("Cannot store meme request in db", { error, options });
             ctx.reply("Something went horribly wrong 😢 I cannot send your meme!");
-        });
+            return;
+        }
+
+        if (!options.categories.length > 0) categories.edit(ctx, meme_id);
+    }
+    catch (exception) {
+        log.error("Cannot handle meme request", { exception, request_message: ctx.message });
+    }
 }
 
 /**
@@ -134,12 +111,13 @@ async function forward_meme_to_group(ctx, file_id, file_type, user, categories) 
 
 function build_caption(user, categories) {
     let caption = `@${user.username}`
-    if (categories && categories.length > 0) caption += ` | #${categories[0]}`;
+    if (categories && categories.length > 0)
+        caption += ` | ${categories.map(c => `#${c}`).join(' · ')}`;
+
     return caption;
 }
 
 module.exports.handle_meme_request = handle_meme_request;
-module.exports.process_meme = process_meme;
 module.exports.forward_meme_to_group = forward_meme_to_group;
 module.exports.build_caption = build_caption;
 
