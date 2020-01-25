@@ -91,10 +91,11 @@ function save_user(user) {
  * @param {The id of the message from the user} message_id
  * @param {The category of the meme} category
  */
-async function save_meme(user_id, file_id, file_type, message_id, categories, group_message_id = null, post_date = new Date()) {
+async function save_meme(user_id, file_id, file_unique_id, file_type, message_id, categories, group_message_id = null, post_date = new Date()) {
     try {
         const result = await memes.insertOne({
             _id: file_id,
+            file_unique_id,
             type: file_type,
             poster_id: user_id,
             private_message_id: message_id,
@@ -112,13 +113,27 @@ async function save_meme(user_id, file_id, file_type, message_id, categories, gr
     }
 }
 
+module.exports.meme_id_get_by_group_message_id = async function (group_message_id) {
+    const meme = await memes.findOne({ group_message_id }, { _id: 1 });
+    if (!meme || !meme._id)
+        throw { error: "Cannot find meme by group message id", group_message_id };
+    return meme._id;
+}
+
+module.exports.meme_id_get_by_private_message_id = async function (private_message_id) {
+    const meme = await memes.findOne({ private_message_id }, { _id: 1 });
+    if (!meme || !meme._id)
+        throw { error: "Cannot find meme by private message id", private_message_id };
+    return meme._id;
+}
+
 async function save_meme_categories(id, categories) {
     const result = await memes.updateOne(
         { _id: id },
         { $set: { categories } }
     );
     if (result.matchedCount !== 1) {
-        log.warning(`Faild saving categories for meme with id ${_id}, matchedCount !== 1`, result)
+        log.warning(`Faild saving categories for meme with id ${id}, matchedCount !== 1`, result)
         throw "Could not find meme";
     }
 }

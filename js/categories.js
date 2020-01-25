@@ -15,6 +15,9 @@ let keyboard_width = 4;
 let maximum = 1;
 let stage = new Stage();
 
+const emoji_ok = '✅';
+const emoji_no = '❌';
+
 init();
 _config.subscribe('categories', c => {
     categories = c.options.map(escape_category);
@@ -24,8 +27,8 @@ _config.subscribe('categories', c => {
 _bot.subscribe(bot => { // Has to be done before require forwarding
     bot.use(Session());
     bot.use(stage.middleware());
-    bot.command('edit', command_edit);
-    bot.command('categories', command_categories);
+    bot.command('edit_categories', command_edit_categories);
+    bot.command('set_categories', command_set_categories);
     bot.command('add_categories', command_add_categories);
     bot.command('remove_categories', command_remove_categories);
 });
@@ -34,8 +37,8 @@ function init() {
     const selectCategory = new Scene('selectCategory');
     selectCategory.enter(start);
     selectCategory.leave(cleanUp);
-    selectCategory.hears('✔️', done);
-    selectCategory.hears('❌', abort);
+    selectCategory.hears(emoji_ok, done);
+    selectCategory.hears(emoji_no, abort);
     selectCategory.on('message', receive);
     stage.register(selectCategory);
 }
@@ -44,7 +47,7 @@ function init() {
  * Edits the categories of a meme.
  * @param {The current telegraf context} ctx
  */
-async function edit(ctx, meme_id) {
+async function edit_categories(ctx, meme_id) {
     try {
         const selected = await db.get_meme_categories(meme_id);
         ctx.session.categories = { meme_id, selected };
@@ -60,22 +63,26 @@ async function edit(ctx, meme_id) {
     }
 }
 
-async function command_edit(ctx) {
+async function command_edit_categories(ctx) {
     try {
+        // Ignore command in group
+        if (!util.is_private_chat(ctx)) {
+            ctx.deleteMessage(ctx.update.message.message_id);
+            return;
+        }
 
-        if (!util.is_private_chat(ctx)) return; // Ignore command in group
         if (!util.is_reaction(ctx)) {
             ctx.reply('Please only use this command in a reply to one of your memes.');
             return;
         }
 
-        const meme_id = util.any_media_id(ctx.message.reply_to_message);
+        const meme_id = await db.meme_id_get_by_private_message_id(ctx.update.message.reply_to_message.message_id);
         if (!meme_id) {
             ctx.reply('This does not look like a meme to me 🤖');
             return;
         }
 
-        await edit(ctx, meme_id);
+        await edit_categories(ctx, meme_id);
     }
     catch (error) {
         log.error("Cannot handle edit command", error);
@@ -83,38 +90,42 @@ async function command_edit(ctx) {
     }
 }
 
-async function command_categories(ctx) {
+async function command_set_categories(ctx) {
     try {
-        const id = get_meme_id_from_command(ctx);
+        const id = await get_meme_id_from_command(ctx);
         if (!id) {
-            log.warning('Abotring /categories command', 'No media id found or user is not permitted to edit the categories.');
+            log.info('Abotring /set_categories command', 'No media id found or user is not permitted to edit the categories.');
             return;
         }
 
-        const categories = parse_categories(ctx.update.message.text.replace('/categories', ''));
+        const categories = parse_categories(ctx.update.message.text, 1);
         if (categories.length > maximum) {
             if (util.is_private_chat(ctx)) ctx.reply(`That's more than the ${maximum} allowed categories.`);
-            log.warning('Aborting /categories', 'maximum number of categories exceeded');
+            log.info('Aborting /set_categories', 'maximum number of categories exceeded');
             return;
         }
         await db.save_meme_categories(id, categories);
         await maintain.update_meme_in_group(id);
-        if (util.is_private_chat(ctx)) ctx.reply('✔️ done')
+        if (util.is_private_chat(ctx)) ctx.reply(`${emoji_ok} Done`);
     }
     catch (error) {
-        log.error("Cannot handle command /categories", error);
+        log.error("Cannot handle command /set_categories", error);
     }
 }
 
 async function command_add_categories(ctx) {
     try {
-        const id = get_meme_id_from_command(ctx);
+        const id = await get_meme_id_from_command(ctx);
         if (!id) {
-            log.warning('Abotring /add_categories command', 'No media id found or user is not permitted to edit the categories.');
+            log.info('Abotring /add_categories command', 'No media id found or user is not permitted to edit the categories.');
             return;
         }
 
-        const categories = parse_categories(ctx.update.message.text.replace('/add_categories', ''));
+        const categories = parse_categories(ctx.update.message.text, 1);
+        if (categories.length < 1) {
+            log.info('Ignoring /add_categories command', 'No categories to add given.');
+            return;
+        }
         const categories_in_db = await db.get_meme_categories(id);
         for (const category of categories)
             if (!categories_in_db.includes(category))
@@ -122,13 +133,13 @@ async function command_add_categories(ctx) {
 
         if (categories_in_db.length > maximum) {
             if (util.is_private_chat(ctx)) ctx.reply(`That would be more than the ${maximum} allowed categories.`);
-            log.warning('Aborting /add_categories', 'maximum number of categories exceeded');
+            log.info('Aborting /add_categories', 'maximum number of categories exceeded');
             return;
         }
 
         await db.meme_add_categories(id, categories);
         await maintain.update_meme_in_group(id);
-        if (util.is_private_chat(ctx)) ctx.reply('✔️ done')
+        if (util.is_private_chat(ctx)) ctx.reply(`${emoji_ok} Done`)
     }
     catch (error) {
         log.error("Cannot handle command /add_categories", error);
@@ -137,51 +148,83 @@ async function command_add_categories(ctx) {
 
 async function command_remove_categories(ctx) {
     try {
-        const id = get_meme_id_from_command(ctx);
+        const id = await get_meme_id_from_command(ctx);
         if (!id) {
-            log.warning('Abotring /remove_categories command', 'No media id found or user is not permitted to edit the categories.');
+            log.info('Abotring /remove_categories command', 'No media id found or user is not permitted to edit the categories.');
             return;
         }
 
-        const categories = parse_categories(ctx.update.message.text.replace('/remove_categories', ''));
+        const categories = parse_categories(ctx.update.message.text, 1);
+        if (categories.length < 1) {
+            log.info('Ignoring /remove_categories command', 'No categories to remove given.');
+            return;
+        }
         await db.meme_remove_categores(id, categories);
         await maintain.update_meme_in_group(id);
-        if (util.is_private_chat(ctx)) ctx.reply('✔️ done')
+        if (util.is_private_chat(ctx)) ctx.reply(`${emoji_ok} Done`)
     }
     catch (error) {
         log.error("Cannot handle command /remove_categories", error);
     }
 }
 
+
 /**
- * Validates a categoy request (if is reply and is allowed to) and returns the meme id if the meme in question.
+ * Checks if a category command is in the group or in private chat or invalid  (if is reply and user is allowed to).
  * If the message is send in a group, it will be deleted.
+ * @returns 'group', 'private' or null.
  * @param {*} ctx
  */
-function get_meme_id_from_command(ctx) {
+function check_command(ctx) {
+    const is_private = util.is_private_chat(ctx);
     // delete rquest, if is in group chat
-    if (!util.is_private_chat(ctx))
+    if (!is_private)
         ctx.deleteMessage(ctx.update.message.message_id);
 
     // Check for reply
     if (!util.is_reaction(ctx)) {
-        if (util.is_private_chat(ctx))
+        if (is_private)
             ctx.reply('Please only use this command in a reply to a meme.');
 
-        log.warning('Aborting categories command', 'command was not in a reply to an other message.');
+        log.info('Aborting categories command', 'command was not in a reply to an other message.');
+        return null;
+    }
+
+    // Check for media
+    if (!util.has_any_media(ctx.update.message.reply_to_message)) {
+        if (is_private)
+            ctx.reply('Please only use this command in a reply to a meme.');
+
+        log.info('Aborting categories command', 'command was not in a reply to a message with media.');
         return null;
     }
 
     // Check if is allowed
     if (!can_edit(ctx)) {
-        if (util.is_private_chat(ctx))
+        if (is_private)
             ctx.reply('You are not allowed to change categories for this meme.');
 
-        log.warning('Aborting categories command', 'user was not allowed to edit the categories of the meme.');
+        log.info('Aborting categories command', 'user was not allowed to edit the categories of the meme.');
         return null;
     }
 
-    return util.any_media_id(ctx.update.message.reply_to_message);
+    return is_private ? 'private' : 'group'; // TODO maybe chat if it's actually a group message
+}
+
+/**
+ * Validates a categoy request (if is reply and is allowed to) and returns the meme id of the meme in question.
+ * If the message is send in a group, it will be deleted.
+ * @param {*} ctx
+ */
+async function get_meme_id_from_command(ctx) {
+    const type = check_command(ctx);
+    if (type === 'private')
+        return await db.meme_id_get_by_private_message_id(ctx.update.message.reply_to_message.message_id);
+
+    if (type === 'group')
+        return await db.meme_id_get_by_group_message_id(ctx.update.message.reply_to_message.message_id);
+
+    throw "Cannot get meme id from command";
 }
 
 /**
@@ -212,11 +255,11 @@ function receive(ctx) {
             const index = ctx.session.categories.selected.indexOf(category);
             if (index > -1) {
                 ctx.session.categories.selected.splice(index, 1);
-                ctx.reply(`➖ Removing #${category}`, buildCategoryKeyboard(ctx));
+                ctx.reply(`🗑️ Removing #${category}`, buildCategoryKeyboard(ctx));
             }
             else {
                 ctx.session.categories.selected.push(category);
-                ctx.reply(`➕ Adding #${category}`, buildCategoryKeyboard(ctx));
+                ctx.reply(`✨ Adding #${category}`, buildCategoryKeyboard(ctx));
             }
         }
 
@@ -239,7 +282,7 @@ async function done(ctx) {
     try {
         await db.save_meme_categories(ctx.session.categories.meme_id, ctx.session.categories.selected);
         await maintain.update_meme_in_group(ctx.session.categories.meme_id);
-        ctx.reply("✔️ Done", { reply_markup: { remove_keyboard: true } });
+        ctx.reply(`${emoji_ok} Done`, { reply_markup: { remove_keyboard: true } });
     }
     catch (error) {
         ctx.reply("💥 I could not update your categories, sorry!", { reply_markup: { remove_keyboard: true } });
@@ -251,7 +294,7 @@ async function done(ctx) {
 
 function abort(ctx) {
     try {
-        ctx.reply("❌ Okay, not updating categories", { reply_markup: { remove_keyboard: true } });
+        ctx.reply(`${emoji_no} Okay, not updating categories`, { reply_markup: { remove_keyboard: true } });
     }
     catch (error) {
         ctx.reply("💥 Something went wrong!", { reply_markup: { remove_keyboard: true } });
@@ -270,7 +313,7 @@ function buildCategoryKeyboard(ctx) {
     const keyboard = new Keyboard();
     try {
         const options = categories.map(c => ctx.session.categories.selected.includes(c) ? `[ #${c} ]` : `#${c}`);
-        options.unshift('✔️', '❌');
+        options.unshift(emoji_ok, emoji_no);
         options.push(...ctx.session.categories.selected.filter(c => !categories.includes(c)).map(c => `[ #${c} ]`));
         for (let i = 0; i < options.length; i += keyboard_width) {
             keyboard.add(options.slice(i, i + keyboard_width));
@@ -294,14 +337,15 @@ function escape_category(caption) {
         .replace(/^[\d_]+/g, '');       // Removes digits and _ from the beginning of the string
 }
 
-function parse_categories(input_stirng) {
+function parse_categories(input_stirng, slice = 0) {
     if (typeof input_stirng !== 'string') return [];
     return input_stirng
         .split(' ')
+        .slice(slice)
         .map(escape_category)
         .filter(c => !!c);
 }
 
-module.exports.edit = edit;
+module.exports.edit_categories = edit_categories;
 module.exports.escape_category = escape_category;
 module.exports.parse_categories = parse_categories;

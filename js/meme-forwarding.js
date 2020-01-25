@@ -63,7 +63,7 @@ async function handle_meme_request(ctx) {
 
         let meme_id = undefined;
         try {
-            meme_id = await db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.categories);
+            meme_id = await db.save_meme(options.user.id, options.file_id, undefined, options.file_type, options.message_id, options.categories);
             ctx.reply("Sending you meme ✈️");
             await forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.categories);
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
@@ -78,7 +78,7 @@ async function handle_meme_request(ctx) {
             return;
         }
 
-        if (!options.categories.length > 0) categories.edit(ctx, meme_id);
+        if (!options.categories.length > 0) categories.edit_categories(ctx, meme_id);
     }
     catch (exception) {
         log.error("Cannot handle meme request", { exception, request_message: ctx.message });

@@ -70,6 +70,11 @@ function has_video(message) {
     return !!message.video;
 }
 
+/** Checks weather a message contains any kind of supported media */
+function has_any_media(message) {
+    return has_photo(message) || has_animation(message) || has_video(message);
+}
+
 /**
  * Sends supported media types to the given chat.
  * @param {The message context} ctx
@@ -120,6 +125,7 @@ module.exports.any_media_id = any_media_id;
 module.exports.has_photo = has_photo;
 module.exports.has_animation = has_animation;
 module.exports.has_video = has_video;
+module.exports.has_any_media = has_any_media;
 module.exports.send_any_media = send_any_media;
 module.exports.send_media_by_type = send_media_by_type;
 module.exports.get_media_type_from_message = get_media_type_from_message;
