@@ -127,39 +127,44 @@ async function save_meme_categories(id, categories) {
  * Saves the message id of a recently send message. This is supposed to be used after sending a meme to the meme group.
  * @param {The message context that got returned from the message to the meme group} ctx
  */
-async function save_meme_group_message(ctx) {
-    let file_id = util.any_media_id(ctx);
-    if (!file_id) {
-        await log.error("Cannot store group message id in mongo db", "missing file id");
-        return;
-    }
+module.exports.save_meme_group_message = async function (file_id, group_message_id) {
+    if (!file_id)
+        throw 'Cannot store group message id in mongo db, missing file id!';
+    if (!group_message_id)
+        throw 'Cannot store group message id in mongo db, missing group message id!';
+
     try {
         await memes.updateOne(
             { _id: file_id },
-            { $set: { group_message_id: ctx.message_id } }
+            { $set: { group_message_id: group_message_id } }
         );
     }
     catch (error) {
-        await log.error("Cannot store group message id in mongo db", { error, file_id });
+        throw { message: "Cannot store group message id in mongo db", error, file_id };
     };
 }
 
-async function save_vote(user_id, file_id, vote_type) {
+/**
+ * Saves a vote to the mongo db by either setting the vote or removing an existing one.
+ */
+module.exports.save_vote = async function save_vote(user_id, group_message_id, vote_type) {
     const vote_path = `votes.${vote_type}`;
-    let find = {};
-    find['_id'] = file_id;
-    find[vote_path] = user_id;
 
     try {
-        const meme = await memes.findOne(find);
-        let toggle = {}
-        toggle[vote_path] = user_id;
+        const meme = await memes.findOne({
+            group_message_id,
+            [vote_path]: user_id
+        });
+
+        const toggle = {
+            [vote_path]: user_id
+        };
 
         if (meme) {
-            await memes.updateOne({ _id: file_id }, { $pull: toggle });
+            await memes.updateOne({ group_message_id }, { $pull: toggle });
             return;
         }
-        await memes.updateOne({ _id: file_id }, { $addToSet: toggle });
+        await memes.updateOne({ group_message_id }, { $addToSet: toggle });
     }
     catch (error) {
         log.error("Cannot save vote in mongo db", { error, request: { user_id, file_id, vote_type } });
@@ -199,6 +204,28 @@ async function count_votes(file_id) {
     }
     catch (error) {
         log.error("Cannot count votes in mongo db", { error, request: { file_id } });
+        throw error;
+    }
+}
+
+/**
+ * Counts the votes for each vote type of a meme.
+ */
+module.exports.votes_count_by_group_message_id = async function (group_message_id) {
+    try {
+        const meme = await memes.findOne({ group_message_id });
+        if (!meme) throw "meme not found";
+        if (!meme.votes) return {};
+
+        const votes = {}
+        for (type in meme.votes) {
+            votes[type] = meme.votes[type].length;
+        }
+
+        return votes;
+    }
+    catch (error) {
+        log.error("Cannot count votes in mongo db", { error, request: { group_message_id } });
         throw error;
     }
 }
@@ -275,6 +302,16 @@ function get_user_from_meme(file_id) {
                 resolve(meme.poster_id);
             })
     })
+}
+
+/**
+ * Returns the poster id by searching for the group message id of a meme.
+ */
+module.exports.poster_id_get_by_group_message_id = async function (group_message_id) {
+    const meme = await memes.findOne({ group_message_id }, { poster_id: 1, _id: 0 });
+    if (!meme || !meme.poster_id)
+        throw { error: "Cannot find meme", request: { group_message_id } };
+    return meme.poster_id;
 }
 
 async function get_user(user_id) {
@@ -570,9 +607,7 @@ async function meme_remove_categores(id, categories) {
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
-module.exports.save_meme_group_message = save_meme_group_message;
 module.exports.save_meme_categories = save_meme_categories;
-module.exports.save_vote = save_vote;
 module.exports.get_memes_by_user = get_memes_by_user;
 module.exports.count_votes = count_votes;
 module.exports.get_user_top_meme = get_user_top_meme;

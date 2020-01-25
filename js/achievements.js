@@ -23,9 +23,12 @@ async function check_post_archievements(ctx) {
     }
 }
 
-async function check_vote_achievements(ctx, file_id, vote_type) {
+/**
+ * Checks weather a user gtan achievement. If that is the case, it will send a message into the group.
+ */
+module.exports.check_vote_achievements = async function check_vote_achievements(ctx, group_message_id, vote_type) {
     try {
-        const poster_id = await db.get_user_from_meme(file_id);
+        const poster_id = await db.poster_id_get_by_group_message_id(group_message_id);
         const votes = await db.count_user_total_votes_by_type(poster_id, vote_type);
         if (!achievements.vote_count[vote_type]) return;
 
@@ -50,4 +53,3 @@ function fromatMessage(achievement, user) {
 }
 
 module.exports.check_post_archievements = check_post_archievements;
-module.exports.check_vote_achievements = check_vote_achievements;

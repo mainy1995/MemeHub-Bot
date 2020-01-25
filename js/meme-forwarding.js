@@ -65,7 +65,7 @@ async function handle_meme_request(ctx) {
         try {
             meme_id = await db.save_meme(options.user.id, options.file_id, options.file_type, options.message_id, options.categories);
             ctx.reply("Sending you meme ✈️");
-            forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.categories);
+            await forward_meme_to_group(ctx, options.file_id, options.file_type, options.user, options.categories);
             setTimeout(() => achievements.check_post_archievements(ctx), 100); // Timeout so it's not blocking anything important
         }
         catch (error) {
@@ -102,10 +102,10 @@ async function forward_meme_to_group(ctx, file_id, file_type, user, categories) 
     }
     try {
         const result = await util.send_media_by_type(ctx, group_id, file_id, file_type, extra);
-        await db.save_meme_group_message(result);
+        await db.save_meme_group_message(file_id, result.message_id);
     }
     catch (error) {
-        await log.error("Cannot not send meme to group", error);
+        log.error("Cannot not send meme to group", error);
     }
 }
 

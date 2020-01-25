@@ -31,7 +31,7 @@ _bot.subscribe(bot => {
  * @param {The context of the callback_query} ctx 
  */
 async function handle_vote_request(ctx) {
-    const file_id = util.any_media_id(ctx.update.callback_query.message);
+    const group_message_id = ctx.update.callback_query.message.message_id;
     const user = ctx.update.callback_query.from;
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
@@ -41,8 +41,8 @@ async function handle_vote_request(ctx) {
         return;
     }
 
-    if (!file_id) {
-        log.warn('Cannot handle vote request', { detail: 'could not identify media id', callback_query: ctx.update.callback_query });
+    if (!group_message_id) {
+        log.warn('Cannot handle vote request', { detail: 'could not identify message id', callback_query: ctx.update.callback_query });
         ctx.answerCbQuery();
         return;
     }
@@ -51,11 +51,11 @@ async function handle_vote_request(ctx) {
     db.save_user(ctx.update.callback_query.from);
 
     try {
-        await db.save_vote(user.id, file_id, vote_type)
+        await db.save_vote(user.id, group_message_id, vote_type)
 
-        setTimeout(() => achievements.check_vote_achievements(ctx, file_id, vote_type), 200);
+        setTimeout(() => achievements.check_vote_achievements(ctx, group_message_id, vote_type), 200);
 
-        const votes = await db.count_votes(file_id);
+        const votes = await db.votes_count_by_group_message_id(group_message_id);
 
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
             .catch(err => log.error('Cannot update vote count', err));
@@ -95,6 +95,8 @@ function is_vote_callback(callback_query) {
 function is_legacy_like_callback(callback_query) {
     return callback_query.data == "upvote";
 }
+
+
 
 module.exports.handle_vote_request = handle_vote_request;
 module.exports.handle_legacy_like_request = handle_legacy_like_request;
