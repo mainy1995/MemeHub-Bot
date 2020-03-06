@@ -80,7 +80,7 @@ function handle_error(error, context) {
 
 setTimeout(async () => { lc.trigger('init'); }, 1000);
 
-process.on('uncaughtException', handle_error);
-process.on('unhandledRejection', handle_error);
+// process.on('uncaughtException', handle_error);
+// process.on('unhandledRejection', handle_error);
 
 module.exports.subscribe = subscribe;
