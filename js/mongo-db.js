@@ -20,12 +20,17 @@ lc.on('start', async () => {
     await connected;
 })
 
-lc.late('stop', async () => {
+lc.on('stop', async () => {
     await connected;
     if (!connection) return;
 
     log.info('Disconnecting from mongo db');
-    await connection.close();
+    try {
+        await connection.close();
+    }
+    catch (error) {
+        console.log('failed to disconnect from mongodb', error);
+    }
 });
 
 function init(coll_names, db_name, connection_string) {

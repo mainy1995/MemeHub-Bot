@@ -23,7 +23,6 @@
     "docker-names": "^1.1.1",
     "moment": "^2.24.0",
     "mongodb": "^3.4.0",
-    "node-shutdown-events": "^0.1.1",
     "serialize-error": "^5.0.0",
     "telegraf": "^3.34.1",
     "telegraf-command-parts": "^1.0.3",

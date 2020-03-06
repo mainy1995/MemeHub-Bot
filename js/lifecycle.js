@@ -1,6 +1,3 @@
-const ShutdownHandler = require("node-shutdown-events");
-new ShutdownHandler({ exitTimeout: 60000, log: { warn: console.log, error: console.log, info: console.log } });
-
 const listeners = { early: {}, on: {}, late: {}, after: {} };
 const hooks = [async (stage, event) => {
     await Promise.all((listeners[stage][event] || []).map(async listener => {
@@ -19,11 +16,7 @@ function register(stage, event, callback) {
     listeners[stage][event].push(callback);
 }
 
-process.on("shutdown", async () => {
-    await this.trigger('stop');
-});
-
-module.exports.trigger = async function (event) {
+async function trigger(event) {
     try {
         for (const stage of ['early', 'on', 'late', 'after']) {
             for (const hook of hooks) {
@@ -35,6 +28,13 @@ module.exports.trigger = async function (event) {
         console.log(err);
     }
 }
+
+process.on("SIGINT", () => trigger('stop'));
+process.on("SIGTERM", () => trigger('stop'));
+process.on("SIGQUIT", () => trigger('stop'));
+register('after', 'stop', () => process.exit(0));
+
+module.exports.trigger = trigger;
 
 module.exports.early = function (event, callback) {
     register('early', event, callback);

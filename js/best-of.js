@@ -11,7 +11,7 @@ const lc = require('./lifecycle');
 let bot;
 let channel_id = undefined
 let tasks = [];
-let vote_types = [ ];
+let vote_types = [];
 
 _bot.subscribe(b => bot = b);
 _config.subscribe('vote-types', v => vote_types = v);
@@ -22,7 +22,7 @@ _config.subscribe('best-of', best_of => {
     schedule_all(best_of);
 });
 
-lc.on("stop", stop_all);
+lc.early("stop", stop_all);
 
 function schedule_all(best_of) {
     tasks = [
@@ -48,7 +48,7 @@ async function execute_best_of(task, data_callback) {
     const meme = await data_callback(task);
 
     if (meme == null) {
-        log.warning('Not running scheduled best-of', { reason: 'no meme matchtes the requirements', task});
+        log.warning('Not running scheduled best-of', { reason: 'no meme matchtes the requirements', task });
         return;
     }
 

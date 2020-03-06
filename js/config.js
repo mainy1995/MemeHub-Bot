@@ -20,11 +20,11 @@ function subscribe(config_name, update_callback) {
         return;
     }
 
-    subscribers[config_name] = [ update_callback ];
+    subscribers[config_name] = [update_callback];
     init_config(config_name);
 }
 
-lc.on('stop', () => {
+lc.early('stop', () => {
     for (s of stalker) {
         s.close();
     }
@@ -34,8 +34,8 @@ async function init_config(config_name) {
     read_config(config_name);
 
     let s = watchr.open(
-        `config/${config_name}.json`, 
-        (changeType) =>{
+        `config/${config_name}.json`,
+        (changeType) => {
             if (changeType === 'delete') {
                 log.error('Missing config file', `Config file "${config_name}" has been deleted`);
                 return;
@@ -88,7 +88,7 @@ function on_update(config_name, new_config) {
 
 function notify_subscribers(config_name, config = null) {
     if (!config) config = configs[config_name];
-    for(update_callback of subscribers[config_name]) {
+    for (update_callback of subscribers[config_name]) {
         update_callback(config);
     }
 }

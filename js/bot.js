@@ -5,6 +5,7 @@ const dockerNames = require('docker-names');
 const lc = require('./lifecycle');
 const fs = require('fs');
 const commandParts = require('telegraf-command-parts');
+const { serializeError } = require('serialize-error');
 
 const subscribers = [];
 let bot;
@@ -40,15 +41,14 @@ lc.after('start', async () => {
     notify_subscribers(bot);
 });
 
-lc.on('stop', async () => {
+lc.early('stop', async () => {
     if (!has_bot) return;
     await log.notice(`Stopping bot ${bot_name}`, 'Shutdown event received');
-    await bot.stop();
+    await bot.stop(() => { });
 });
 
-lc.after('stop', async () => {
-    await log.info(`Shutdown complete for bot ${bot_name}`);
-    process.exitCode = 0;
+lc.late('stop', async () => {
+    await log.notice(`Shutdown complete for bot ${bot_name}`);
 });
 
 function subscribe(callback) {
@@ -63,24 +63,24 @@ function notify_subscribers(bot) {
 }
 
 function handle_error(error, context) {
-    try {
-        log.error("Uncaught error", { error, context });
-    }
-    catch (err) {
-        const text = `Critical Error: Failed logging an unahandled error!
-            Original Error: ${error}
-            Original Context: ${context}
-            Logging Error: ${err}
-        `;
-
-        console.log(text);
-        fs.writeFileSync("critical_error.txt", text);
-    }
+    const stack = new Error().stack;
+    const text = `Critical Error: An error has not benn caught. Bot shutting down!
+        Original Error: ${JSON.stringify(serializeError(error))}
+        Original Context: ${JSON.stringify(serializeError(context))}
+        Stack: ${stack}
+    `;
+    console.log(text);
+    fs.writeFileSync(`critical_error_${Math.floor(Date.now() / 1000)}`, text);
+    process.exit(1);
 }
 
-setTimeout(async () => { lc.trigger('init'); }, 1000);
+process.on('uncaughtException', (exception, origin) => {
+    handle_error(exception, origin);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    handle_error(reason, promise);
+});
 
-// process.on('uncaughtException', handle_error);
-// process.on('unhandledRejection', handle_error);
+setTimeout(async () => { lc.trigger('init'); }, 1000);
 
 module.exports.subscribe = subscribe;
