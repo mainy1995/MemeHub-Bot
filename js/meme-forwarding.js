@@ -74,7 +74,7 @@ async function handle_meme_request(ctx) {
                 return;
             }
             log.error("Cannot store meme request in db", { error, options });
-            ctx.reply("Something went horribly wrong 😢 I cannot send your meme!");
+            ctx.telegram.sendMessage(options.user.id, "Something went horribly wrong 😢 I cannot send your meme!");
             return;
         }
 
