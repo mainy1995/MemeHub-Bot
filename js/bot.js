@@ -6,6 +6,7 @@ const lc = require('./lifecycle');
 const fs = require('fs');
 const commandParts = require('telegraf-command-parts');
 const { serializeError } = require('serialize-error');
+const moment = require('moment');
 
 const subscribers = [];
 let bot;
@@ -65,9 +66,18 @@ function notify_subscribers(bot) {
 function handle_error(error, context) {
     const stack = new Error().stack;
     const text = `Critical Error: An error has not benn caught. Bot shutting down!
-        Original Error: ${JSON.stringify(serializeError(error))}
-        Original Context: ${JSON.stringify(serializeError(context))}
-        Local Stack: ${stack}
+        Time: ${moment().format('HH:mm:ss.SSS')}
+        Original Error:
+        
+        ${JSON.stringify(serializeError(error))}
+        
+        Original Context:
+        
+        ${JSON.stringify(context)}
+        
+        Local Stack: 
+        
+        ${stack}
     `;
     console.log(text);
     fs.writeFileSync(`critical_error_${Math.floor(Date.now() / 1000)}`, text);
