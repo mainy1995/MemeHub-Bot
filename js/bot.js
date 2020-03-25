@@ -76,7 +76,10 @@ Original Error:
 ${JSON.stringify(serializeError(error), null, 2)}
 
 Original Context:
-${JSON.stringify(context), null, 2}
+${JSON.stringify(context, null, 2)}
+
+Error Stack:
+${error.stack}
 
 Local Stack: 
 ${stack}
