@@ -67,12 +67,12 @@ async function command_edit_categories(ctx) {
     try {
         // Ignore command in group
         if (!util.is_private_chat(ctx)) {
-            ctx.deleteMessage(ctx.update.message.message_id);
+            await ctx.deleteMessage(ctx.update.message.message_id);
             return;
         }
 
         if (!util.is_reaction(ctx)) {
-            ctx.reply('Please only use this command in a reply to one of your memes.');
+            await ctx.reply('Please only use this command in a reply to one of your memes.');
             return;
         }
 
@@ -175,16 +175,16 @@ async function command_remove_categories(ctx) {
  * @returns 'group', 'private' or null.
  * @param {*} ctx
  */
-function check_command(ctx) {
+async function check_command(ctx) {
     const is_private = util.is_private_chat(ctx);
     // delete rquest, if is in group chat
     if (!is_private)
-        ctx.deleteMessage(ctx.update.message.message_id);
+        await ctx.deleteMessage(ctx.update.message.message_id);
 
     // Check for reply
     if (!util.is_reaction(ctx)) {
         if (is_private)
-            ctx.reply('Please only use this command in a reply to a meme.');
+            await ctx.reply('Please only use this command in a reply to a meme.');
 
         log.info('Aborting categories command', 'command was not in a reply to an other message.');
         return null;
@@ -193,7 +193,7 @@ function check_command(ctx) {
     // Check for media
     if (!util.has_any_media(ctx.update.message.reply_to_message)) {
         if (is_private)
-            ctx.reply('Please only use this command in a reply to a meme.');
+            await ctx.reply('Please only use this command in a reply to a meme.');
 
         log.info('Aborting categories command', 'command was not in a reply to a message with media.');
         return null;
@@ -217,7 +217,7 @@ function check_command(ctx) {
  * @param {*} ctx
  */
 async function get_meme_id_from_command(ctx) {
-    const type = check_command(ctx);
+    const type = await check_command(ctx);
     if (type === 'private')
         return await db.meme_id_get_by_private_message_id(ctx.update.message.reply_to_message.message_id);
 
