@@ -66,24 +66,20 @@ function notify_subscribers(bot) {
 function handle_error(error, context) {
     const stack = new Error().stack;
     const text = `
-        
-        Critical Error: An error has not benn caught. Bot shutting down!
-        ==============
-        Time:
-        
-        ${moment().format('HH:mm:ss.SSS')}
-        
-        Original Error:
-        
-        ${JSON.stringify(serializeError(error))}
-        
-        Original Context:
-        
-        ${JSON.stringify(context)}
-        
-        Local Stack: 
-        
-        ${stack}
+Critical Error: An error has not been caught. Bot shutting down!
+==============
+
+Time:
+${moment().format('HH:mm:ss.SSS')}
+
+Original Error:
+${JSON.stringify(serializeError(error), null, 2)}
+
+Original Context:
+${JSON.stringify(context), null, 2}
+
+Local Stack: 
+${stack}
     `;
     console.log(text);
     fs.writeFileSync(`critical_error_${Math.floor(Date.now() / 1000)}`, text);
