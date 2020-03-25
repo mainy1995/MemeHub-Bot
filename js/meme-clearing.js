@@ -13,7 +13,7 @@ async function is_clearing_request(ctx) {
     if (ctx.update.message.text != '/repost') return false;
     if (ctx.update.message.reply_to_message == null) return false;
     if (!await admins.can_delete_messages(ctx.update.message.from)) return false;
-    
+
     return true;
 }
 /**
@@ -26,8 +26,8 @@ async function clear_repost(ctx) {
             var repost_msg_id = ctx.update.message.reply_to_message.message_id;
             var answer_msg_id = ctx.update.message.message_id;
             db.save_repost(repost_msg_id);
-            ctx.deleteMessage(repost_msg_id);
-            ctx.deleteMessage(answer_msg_id);
+            await ctx.deleteMessage(repost_msg_id);
+            await ctx.deleteMessage(answer_msg_id);
         }
     }
     catch (err) {
