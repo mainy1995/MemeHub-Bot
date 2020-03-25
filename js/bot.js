@@ -67,7 +67,7 @@ function handle_error(error, context) {
     const text = `Critical Error: An error has not benn caught. Bot shutting down!
         Original Error: ${JSON.stringify(serializeError(error))}
         Original Context: ${JSON.stringify(serializeError(context))}
-        Stack: ${stack}
+        Local Stack: ${stack}
     `;
     console.log(text);
     fs.writeFileSync(`critical_error_${Math.floor(Date.now() / 1000)}`, text);

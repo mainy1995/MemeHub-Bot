@@ -78,7 +78,7 @@ async function handle_meme_request(ctx) {
             return;
         }
 
-        if (!options.categories.length > 0) categories.edit_categories(ctx, meme_id);
+        if (!options.categories.length > 0) await categories.edit_categories(ctx, meme_id);
     }
     catch (exception) {
         log.error("Cannot handle meme request", { exception, request_message: ctx.message });
