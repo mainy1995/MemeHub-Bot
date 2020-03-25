@@ -65,8 +65,14 @@ function notify_subscribers(bot) {
 
 function handle_error(error, context) {
     const stack = new Error().stack;
-    const text = `Critical Error: An error has not benn caught. Bot shutting down!
-        Time: ${moment().format('HH:mm:ss.SSS')}
+    const text = `
+        
+        Critical Error: An error has not benn caught. Bot shutting down!
+        ==============
+        Time:
+        
+        ${moment().format('HH:mm:ss.SSS')}
+        
         Original Error:
         
         ${JSON.stringify(serializeError(error))}
