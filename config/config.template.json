@@ -1,5 +1,6 @@
 {
     "bot_token": "<Your bot token you got from the BotFather>",
+    "bot_handle": "<Your bot handle (ends in 'bot')>",
     "group_id": "<The id of the meme group>",
     "public_welcome_message": "Hi %USER%!",
     "welcome_message": "Welcome to the MemeHub! 👋\n\nPlease send your memes to this private chat, I will forward them for you.",
