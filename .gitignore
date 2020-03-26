@@ -55,3 +55,7 @@ best-of.json
 debug.json
 achievements.json
 vote-types.json
+
+# error logs
+critical_error*
+
