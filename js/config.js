@@ -52,7 +52,7 @@ async function init_config(config_name) {
                 return;
             }
 
-            log.info('Updated config file', `Config file "${config_name}" has been updated`);
+            log.notice('Updated config file', `Config file "${config_name}" has been updated`);
             read_config(config_name);
         },
         (err) => {
