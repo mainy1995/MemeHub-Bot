@@ -441,18 +441,12 @@ async function get_user_meme_counts(limit = 5) {
     return result.toArray();
 }
 
-async function save_repost(message_id) {
+module.exports.meme_mark_as_removed = async function (message_id, removeRason, isRepost) {
     try {
-        const meme = await memes.findOne({ group_message_id: message_id });
-
-        if (!meme) {
-            log.error("Cannot flag meme as repost, as it does not exist", { message_id });
-        }
-
-        await memes.updateOne({ group_message_id: message_id }, { $set: { isRepost: true } });
+        await memes.updateOne({ group_message_id: message_id }, { $set: { isRemoved: true, removeRason, isRepost } });
     }
     catch (error) {
-        log.error("Cannot save repost flag", { error, request: { message_id } });
+        log.error("Cannot save removed flag", { error, request: { message_id } });
     }
 }
 
@@ -656,7 +650,6 @@ module.exports.get_user_from_meme = get_user_from_meme;
 module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
 module.exports.get_user = get_user;
-module.exports.save_repost = save_repost;
 module.exports.get_meme_recent_best = get_meme_recent_best;
 module.exports.get_meme_random_good = get_meme_random_good;
 module.exports.get_meme_by_id = get_meme_by_id;

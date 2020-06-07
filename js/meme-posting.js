@@ -13,6 +13,7 @@ const _bot = require('./bot');
 let group_id = undefined;
 let eventPost;
 let telegram;
+let last = undefined;
 
 _bot.subscribe(b => telegram = b.telegram);
 _config.subscribe('config', c => group_id = c.group_id);
@@ -59,6 +60,7 @@ async function post_meme(meme_id) {
 
         // Store the group message id, which marks the meme as posted
         await db.save_meme_group_message(meme_id, result.message_id);
+        last = result.message_id;
 
         // Trigger achievements check
         setTimeout(() => achievements.check_post_archievements(meme.user), 100);
@@ -83,3 +85,4 @@ function build_caption(user, categories) {
 
 module.exports.post_meme = post_meme;
 module.exports.build_caption = build_caption;
+module.exports.last = last;

@@ -1,40 +1,47 @@
+const { serializeError } = require('serialize-error');
+
 const db = require('./mongo-db');
 const log = require('./log');
 const admins = require('./admins');
+const { last } = require('./meme-posting');
 const _bot = require('./bot');
 
-_bot.subscribe(bot => bot.command('repost', clear_repost));
+_bot.subscribe(bot => {
+    bot.command('repost', clear_repost);
+    bot.command('remove', remove_post);
+});
 
-/**
- * Checks Message if its from Admin and if it contains Repost
- * @param {The telegraph message context} ctx 
- */
-async function is_clearing_request(ctx) {
-    if (ctx.update.message.text != '/repost') return false;
-    if (ctx.update.message.reply_to_message == null) return false;
-    if (!await admins.can_delete_messages(ctx.update.message.from)) return false;
-
-    return true;
-}
 /**
  * Deletes Repost and Command Message
  * @param {The telegraph message context} ctx 
  */
 async function clear_repost(ctx) {
-    try {
-        if (await is_clearing_request(ctx)) {
-            var repost_msg_id = ctx.update.message.reply_to_message.message_id;
-            var answer_msg_id = ctx.update.message.message_id;
-            db.save_repost(repost_msg_id);
-            await ctx.deleteMessage(repost_msg_id);
-            await ctx.deleteMessage(answer_msg_id);
-        }
-    }
-    catch (err) {
-        log.error("Failed to clear repost message or repost command. The bot might need to have the 'can_delete_messages' privilege.", err);
-    }
+    await remove_post(ctx, 'repost', true);
 }
 
+async function remove_post(ctx, reason = '', repost = false) {
+    try {
+        // Get the message from the reply or use the last postet meme
+        let message_id = ctx.update.message.reply_to_message && ctx.update.message.reply_to_message.message_id || last;
+        if (!message_id)
+            throw new Error('Found no message to remove');
 
-module.exports.clear_repost = clear_repost;
-module.exports.is_clearing_request = is_clearing_request;
+        // Check if the user may delete post
+        if (!admins.can_delete_messages(ctx.update.message.from))
+            throw new Error('User is not allowed to remove posts')
+
+        // Check if there is a reason
+        if (ctx.state.command.args)
+            reason = ctx.state.command.args;
+
+        await ctx.deleteMessage(message_id);
+        await db.meme_mark_as_removed(message_id, reason, repost || reason === 'repost');
+        return message_id;
+    }
+    catch (error) {
+        log.warning("Failed to remove post. The bot might need to have the 'can_delete_messages' privilege.", serializeError(error));
+    }
+    finally {
+        ctx.deleteMessage(ctx.update.message.message_id);
+    }
+}
