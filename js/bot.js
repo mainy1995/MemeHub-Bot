@@ -1,11 +1,13 @@
 const Telegraf = require('telegraf');
-const _config = require('./config');
-const log = require('./log');
 const dockerNames = require('docker-names');
-const lc = require('./lifecycle');
-const fs = require('fs');
 const commandParts = require('telegraf-command-parts');
 const { serializeError } = require('serialize-error');
+const { Defaults } = require('redis-request-broker');
+
+const _config = require('./config');
+const log = require('./log');
+const lc = require('./lifecycle');
+const fs = require('fs');
 const moment = require('moment');
 
 const subscribers = [];
@@ -22,17 +24,26 @@ _config.subscribe('config', async c => {
     config = c;
 });
 
+_config.subscribe('rrb', async rrb => {
+    Defaults.setDefaults({
+        redis: rrb.redis
+    });
+})
+
+lc.early('init', async () => {
+    bot_name = dockerNames.getRandomName();
+    log.set_name(bot_name);
+});
+
 lc.after('init', async () => {
     lc.trigger('start');
 })
 
 lc.early('start', async () => {
     bot = new Telegraf(config.bot_token);
-    bot_name = dockerNames.getRandomName();
+    log.set_config(_config);
     bot.use(commandParts());
     bot.catch(handle_error);
-    log.set_name(bot_name);
-    log.set_config(_config);
 });
 
 lc.after('start', async () => {

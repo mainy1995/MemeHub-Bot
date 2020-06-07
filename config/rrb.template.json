@@ -1,0 +1,17 @@
+{
+    "redis": {
+        "prefix": "mh:",
+        "port": 6379,
+        "host": "127.0.0.1"
+    },
+    "events": {
+        "vote": "events:vote",
+        "retractVote": "events:retract-vote",
+        "post": "events:post"
+    },
+    "queues": {
+        "mayUserPost": "limits:may",
+        "getUserQuota": "limits:quota",
+        "logging": "logging:log"
+    }
+}

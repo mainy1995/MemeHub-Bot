@@ -54,7 +54,7 @@ async function execute_best_of(task, data_callback) {
 
     let vote_string = Object.keys(meme.votes).map(k => `${meme.votes[k].length}x${vote_types.find(v => v.id == k).emoji}`).join(' ');
     let user = util.name_from_user(meme.user);
-    util.send_media_by_type(bot, channel_id, meme.media_id, meme.type, { caption: `${task.caption} ${user} | ${vote_string}` });
+    util.send_media_by_type(bot.telegram, channel_id, meme.media_id, meme.type, { caption: `${task.caption} ${user} | ${vote_string}` });
 }
 
 async function get_recent_best(task) {

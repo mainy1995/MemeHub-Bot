@@ -9,14 +9,14 @@ _config.subscribe('achievements', c => achievements = c);
 
 let recent_vote_achievements = {};
 
-async function check_post_archievements(ctx) {
+async function check_post_archievements(user) {
     try {
-        const result = await db.get_user_meme_count(ctx.message.from.id);
+        const result = await db.get_user_meme_count(user.id);
         const achievement = achievements.post_count.find(a => a.count === result);
 
         if (!achievement) return;
 
-        ctx.telegram.sendMessage(config.group_id, fromatMessage(achievement, ctx.message.from));
+        ctx.telegram.sendMessage(config.group_id, fromatMessage(achievement, user));
     }
     catch (err) {
         log.error("Checking post achievements failed", err);
@@ -24,7 +24,7 @@ async function check_post_archievements(ctx) {
 }
 
 /**
- * Checks weather a user gtan achievement. If that is the case, it will send a message into the group.
+ * Checks weather a user got an achievement. If that is the case, it will send a message into the group.
  */
 module.exports.check_vote_achievements = async function check_vote_achievements(ctx, group_message_id, vote_type) {
     try {

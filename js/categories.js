@@ -1,14 +1,18 @@
-const _bot = require('./bot');
+
+const { serializeError } = require('serialize-error');
 const Stage = require('telegraf/stage');
 const Scene = require('telegraf/scenes/base');
 const Session = require('telegraf/session');
 const Keyboard = require('telegraf-keyboard');
+
+const _bot = require('./bot');
 const util = require('./util');
 const log = require('./log');
 const _config = require('./config');
 const db = require('./mongo-db');
 const maintain = require('./meme-maintaining');
 const admins = require('./admins');
+const posting = require('./meme-posting');
 
 let categories = [];
 let keyboard_width = 4;
@@ -47,10 +51,10 @@ function init() {
  * Edits the categories of a meme.
  * @param {The current telegraf context} ctx
  */
-async function edit_categories(ctx, meme_id) {
+async function edit_categories(ctx, meme_id, post_afterward = false) {
     try {
         const selected = await db.get_meme_categories(meme_id);
-        ctx.session.categories = { meme_id, selected };
+        ctx.session.categories = { meme_id, selected, post_afterward };
         ctx.scene.enter('selectCategory');
     }
     catch (error) {
@@ -279,12 +283,19 @@ async function done(ctx) {
         return;
     }
 
+    // Save and then post or update meme
     try {
         await db.save_meme_categories(ctx.session.categories.meme_id, ctx.session.categories.selected);
-        await maintain.update_meme_in_group(ctx.session.categories.meme_id);
+
+        if (ctx.session.categories.post_afterward)
+            await posting.post_meme(ctx.session.categories.meme_id);
+        else
+            await maintain.update_meme_in_group(ctx.session.categories.meme_id);
+
         ctx.reply(`${emoji_ok} Done`, { reply_markup: { remove_keyboard: true } });
     }
     catch (error) {
+        log.warning('Failed to save meme categories', { error: serializeError(error), session: session.categories });
         ctx.reply("💥 I could not update your categories, sorry!", { reply_markup: { remove_keyboard: true } });
     }
     finally {
@@ -294,7 +305,10 @@ async function done(ctx) {
 
 function abort(ctx) {
     try {
-        ctx.reply(`${emoji_no} Okay, not updating categories`, { reply_markup: { remove_keyboard: true } });
+        if (ctx.session.categories.post_afterward)
+            ctx.reply(`${emoji_no} Okay, not posting your meme!`, { reply_markup: { remove_keyboard: true } });
+        else
+            ctx.reply(`${emoji_no} Okay, not updating categories`, { reply_markup: { remove_keyboard: true } });
     }
     catch (error) {
         ctx.reply("💥 Something went wrong!", { reply_markup: { remove_keyboard: true } });

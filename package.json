@@ -23,7 +23,7 @@
     "docker-names": "^1.1.1",
     "moment": "^2.24.0",
     "mongodb": "^3.5.5",
-    "redis-request-broker": "^1.4.1",
+    "redis-request-broker": "^1.11.1",
     "serialize-error": "^6.0.0",
     "telegraf": "^3.36.0",
     "telegraf-command-parts": "^1.0.3",

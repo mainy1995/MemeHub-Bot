@@ -10,19 +10,18 @@ const levels = {
 
 let setReady;
 let publisher;
-let instance;
+let instance = 'unknown';
 const isReady = new Promise(resolve => setReady = resolve);
 
 function set_config(_config) {
-    _config.subscribe('log', async logConfig => {
+    _config.subscribe('rrb', async rrb => {
 
-        const channel = logConfig.channel || 'log';
-        const redis = logConfig.redis || {};
+        const channel = rrb.queues.logging || 'log';
 
         if (publisher && publisher.disconnect)
             await publisher.disconnect();
 
-        publisher = new Publisher(channel, { redis });
+        publisher = new Publisher(channel);
         await publisher.connect();
         setReady();
     });
@@ -53,9 +52,13 @@ async function log_debug(text, data) {
 }
 
 async function handle_log(level, title, data) {
+    await send_log(level, 'Bot', instance, title, data);
+}
+
+async function send_log(level, component, i, title, data) {
     await isReady;
     try {
-        const message = { level, component: 'Bot', instance, title, data }
+        const message = { level, component, instance: i, title, data }
         await publisher.publish(message);
     }
     catch (error) {

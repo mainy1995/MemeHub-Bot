@@ -1,7 +1,7 @@
 const db = require('./mongo-db');
 const log = require('./log');
 const voting = require('./meme-voting');
-const forwarding = require('./meme-forwarding');
+const posting = require('./meme-posting');
 const _config = require('./config');
 const _bot = require('./bot');
 
@@ -16,7 +16,7 @@ async function update_user_name(user) {
     var memes = db.get_memes_by_user(user.id, { projection: { group_message_id: 1, categories: 1, votes: 1 } });
 
     for await (const meme of memes) {
-        const caption = forwarding.build_caption(user, meme.categories);
+        const caption = posting.build_caption(user, meme.categories);
         const votes = await db.count_votes(meme._id);
         const keyboard = voting.create_keyboard(votes);
         bot.telegram.editMessageCaption(group_id, meme.group_message_id, null, caption, { reply_markup: { inline_keyboard: keyboard } })
@@ -59,7 +59,7 @@ function try_update(meme_id) {
 async function do_update(meme_id) {
     try {
         const meme = await db.get_meme_by_id(meme_id);
-        const caption = forwarding.build_caption(meme.user, meme.categories);
+        const caption = posting.build_caption(meme.user, meme.categories);
         const votes = await db.count_votes(meme._id);
         const keyboard = voting.create_keyboard(votes);
 

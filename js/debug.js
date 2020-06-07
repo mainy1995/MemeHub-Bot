@@ -3,7 +3,7 @@ const db = require('./mongo-db');
 const log = require('./log');
 const _config = require('./config');
 const _bot = require('./bot');
-const forwarding = require('./meme-forwarding');
+const posting = require('./meme-posting');
 const lc = require('./lifecycle');
 const util = require('./util');
 const admins = require('./admins');
@@ -81,9 +81,9 @@ async function show_meme(ctx) {
     try {
         const meme = await db.get_meme_by_id(id);
         const extra = {
-            caption: forwarding.build_caption(meme.user, meme.categories)
+            caption: posting.build_caption(meme.user, meme.categories)
         };
-        await util.send_media_by_type(ctx, ctx.chat.id, meme._id, meme.type, extra);
+        await util.send_media_by_type(ctx.telegram, ctx.chat.id, meme._id, meme.type, extra);
     }
     catch (error) {
         log.error("Cannot show meme", error);

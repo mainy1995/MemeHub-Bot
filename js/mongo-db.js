@@ -11,12 +11,12 @@ let users;
 let connection;
 let connected;
 let collection_names;
+let config;
 
-_config.subscribe('config', c => {
-    init(c.mongodb.collection_names, c.mongodb.database, c.mongodb.connection_string);
-});
+_config.subscribe('config', c => config = c.mongodb);
 
 lc.on('start', async () => {
+    init(config.collection_names, config.database, config.connection_string);
     await connected;
 })
 
@@ -58,7 +58,7 @@ function init(coll_names, db_name, connection_string) {
 
             memes = collections[0];
             users = collections[1];
-            log.success('Connected to mongodb');
+            log.info('Connected to mongodb');
             resolve();
         });
     });
@@ -166,6 +166,8 @@ module.exports.save_meme_group_message = async function (file_id, group_message_
 
 /**
  * Saves a vote to the mongo db by either setting the vote or removing an existing one.
+ * Returns 1 if the vote was added, -1 if the vote has been removed and 0 if the vote could not
+ * be saved.
  */
 module.exports.save_vote = async function save_vote(user_id, group_message_id, vote_type) {
     const vote_path = `votes.${vote_type}`;
@@ -182,14 +184,15 @@ module.exports.save_vote = async function save_vote(user_id, group_message_id, v
 
         if (meme) {
             await memes.updateOne({ group_message_id }, { $pull: toggle });
-            return;
+            return -1;
         }
         await memes.updateOne({ group_message_id }, { $addToSet: toggle });
+        return 1;
     }
     catch (error) {
         log.error("Cannot save vote in mongo db", { error, request: { user_id, file_id, vote_type } });
     }
-
+    return 0;
 }
 
 async function* get_memes_by_user(user_id, options, include_reposts) {
@@ -246,6 +249,20 @@ module.exports.votes_count_by_group_message_id = async function (group_message_i
     }
     catch (error) {
         log.error("Cannot count votes in mongo db", { error, request: { group_message_id } });
+        throw error;
+    }
+}
+
+module.exports.votes_includes_self_vote = async function (group_message_id, vote_type, poster_id) {
+    try {
+        const meme = await memes.findOne({ group_message_id, [`votes.${vote_type}`]: poster_id }, { fields: { votes: 1, poster_id: 1 } });
+        if (!meme)
+            return false;
+
+        return true;
+    }
+    catch (error) {
+        log.error("Cannot check votes in mongo db", { error, request: { group_message_id } });
         throw error;
     }
 }
@@ -513,7 +530,8 @@ async function get_meme_by_id(id) {
                     type: '$type',
                     votes: '$votes',
                     categories: '$categories',
-                    group_message_id: '$group_message_id'
+                    group_message_id: '$group_message_id',
+                    poster_id: '$poster_id'
                 }
             }
         }

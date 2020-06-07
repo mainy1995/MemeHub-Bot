@@ -1,14 +1,27 @@
+const { Publisher } = require('redis-request-broker');
+const { serializeError } = require('serialize-error');
 const util = require('./util');
 const log = require('./log');
 const db = require('./mongo-db');
 const achievements = require('./achievements');
 const _config = require('./config');
 const _bot = require('./bot');
+const lc = require('./lifecycle');
 
 const vote_prefix = "vote"
 let vote_types = [];
+let publisherVote;
+let publisherRetractVote;
 
 _config.subscribe('vote-types', c => { vote_types = c; });
+_config.subscribe('rrb', async rrb => {
+    await stop();
+
+    publisherVote = new Publisher(rrb.events.vote);
+    publisherRetractVote = new Publisher(rrb.events.retractVote);
+    await publisherVote.connect();
+    await publisherRetractVote.connect();
+});
 
 _bot.subscribe(bot => {
     bot.on('callback_query', (ctx) => {
@@ -25,6 +38,15 @@ _bot.subscribe(bot => {
     });
 });
 
+lc.on('stop', stop);
+async function stop() {
+    if (publisherVote)
+        await publisherVote.disconnect();
+
+    if (publisherRetractVote)
+        await publisherRetractVote.disconnect();
+}
+
 
 /**
  * Saves the user, his upvote and updates the upvote count.
@@ -32,6 +54,7 @@ _bot.subscribe(bot => {
  */
 async function handle_vote_request(ctx) {
     const group_message_id = ctx.update.callback_query.message.message_id;
+    const meme_id = util.any_media_id(ctx.update.callback_query.message);
     const user = ctx.update.callback_query.from;
     const vote_type = vote_type_from_callback_data(ctx.update.callback_query.data);
 
@@ -48,21 +71,46 @@ async function handle_vote_request(ctx) {
     }
 
     await db.connected;
-    db.save_user(ctx.update.callback_query.from);
+    db.save_user(user);
 
     try {
-        await db.save_vote(user.id, group_message_id, vote_type)
+        const user_id = user.id;
 
+        // Store the vote in the db
+        const voteResult = await db.save_vote(user_id, group_message_id, vote_type)
+
+        // Cancel if the vote has not changed
+        if (!voteResult) return;
+
+        // Queue achievement check
         setTimeout(() => achievements.check_vote_achievements(ctx, group_message_id, vote_type), 200);
 
-        const votes = await db.votes_count_by_group_message_id(group_message_id);
-
-        ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(votes) })
+        // Update vote count
+        const new_count = await db.votes_count_by_group_message_id(group_message_id);
+        ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(new_count) })
             .catch(err => log.error('Cannot update vote count', err));
-        ctx.answerCbQuery();
+
+        // Send vote event to rrb
+        const poster_id = await db.poster_id_get_by_group_message_id(group_message_id);
+        const self_vote = await db.votes_includes_self_vote(group_message_id, vote_type, poster_id);
+        const event = {
+            vote_type,
+            new_count: new_count[vote_type],
+            meme_id,
+            user_id,
+            poster_id,
+            self_vote
+        };
+
+        if (voteResult === 1)
+            await publisherVote.publish(event);
+        else if (voteResult === -1)
+            await publisherRetractVote.publish(event);
     }
     catch (err) {
-        log.error('Vote handling failed', err);
+        log.error('Vote handling failed', serializeError(err));
+    }
+    finally {
         ctx.answerCbQuery();
     }
 
