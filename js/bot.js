@@ -31,7 +31,7 @@ lc.early('start', async () => {
     bot_name = dockerNames.getRandomName();
     bot.use(commandParts());
     bot.catch(handle_error);
-    log.set_bot(bot);
+    log.set_name(bot_name);
     log.set_config(_config);
 });
 
