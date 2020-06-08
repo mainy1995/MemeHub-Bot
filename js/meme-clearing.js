@@ -40,7 +40,7 @@ async function remove_post(ctx, reason = undefined, repost = false) {
         // Queue notify user
         setTimeout(async () => {
             try {
-                const poster = await db.poster_id_get_by_group_message_id(meme_id);
+                const poster = await db.poster_id_get_by_group_message_id(message_id);
                 const text = reason
                     ? `One of your memes has been removed because of the following reason: ${reason}.`
                     : 'One of your memes has been removed by an admin.';
