@@ -19,7 +19,7 @@ async function clear_repost(ctx) {
     await remove_post(ctx, 'repost', true);
 }
 
-async function remove_post(ctx, reason = '', repost = false) {
+async function remove_post(ctx, reason = undefined, repost = false) {
     try {
         // Get the message from the reply or use the last postet meme
         let message_id = ctx.update.message.reply_to_message && ctx.update.message.reply_to_message.message_id || last;
@@ -36,6 +36,21 @@ async function remove_post(ctx, reason = '', repost = false) {
 
         await ctx.deleteMessage(message_id);
         await db.meme_mark_as_removed(message_id, reason, repost || reason === 'repost');
+
+        // Queue notify user
+        setTimeout(async () => {
+            try {
+                const poster = await db.poster_id_get_by_group_message_id(meme_id);
+                const text = reason
+                    ? `One of your memes has been removed because of the following reason: ${reason}.`
+                    : 'One of your memes has been removed by an admin.';
+
+                ctx.telegram.sendMessage(poster, text);
+            }
+            catch (error) {
+                log.warning('Failed to notify user about meme removal', serializeError(error));
+            }
+        }, 500);
         return message_id;
     }
     catch (error) {

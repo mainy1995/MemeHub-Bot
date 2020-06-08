@@ -55,7 +55,7 @@ async function post_meme(meme_id) {
         }
 
         // Send the meme to the chat
-        telegram.sendMessage(meme.poster_id, "Sending you meme ✈️");
+        telegram.sendMessage(meme.poster_id, "Sending your meme ✈️");
         const result = await util.send_media_by_type(telegram, group_id, meme._id, meme.type, extra);
 
         // Store the group message id, which marks the meme as posted
