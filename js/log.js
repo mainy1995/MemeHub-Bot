@@ -1,4 +1,6 @@
 const { Publisher } = require('redis-request-broker');
+const { serializeError } = require('serialize-error');
+
 
 const levels = {
     error: 'error',
@@ -58,6 +60,7 @@ async function handle_log(level, title, data) {
 async function send_log(level, component, i, title, data) {
     await isReady;
     try {
+        if (data instanceof Error) data = serializeError(data);
         const message = { level, component, instance: i, title, data }
         await publisher.publish(message);
     }

@@ -2,7 +2,7 @@ const Telegraf = require('telegraf');
 const dockerNames = require('docker-names');
 const commandParts = require('telegraf-command-parts');
 const { serializeError } = require('serialize-error');
-const { Defaults } = require('redis-request-broker');
+const { Defaults, Worker } = require('redis-request-broker');
 
 const _config = require('./config');
 const log = require('./log');
@@ -11,10 +11,12 @@ const fs = require('fs');
 const moment = require('moment');
 
 const subscribers = [];
+let getBotTokenWorker = undefined;
 let bot;
 let bot_name;
 let has_bot = false;
 let config;
+let rrbConfig;
 _config.subscribe('config', async c => {
     if (has_bot) {
         has_bot = false;
@@ -28,6 +30,7 @@ _config.subscribe('rrb', async rrb => {
     Defaults.setDefaults({
         redis: rrb.redis
     });
+    rrbConfig = rrb;
 })
 
 lc.early('init', async () => {
@@ -41,6 +44,8 @@ lc.after('init', async () => {
 
 lc.early('start', async () => {
     bot = new Telegraf(config.bot_token);
+    getBotTokenWorker = new Worker(rrbConfig.queues.getBotToken, async _ => config.bot_token);
+    getBotTokenWorker.listen().catch(error => log.warning('Failed to start get bot token worker', error));
     log.set_config(_config);
     bot.use(commandParts());
     bot.catch(handle_error);
@@ -57,6 +62,10 @@ lc.early('stop', async () => {
     if (!has_bot) return;
     await log.notice(`Stopping bot ${bot_name}`, 'Shutdown event received');
     await bot.stop(() => { });
+});
+
+lc.on('stop', async () => {
+    getBotTokenWorker.stop().catch(console.error);
 });
 
 lc.late('stop', async () => {
