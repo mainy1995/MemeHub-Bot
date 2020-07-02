@@ -59,9 +59,6 @@ async function stop() {
  * @param {The context of the callback_query} ctx 
  */
 async function handle_vote_request(ctx) {
-    const timer = `Vote request at ${Date.now()}`;
-    console.time(timer);
-
     const group_message_id = ctx.update.callback_query.message.message_id;
     const meme_id = util.any_media_id(ctx.update.callback_query.message);
     const user = ctx.update.callback_query.from;
@@ -78,8 +75,6 @@ async function handle_vote_request(ctx) {
         log.warn('Cannot handle vote request', { detail: 'could not identify message id', callback_query: ctx.update.callback_query });
         return ctx.answerCbQuery();
     }
-
-    console.timeLog(timer, 'Basic validation done');
 
     try {
         const mayVote = await clientMayVote.request({ user_id, meme_id });
@@ -99,20 +94,14 @@ async function handle_vote_request(ctx) {
         return ctx.answerCbQuery();
     }
 
-    console.timeLog(timer, 'may-vote done');
-
     await db.connected;
     db.save_user(user);
-
-
-    console.timeLog(timer, 'save user done');
 
     try {
 
         // Store the vote in the db
         const voteResult = await db.save_vote(user_id, group_message_id, vote_type)
 
-        console.timeLog(timer, 'vote save done');
         // Cancel if the vote has not changed
         if (!voteResult) return;
 
@@ -124,13 +113,10 @@ async function handle_vote_request(ctx) {
         ctx.editMessageReplyMarkup({ inline_keyboard: create_keyboard(new_count) })
             .catch(err => log.error('Cannot update vote count', err));
 
-        console.timeLog(timer, 'count new votes done');
-
         // Send vote event to rrb
         const poster_id = await db.poster_id_get_by_group_message_id(group_message_id);
         const self_vote = await db.votes_includes_self_vote(group_message_id, vote_type, poster_id);
 
-        console.timeLog(timer, 'get poster id and self vote done');
         const event = {
             vote_type,
             new_count: new_count[vote_type],
@@ -145,8 +131,6 @@ async function handle_vote_request(ctx) {
         else if (voteResult === -1)
             await publisherRetractVote.publish(event);
 
-
-        console.timeLog(timer, 'event publish done');
     }
     catch (err) {
         log.error('Vote handling failed', serializeError(err));
@@ -154,8 +138,6 @@ async function handle_vote_request(ctx) {
     finally {
         ctx.answerCbQuery();
     }
-
-    console.timeEnd(timer);
 }
 
 async function handle_legacy_like_request(ctx) {
