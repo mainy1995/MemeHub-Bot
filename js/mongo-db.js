@@ -351,8 +351,14 @@ module.exports.poster_id_get_by_group_message_id = async function (group_message
     return meme.poster_id;
 }
 
-async function get_user(user_id) {
+module.exports.get_user = async function (user_id) {
     const user = await users.findOne({ _id: user_id });
+    user.id = user._id;
+    return user;
+}
+
+module.exports.get_user_by_username = async function (username) {
+    const user = await users.findOne({ username });
     user.id = user._id;
     return user;
 }
@@ -649,7 +655,6 @@ module.exports.get_user_meme_count = get_user_meme_count;
 module.exports.get_user_from_meme = get_user_from_meme;
 module.exports.count_user_total_votes_by_type = count_user_total_votes_by_type;
 module.exports.connected = connected;
-module.exports.get_user = get_user;
 module.exports.get_meme_recent_best = get_meme_recent_best;
 module.exports.get_meme_random_good = get_meme_random_good;
 module.exports.get_meme_by_id = get_meme_by_id;

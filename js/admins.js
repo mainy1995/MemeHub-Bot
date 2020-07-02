@@ -17,10 +17,16 @@ async function can_delete_messages(user) {
     return admins.some(a => a.user.id == user.id && (a.status == 'creator' || a.can_delete_messages));
 }
 
+async function can_change_info(user) {
+    const admins = await getAdmins();
+    return admins.some(a => a.user.id == user.id && (a.status == 'creator' || a.can_change_info));
+}
+
 async function is_admin(user) {
     const admins = await getAdmins();
     return admins.some(a => a.user.id == user.id);
 }
 
 module.exports.can_delete_messages = can_delete_messages;
+module.exports.can_change_info = can_change_info;
 module.exports.is_admin = is_admin;
