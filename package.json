@@ -21,6 +21,7 @@
     "csv-reader": "^1.0.6",
     "csv-writer": "^1.6.0",
     "docker-names": "^1.1.1",
+    "handy-redis": "^1.8.3",
     "moment": "^2.24.0",
     "mongodb": "^3.5.5",
     "redis-request-broker": "^1.11.1",

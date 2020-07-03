@@ -10,8 +10,11 @@
         "post": "events:post"
     },
     "queues": {
-        "mayUserPost": "limits:may",
+        "mayUserPost": "limits:may-post",
+        "mayUserVote": "limits:may-vote",
         "getUserQuota": "limits:quota",
-        "logging": "logging:log"
+        "issueTokens": "tokens:issue",
+        "logging": "logging:log",
+        "getBotToken": "bot-token"
     }
 }

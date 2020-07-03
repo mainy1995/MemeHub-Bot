@@ -79,7 +79,7 @@ The MemeHub Bot uses [redis-request-broker](https://www.npmjs.com/package/redis-
       ```ts
       string // The bot token
       ```
- - `limits:may`: Reqeusts weather a user may issue a post due to the post limit
+ - `limits:may-post`: Reqeusts weather a user may issue a post due to the post limit
     - Worker: `MemeHub-Limits`
     - Request data:
       ```ts
@@ -91,4 +91,44 @@ The MemeHub Bot uses [redis-request-broker](https://www.npmjs.com/package/redis-
       ```ts
       boolean // Weather the user may post right now
       ```
-    
+  - `limits:may-vote`: Requests weather a user may issue or retract a vote on a meme
+     - Worker: `MemeHub-Limits`
+     - Request data:
+       ```ts
+       {
+         user_id: string, // The id of the user in question
+         meme_id: string // The id of the meme in question
+       }
+       ```
+     - Response data:
+       ```ts
+       boolean // Weather the user may vote on the meme right now
+       ```
+  - `limits:quota`: Requests relevant information on posting limits
+     - Worker: `MemeHub-Limits`
+     - Request data:
+       ```ts
+       {
+         user_id: string // The id of the user in question
+       }
+       ```
+     - Reponse data:
+       ```ts
+       {
+         tokens: number, // The amount of meme tokes the user has
+         freePosts: number // The amount of posts a user may issue before having to pay with tokens
+       }
+       ```
+  - `tokens:issue`: Alters the amount of tokens a user has
+      - Worker: `MemeHub-Limits` (should be moved into own module)
+      - Request data:
+        ```ts
+        {
+          user_id: string, // The user in question
+          amount: number // The amount of tokens to give (negative to take away tokens)
+        }
+        ```
+      - Response data:
+        ```ts
+        number // The new amount of tokens the user has
+        ```
