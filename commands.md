@@ -2,22 +2,22 @@
 
 The bot supports multiple commands. Some of them are restricted by admin rights set in the group and / or the chat which the command has ben sent in. Some commands have to be sent as a reply to a meme.
 
-| Command                                     | Arguments         | rights                | private | group |
-|---------------------------------------------|-------------------|-----------------------|---------|-------|
-| [`/tokens`](#/tokens)                       |                   |                       | yes     | no    |
-| [`/issue`](#/issue)                         | `username amount` | `can_change_info`     | yes     | no    |
-| [`/remove`](#/remove)                       | `[reason]`        | `can_delete_messages` | yes     | yes   |
-| [`/repost`](#/repost)                       | `[reason]`        | `can_delete_messages` | yes     | yes   |
-| [`/edit_categories`](#/edit_categories)     |                   |                       | yes     | no    |
-| [`/set_categories`](#/set_categories)       | `[categories]`    |                       | yes     | yes   |
-| [`/add_categories`](#/add_categories)       | `[categories]`    |                       | yes     | yes   |
-| [`/remove_categories`](#/remove_categories) | `[categories]`    |                       | yes     | yes   |
-| [`/top`](#/top)                             |                   |                       | yes     | yes   |
-| [`/avg`](#/avg)                             |                   |                       | yes     | yes   |
-| [`/sum`](#/sum)                             |                   |                       | yes     | yes   |
-| [`/chatinfo`](#/chatinfo)                   |                   |                       | yes     | yes   |
-| [`/updateusername`](#/updateusername)       |                   |                       | yes     | yes   |
-| [`/meme`](#/meme)                           | `meme_id`         | `is_admin`            | yes     | yes   |
+| Command                                    | Arguments         | rights                | private | group |
+|--------------------------------------------|-------------------|-----------------------|---------|-------|
+| [`/tokens`](#tokens)                       |                   |                       | yes     | no    |
+| [`/issue`](#issue)                         | `username amount` | `can_change_info`     | yes     | no    |
+| [`/remove`](#remove)                       | `[reason]`        | `can_delete_messages` | yes     | yes   |
+| [`/repost`](#repost)                       | `[reason]`        | `can_delete_messages` | yes     | yes   |
+| [`/edit_categories`](#edit_categories)     |                   |                       | yes     | no    |
+| [`/set_categories`](#set_categories)       | `[categories]`    |                       | yes     | yes   |
+| [`/add_categories`](#add_categories)       | `[categories]`    |                       | yes     | yes   |
+| [`/remove_categories`](#remove_categories) | `[categories]`    |                       | yes     | yes   |
+| [`/top`](#top)                             |                   |                       | yes     | yes   |
+| [`/avg`](#avg)                             |                   |                       | yes     | yes   |
+| [`/sum`](#sum)                             |                   |                       | yes     | yes   |
+| [`/chatinfo`](#chatinfo)                   |                   |                       | yes     | yes   |
+| [`/updateusername`](#updateusername)       |                   |                       | yes     | yes   |
+| [`/meme`](#meme)                           | `meme_id`         | `is_admin`            | yes     | yes   |
 
 ## `/tokens`
 
