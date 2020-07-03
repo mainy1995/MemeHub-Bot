@@ -1,134 +1,35 @@
 # Setup
 
   - Install node and npm from [here](https://nodejs.org/en/)
-  - Fork and clone the repo
-  - Run `npm i` inside
+  - Get a working MongoDB instance (see below)
+  - Get a working Redis instace (see below)
+  - Run `npm i`
   - Create a bot using the [@BotFather](https://telegram.me/botfather) in Telegram
   - Add the bot to a group and find the group id ([How-To](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id))
-  - Make sure you have a working mongodb instance (see mongodb)
-  - Copy `config.template.json` to `config.json` and configure your settings
+  - Copy all the `*.template.json` files to `*.json` and configure your settings
 
-# MongoDB
+## MongoDB
 
-The bot uses mongodb for storing data. You only need to create a database, collections will be created on the fly. Collection names and the database to use are set in the `config.json`.
+You will need a MongoDB database. The schema is created on the fly. Collection names and the databases to use are set in the `config.json`.
 
 A convinient way to get started is to use a free atlas instance in the cloud ([Link](https://www.mongodb.com/cloud/atlas)).
 
+## Redis
+
+You will need a running redis instance. An easy way is to use a docker-compose if you have docker set up ([Link](https://hub.docker.com/r/rediscommander/redis-commander)).
+
 # Running
 
-Just run `npm run start`
+`npm run start`
 
-# Frameworks
+# Used frameworks, libaries and technologies
 
-  - Telegraf:   https://telegraf.js.org/#/?id=telegraf-js  
+  - [Telegraf](https://telegraf.js.org/#/?id=telegraf-js)
+  - [MongoDB](https://www.mongodb.com/) ([NodeJS driver](https://mongodb.github.io/node-mongodb-native/))
+  - [Redis](https://redis.io/) ([NodeJS driver](https://www.npmjs.com/package/redis))
+  - [redis-request-broker](https://www.npmjs.com/package/redis-request-broker)
 
-# RRB Messaging
+# Other resources
 
-The MemeHub Bot uses [redis-request-broker](https://www.npmjs.com/package/redis-request-broker) to send messages and requests between components via the redis pub/sub system.
-
-## Messages
-
- - `events:vote`: A user issued a vote
-   ```ts
-   {
-     vote_type: string // The type of the vote, as deined in vote-types.json
-     new_count: number // The new amount of votes of this type on the meme
-     meme_id: string // The if of the meme
-     user_id: string // The id of the user that issued the vote
-     poster_id: string // The id of the user that posted the meme
-     self_vote: boolean // Weather the poster voted his own meme (after the change)
-   }
-   ```
- - `events:retract-vote`: A user retracted a vote
-   ```ts
-   {
-     vote_type: string // The type of the vote, as deined in vote-types.json
-     new_count: number // The new amount of votes of this type on the meme
-     meme_id: string // The if of the meme
-     user_id: string // The id of the user that issued the vote
-     poster_id: string // The id of the user that posted the meme
-     self_vote: boolean // Weather the poster voted his own meme (after the change)
-   }
-   ```
- - `events:post`: A user posted a meme
-   ```ts
-   {
-     meme_id: string // The id of the meme that got posted
-     poster_id: string // The id of the user that posted the meme
-   }
-   ```
- - `logging:log`: A log message
-   ```ts
-   {
-     level: string // The level of the log, as defined in the MemeHub-Logger
-     component: string // The component that send the log
-     instance: string // The instance that send the log
-     title: string // The title of the log
-     data?: any // Optional. Any data that belongs to the log
-   }
-   ```
-
-## Requests
- - `bot-token`: Request the currently used bot token
-    - Worker: `MemeHub-Bot`
-    - Request data:
-      ```ts
-      // (none)
-      ```
-    - Response data:
-      ```ts
-      string // The bot token
-      ```
- - `limits:may-post`: Reqeusts weather a user may issue a post due to the post limit
-    - Worker: `MemeHub-Limits`
-    - Request data:
-      ```ts
-      {
-        user_id: string // The id of the user in question
-      }
-      ```
-    - Response data:
-      ```ts
-      boolean // Weather the user may post right now
-      ```
-  - `limits:may-vote`: Requests weather a user may issue or retract a vote on a meme
-     - Worker: `MemeHub-Limits`
-     - Request data:
-       ```ts
-       {
-         user_id: string, // The id of the user in question
-         meme_id: string // The id of the meme in question
-       }
-       ```
-     - Response data:
-       ```ts
-       boolean // Weather the user may vote on the meme right now
-       ```
-  - `limits:quota`: Requests relevant information on posting limits
-     - Worker: `MemeHub-Limits`
-     - Request data:
-       ```ts
-       {
-         user_id: string // The id of the user in question
-       }
-       ```
-     - Reponse data:
-       ```ts
-       {
-         tokens: number, // The amount of meme tokes the user has
-         freePosts: number // The amount of posts a user may issue before having to pay with tokens
-       }
-       ```
-  - `tokens:issue`: Alters the amount of tokens a user has
-      - Worker: `MemeHub-Limits` (should be moved into own module)
-      - Request data:
-        ```ts
-        {
-          user_id: string, // The user in question
-          amount: number // The amount of tokens to give (negative to take away tokens)
-        }
-        ```
-      - Response data:
-        ```ts
-        number // The new amount of tokens the user has
-        ```
+  - See [messages.md](/messages.md) for a list of messages sent over rrb
+  - See [commands.md](/commands.md) for a list of commands that the bot supports

@@ -181,7 +181,7 @@ async function command_remove_categories(ctx) {
  */
 async function check_command(ctx) {
     const is_private = util.is_private_chat(ctx);
-    // delete rquest, if is in group chat
+    // delete request, if is in group chat
     if (!is_private)
         await ctx.deleteMessage(ctx.update.message.message_id);
 
