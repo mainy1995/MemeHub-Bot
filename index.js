@@ -1,6 +1,7 @@
 require('./js/bot');
 require('./js/log');
 require('./js/best-of');
+require('./js/contests');
 require('./js/categories');
 require('./js/debug');
 require('./js/admins.js');

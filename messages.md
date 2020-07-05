@@ -168,11 +168,13 @@ Request and response messaging (RPC)
         ```ts
         boolean // True, if the contest has been deleted
         ```
-  - `contests:list`: Shows a list of all existing contests
+  - `contests:list`: Shows a list of existing contests
       - Worker: `MemeHub-Contests`
       - Request data:
         ```ts
-        // (none)
+        {
+          onlyRunning: boolean // If true, only running contests will be returned
+        }
         ```
       - Response data:
         ```ts
