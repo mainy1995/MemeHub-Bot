@@ -50,6 +50,8 @@ On-way messaging (PUB/SUB)
 
 Request and response messaging (RPC)
 
+### General
+
  - `bot-token`: Request the currently used bot token
     - Worker: `MemeHub-Bot`
     - Request data:
@@ -60,6 +62,9 @@ Request and response messaging (RPC)
       ```ts
       string // The bot token
       ```
+
+### Limits
+
  - `limits:may-post`: Reqeusts weather a user may issue a post due to the post limit
     - Worker: `MemeHub-Limits`
     - Request data:
@@ -100,6 +105,9 @@ Request and response messaging (RPC)
          freePosts: number // The amount of posts a user may issue before having to pay with tokens
        }
        ```
+
+### Tokens
+
   - `tokens:issue`: Alters the amount of tokens a user has
       - Worker: `MemeHub-Limits` (should be moved into own module)
       - Request data:
@@ -112,4 +120,64 @@ Request and response messaging (RPC)
       - Response data:
         ```ts
         number // The new amount of tokens the user has
+        ```
+
+### Contests
+
+  - `contests:create`: Creates a new contest
+      - Worker: `MemeHub-Contests`
+      - Request data:
+        ```ts
+        {
+          id: string, // The id / name of the contest. Used for managing it.
+          tag: string, // The hastag that users choose when submitting for this contest
+          emoji: string // A emoji that can make the contest stand out
+        }
+        ```
+      - Response data:
+        ```ts
+        boolean // True, if the contest has been created
+        ```
+  - `contests:start`: Starts a contest
+      - Worker: `MemeHub-Contests`
+      - Request data:
+        ```ts
+        string // The id / name of the contest to start
+        ```
+      - Response data:
+        ```ts
+        boolean // True, if the contest has been started
+        ```
+  - `contests:stop`: Stops a contest
+      - Worker: `MemeHub-Contests`
+      - Request data:
+        ```ts
+        string // The id / name of the contest to stop
+        ```
+      - Response data:
+        ```ts
+        boolean // True, if the contest has been stopped
+        ```
+  - `contests:delete`: Deletes a contest
+      - Worker: `MemeHub-Contests`
+      - Request data:
+        ```ts
+        string // The id / name of the contest to delete
+        ```
+      - Response data:
+        ```ts
+        boolean // True, if the contest has been deleted
+        ```
+  - `contests:list`: Shows a list of all existing contests
+      - Worker: `MemeHub-Contests`
+      - Request data:
+        ```ts
+        // (none)
+        ```
+      - Response data:
+        ```ts
+        {
+          id: string, // The id of the contest
+          running: boolean // True, if this contest is running
+        }[]
         ```

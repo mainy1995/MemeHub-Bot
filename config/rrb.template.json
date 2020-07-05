@@ -15,6 +15,11 @@
         "getUserQuota": "limits:quota",
         "issueTokens": "tokens:issue",
         "logging": "logging:log",
-        "getBotToken": "bot-token"
+        "getBotToken": "bot-token",
+        "contestsCreate": "contests:create",
+        "contestsStart": "contests:start",
+        "contestsStop": "contests:stop",
+        "contestsDelete": "contests:delete",
+        "contestsList": "contests:list"
     }
 }
