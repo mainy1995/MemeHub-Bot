@@ -1,4 +1,6 @@
 const Telegraf = require('telegraf');
+const Stage = require('telegraf/stage');
+const Session = require('telegraf/session');
 const dockerNames = require('docker-names');
 const commandParts = require('telegraf-command-parts');
 const { serializeError } = require('serialize-error');
@@ -46,8 +48,11 @@ lc.early('start', async () => {
     bot = new Telegraf(config.bot_token);
     getBotTokenWorker = new Worker(rrbConfig.queues.getBotToken, async _ => config.bot_token);
     getBotTokenWorker.listen().catch(error => log.warning('Failed to start get bot token worker', error));
+    bot._stage = new Stage();
     log.set_config(_config);
+    bot.use(Session());
     bot.use(commandParts());
+    bot.use(bot._stage.middleware());
     bot.catch(handle_error);
 });
 

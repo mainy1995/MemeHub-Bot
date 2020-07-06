@@ -2,6 +2,7 @@ require('./js/bot');
 require('./js/log');
 require('./js/best-of');
 require('./js/categories');
+require('./js/contests');
 require('./js/debug');
 require('./js/admins.js');
 require('./js/meme-maintaining.js');

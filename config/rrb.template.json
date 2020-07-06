@@ -7,7 +7,11 @@
     "events": {
         "vote": "events:vote",
         "retractVote": "events:retract-vote",
-        "post": "events:post"
+        "post": "events:post",
+        "contestStarted": "events:contest-started",
+        "contestStopped": "events:contest-stopped",
+        "contestCreated": "events:contest-created",
+        "contestDeleted": "events:contest-deleted"
     },
     "queues": {
         "mayUserPost": "limits:may-post",
@@ -15,6 +19,12 @@
         "getUserQuota": "limits:quota",
         "issueTokens": "tokens:issue",
         "logging": "logging:log",
-        "getBotToken": "bot-token"
+        "getBotToken": "bot-token",
+        "contestsCreate": "contests:create",
+        "contestsStart": "contests:start",
+        "contestsStop": "contests:stop",
+        "contestsDelete": "contests:delete",
+        "contestsList": "contests:list",
+        "contestsTop": "contests:top"
     }
 }
