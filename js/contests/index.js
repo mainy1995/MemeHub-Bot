@@ -6,6 +6,7 @@ const log = require('../log');
 const _config = require('../config');
 const lc = require('../lifecycle');
 const admins = require('../admins');
+const util = require('../util');
 
 // Scene names
 const scenes = {
@@ -100,16 +101,17 @@ async function command_contest(ctx) {
 }
 
 /**
- * Validates a contest command. Contests my not be sent in the meme group (other groups are okay).
+ * Validates a contest command.
+ * Contests may only be managed in the private chat with the bot.
  * Also, only admins are allowed to issue these commands.
  * @param {*} ctx The context of the message
  * @returns {boolean} True, if this is a valid command request.
  */
 async function validate(ctx) {
     // Check group
-    if (ctx.message.chat.id === group_id) {
+    if (!util.is_private_chat(ctx)) {
         ctx.deleteMessage(ctx.message.id).catch(e => log.error('Cannot delete command message', e));
-        ctx.telegram.sendMessage(ctx.message.from.id, 'This command can not be sent in the meme group')
+        ctx.telegram.sendMessage(ctx.message.from.id, 'This command can only be used here')
             .catch(e => log.error('Cannot send message to user', e));
         return false;
     }

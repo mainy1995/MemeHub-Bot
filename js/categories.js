@@ -402,7 +402,6 @@ async function refreshContests() {
         contests = await clientListContests.request({ onlyRunning: false });
         contestsRunning = contests.filter(c => c.running);
         posting.set_contest_data(contests);
-        log.info('New contests', { contests, contestsRunning });
     }
     catch (error) {
         log.warn('Failed to get contests. Category buttons might not include up-to-date data.', error);
