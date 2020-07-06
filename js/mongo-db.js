@@ -132,13 +132,32 @@ module.exports.meme_id_get_by_private_message_id = async function (private_messa
     return meme._id;
 }
 
-async function save_meme_categories(id, categories) {
+/**
+ * Sets the categoires of a meme.
+ * @param {*} id 
+ * @param {*} categories 
+ */
+module.exports.save_meme_categories = async function save_meme_categories(id, categories) {
     const result = await memes.updateOne(
         { _id: id },
         { $set: { categories } }
     );
     if (result.matchedCount !== 1) {
         log.warning(`Faild saving categories for meme with id ${id}, matchedCount !== 1`, result)
+        throw "Could not find meme";
+    }
+}
+
+/**
+ * Sets the contest property of a meme.
+ */
+module.exports.save_meme_contests = async function save_meme_contests(id, contests) {
+    const result = await memes.updateOne(
+        { _id: id },
+        { $set: { contests } }
+    );
+    if (result.matchedCount !== 1) {
+        log.warning(`Faild saving contest for meme with id ${id}, matchedCount !== 1`, result)
         throw "Could not find meme";
     }
 }
@@ -530,6 +549,7 @@ async function get_meme_by_id(id) {
                     type: '$type',
                     votes: '$votes',
                     categories: '$categories',
+                    contests: '$contests',
                     group_message_id: '$group_message_id',
                     poster_id: '$poster_id'
                 }
@@ -544,7 +564,33 @@ async function get_meme_by_id(id) {
     throw "Cannot find meme";
 }
 
-async function get_meme_categories(id) {
+/**
+ * Finds a meme by its id and returns its categories and contest
+ * @param {*} id 
+ */
+module.exports.get_meme_categories_and_contest = async function get_meme_categories_and_contest(id) {
+    try {
+        const result = await memes.findOne({
+            _id: id
+        }, {
+            projection: { categories: 1, contest: 1 }
+        });
+
+        if (!result.categories) throw "Cannot find meme";
+
+        return { categories: result.categories, contest: result.contest };
+    }
+    catch (error) {
+        log.error("Faild getting meme categories from db", error);
+        throw error;
+    }
+}
+
+/**
+ * Finds a meme by its id and returns its categories
+ * @param {*} id 
+ */
+module.exports.get_meme_categories = async function get_meme_categories(id) {
     try {
         const result = await memes.findOne({
             _id: id
@@ -645,7 +691,6 @@ async function meme_remove_categores(id, categories) {
 module.exports.init = init;
 module.exports.save_user = save_user;
 module.exports.save_meme = save_meme;
-module.exports.save_meme_categories = save_meme_categories;
 module.exports.get_memes_by_user = get_memes_by_user;
 module.exports.count_votes = count_votes;
 module.exports.get_user_top_meme = get_user_top_meme;
@@ -658,6 +703,5 @@ module.exports.connected = connected;
 module.exports.get_meme_recent_best = get_meme_recent_best;
 module.exports.get_meme_random_good = get_meme_random_good;
 module.exports.get_meme_by_id = get_meme_by_id;
-module.exports.get_meme_categories = get_meme_categories;
 module.exports.meme_add_categories = meme_add_categories;
 module.exports.meme_remove_categores = meme_remove_categores;

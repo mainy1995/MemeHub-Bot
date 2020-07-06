@@ -1,5 +1,4 @@
 const { serializeError } = require('serialize-error');
-const Stage = require('telegraf/stage');
 const { Client } = require('redis-request-broker');
 
 const _bot = require('../bot');
@@ -18,7 +17,10 @@ const scenes = {
     DELETE: 'contests_delete',
     LIST: 'contests_list',
     START: 'contests_start',
-    STOP: 'contests_stop'
+    STOP: 'contests_stop',
+    TOP_ID: 'contests_top_id',
+    TOP_VOTE: 'contests_top_vote',
+    TOP_AMOUNT: 'contests_top_amount'
 }
 // Keyboard options
 const keyboard_ = {
@@ -27,28 +29,16 @@ const keyboard_ = {
     DELETE: "Delete",
     START: "Start",
     STOP: "Stop",
+    TOP: "Show results",
     DONE: "I'm done",
     YES: "Yes",
     NO: "No",
     CANCEL: "I changed my mind"
 };
 
-
-// Create stage and load scenes
 let clients = {};
-const stage = new Stage().register(
-    require('./scenes/menu').build(scenes, keyboard_, clients),
-    require('./scenes/create_id').build(scenes, keyboard_, clients),
-    require('./scenes/create_tag').build(scenes, keyboard_, clients),
-    require('./scenes/create_emoji').build(scenes, keyboard_, clients),
-    require('./scenes/create_finish').build(scenes, keyboard_, clients),
-    require('./scenes/delete').build(scenes, keyboard_, clients),
-    require('./scenes/list').build(scenes, keyboard_, clients),
-    require('./scenes/start').build(scenes, keyboard_, clients),
-    require('./scenes/stop').build(scenes, keyboard_, clients)
-);
-
 let group_id;
+
 _config.subscribe('rrb', async rrb => {
     await start(rrb);
 });
@@ -56,8 +46,22 @@ _config.subscribe('config', c => {
     group_id = c.group_id;
 })
 _bot.subscribe(bot => {
-    bot.use(stage.middleware());
     bot.command('contest', command_contest);
+    // Create stage and load scenes
+    bot._stage.register(
+        require('./scenes/menu').build(scenes, keyboard_, clients),
+        require('./scenes/create_id').build(scenes, keyboard_, clients),
+        require('./scenes/create_tag').build(scenes, keyboard_, clients),
+        require('./scenes/create_emoji').build(scenes, keyboard_, clients),
+        require('./scenes/create_finish').build(scenes, keyboard_, clients),
+        require('./scenes/delete').build(scenes, keyboard_, clients),
+        require('./scenes/list').build(scenes, keyboard_, clients),
+        require('./scenes/start').build(scenes, keyboard_, clients),
+        require('./scenes/stop').build(scenes, keyboard_, clients),
+        require('./scenes/top_id').build(scenes, keyboard_, clients),
+        require('./scenes/top_vote').build(scenes, keyboard_, clients),
+        require('./scenes/top_amount').build(scenes, keyboard_, clients)
+    )
 });
 lc.on('stop', stop);
 
@@ -68,11 +72,13 @@ async function start(rrb) {
         clients.stop = new Client(rrb.queues.contestsStop);
         clients.delete = new Client(rrb.queues.contestsDelete);
         clients.list = new Client(rrb.queues.contestsList);
+        clients.top = new Client(rrb.queues.contestsTop);
         await clients.create.connect();
         await clients.start.connect();
         await clients.stop.connect();
         await clients.delete.connect();
         await clients.list.connect();
+        await clients.top.connect();
     }
     catch (error) {
         log.error('Failed to start contests: Cannot connect to rrb.', error);

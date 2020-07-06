@@ -14,6 +14,7 @@ let group_id = undefined;
 let eventPost;
 let telegram;
 let last = undefined;
+let contest_data = [];
 
 _bot.subscribe(b => telegram = b.telegram);
 _config.subscribe('config', c => group_id = c.group_id);
@@ -48,7 +49,7 @@ async function post_meme(meme_id) {
     try {
         // Build caption and keyboard
         const extra = {
-            caption: build_caption(meme.user, meme.categories),
+            caption: build_caption(meme.user, meme.categories, meme.contests),
             reply_markup: {
                 inline_keyboard: voting.create_keyboard(meme.votes)
             }
@@ -75,12 +76,32 @@ async function post_meme(meme_id) {
     }
 }
 
-function build_caption(user, categories) {
+function build_caption(user, categories, contests = []) {
+    if (contests && contests.length > 0)
+        return build_caption_for_contest_entry(contests);
+
     let caption = `@${user.username}`
     if (categories && categories.length > 0)
         caption += ` | ${categories.map(c => `#${c}`).join(' · ')}`;
 
     return caption;
+}
+
+function build_caption_for_contest_entry(contests) {
+    return contests.map(tag => {
+        const contest = contest_data.find(c => c.tag === tag);
+        if (contest)
+            return `#${tag} ${contest.emoji}`;
+        return `#${tag}`;
+    }).join(' · ');
+}
+
+/**
+ * If you want the meme caption to include the contest emoji, you need to provide contest data.
+ * @param {*} _contest_data 
+ */
+module.exports.set_contest_data = async function set_contest_data(_contest_data) {
+    contest_data = _contest_data;
 }
 
 module.exports.post_meme = post_meme;

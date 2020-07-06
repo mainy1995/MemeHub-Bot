@@ -1,8 +1,7 @@
 
 const { serializeError } = require('serialize-error');
-const Stage = require('telegraf/stage');
+const { Client, Subscriber } = require('redis-request-broker');
 const Scene = require('telegraf/scenes/base');
-const Session = require('telegraf/session');
 const Keyboard = require('telegraf-keyboard');
 
 const _bot = require('./bot');
@@ -13,39 +12,64 @@ const db = require('./mongo-db');
 const maintain = require('./meme-maintaining');
 const admins = require('./admins');
 const posting = require('./meme-posting');
+const lc = require('./lifecycle');
 
 let categories = [];
+let contests = [];
+let contestsRunning = [];
 let keyboard_width = 4;
 let maximum = 1;
-let stage = new Stage();
+let clientListContests;
+let subscriberContestStarted;
+let subscriberContestStopped;
+let subscriberContestCreated;
+let subscriberContestDeleted;
 
 const emoji_ok = '✅';
 const emoji_no = '❌';
 
-init();
 _config.subscribe('categories', c => {
     categories = c.options.map(escape_category);
     keyboard_width = c.keyboard_width;
     maximum = c.maximum;
 });
-_bot.subscribe(bot => { // Has to be done before require forwarding
-    bot.use(Session());
-    bot.use(stage.middleware());
-    bot.command('edit_categories', command_edit_categories);
-    bot.command('set_categories', command_set_categories);
-    bot.command('add_categories', command_add_categories);
-    bot.command('remove_categories', command_remove_categories);
+_config.subscribe('rrb', async rrb => {
+    clientListContests = new Client(rrb.queues.contestsList);
+    subscriberContestStarted = new Subscriber(rrb.events.contestStarted, contestStarted);
+    subscriberContestStopped = new Subscriber(rrb.events.contestStopped, contestStopped);
+    subscriberContestCreated = new Subscriber(rrb.events.contestCreated, contestCreated);
+    subscriberContestDeleted = new Subscriber(rrb.events.contestDeleted, contestDeleted);
+    await clientListContests.connect();
+    await subscriberContestStarted.listen();
+    await subscriberContestStopped.listen();
+    await subscriberContestCreated.listen();
+    await subscriberContestDeleted.listen();
 });
-
-function init() {
+_bot.subscribe(bot => { // Has to be done before require forwarding
     const selectCategory = new Scene('selectCategory');
     selectCategory.enter(start);
     selectCategory.leave(cleanUp);
     selectCategory.hears(emoji_ok, done);
     selectCategory.hears(emoji_no, abort);
     selectCategory.on('message', receive);
-    stage.register(selectCategory);
+
+    bot._stage.register(selectCategory);
+    bot.command('edit_categories', command_edit_categories);
+    bot.command('set_categories', command_set_categories);
+    bot.command('add_categories', command_add_categories);
+    bot.command('remove_categories', command_remove_categories);
+});
+lc.on('stop', stop);
+lc.late('start', refreshContests);
+
+async function stop() {
+    await clientListContests.disconnect();
+    await subscriberContestStarted.stop();
+    await subscriberContestStopped.stop();
+    await subscriberContestCreated.stop();
+    await subscriberContestDeleted.stop();
 }
+
 
 /**
  * Edits the categories of a meme.
@@ -130,6 +154,7 @@ async function command_add_categories(ctx) {
             log.info('Ignoring /add_categories command', 'No categories to add given.');
             return;
         }
+
         const categories_in_db = await db.get_meme_categories(id);
         for (const category of categories)
             if (!categories_in_db.includes(category))
@@ -245,7 +270,7 @@ function start(ctx) {
     ctx.reply("Pick a category or type one in 👇", buildCategoryKeyboard(ctx));
 }
 
-function receive(ctx) {
+async function receive(ctx) {
     try {
         const categories = parse_categories(ctx.message.text);
         // Check if is valid category
@@ -254,21 +279,22 @@ function receive(ctx) {
             return;
         }
 
-        // Add or remove from session
+        // Deselect or select categoires
         for (const category of categories) {
             const index = ctx.session.categories.selected.indexOf(category);
+
             if (index > -1) {
                 ctx.session.categories.selected.splice(index, 1);
-                ctx.reply(`🗑️ Removing #${category}`, buildCategoryKeyboard(ctx));
+                await ctx.reply(`🗑️ Removing #${category}`, buildCategoryKeyboard(ctx));
             }
             else {
                 ctx.session.categories.selected.push(category);
-                ctx.reply(`✨ Adding #${category}`, buildCategoryKeyboard(ctx));
+                await ctx.reply(`✨ Adding #${category}`, buildCategoryKeyboard(ctx));
             }
         }
 
         if (ctx.session.categories.selected.length > maximum) {
-            ctx.reply(`❗ That's more than the maximum of ${maximum} categories. Remove some before finishing.`);
+            await ctx.reply(`❗ That's more than the maximum of ${maximum} categories. Remove some before finishing.`);
         }
     }
     catch (error) {
@@ -283,8 +309,13 @@ async function done(ctx) {
         return;
     }
 
-    // Save and then post or update meme
+    const categoreisWithContest = ctx.session.categories.selected.filter(cat => contestsRunning.some(cont => cont.tag === cat));
+
     try {
+        // Update categoreis and contest in db 
+        if (categoreisWithContest.length > 0)
+            await db.save_meme_contests(ctx.session.categories.meme_id, categoreisWithContest);
+
         await db.save_meme_categories(ctx.session.categories.meme_id, ctx.session.categories.selected);
 
         if (ctx.session.categories.post_afterward)
@@ -327,8 +358,14 @@ function buildCategoryKeyboard(ctx) {
     const keyboard = new Keyboard();
     try {
         const options = categories.map(c => ctx.session.categories.selected.includes(c) ? `[ #${c} ]` : `#${c}`);
+        const contests = contestsRunning.map(c => ctx.session.categories.selected.includes(c.tag) ? `[ #${c.tag} ${c.emoji} ]` : `#${c.tag} ${c.emoji}`);
+        options.unshift(...contests);
         options.unshift(emoji_ok, emoji_no);
-        options.push(...ctx.session.categories.selected.filter(c => !categories.includes(c)).map(c => `[ #${c} ]`));
+        options.push(...ctx.session.categories.selected
+            .filter(c =>
+                !categories.includes(c) &&
+                !contestsRunning.some(contest => contest.tag === c)
+            ).map(c => `[ #${c} ]`));
         for (let i = 0; i < options.length; i += keyboard_width) {
             keyboard.add(options.slice(i, i + keyboard_width));
         }
@@ -358,6 +395,34 @@ function parse_categories(input_stirng, slice = 0) {
         .slice(slice)
         .map(escape_category)
         .filter(c => !!c);
+}
+
+async function refreshContests() {
+    try {
+        contests = await clientListContests.request({ onlyRunning: false });
+        contestsRunning = contests.filter(c => c.running);
+        posting.set_contest_data(contests);
+        log.info('New contests', { contests, contestsRunning });
+    }
+    catch (error) {
+        log.warn('Failed to get contests. Category buttons might not include up-to-date data.', error);
+    }
+}
+
+async function contestStarted(id) {
+    await refreshContests();
+}
+
+async function contestStopped(id) {
+    await refreshContests();
+}
+
+async function contestCreated(id) {
+    await refreshContests();
+}
+
+async function contestDeleted(id) {
+    await refreshContests();
 }
 
 module.exports.edit_categories = edit_categories;

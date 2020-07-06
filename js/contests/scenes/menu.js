@@ -11,7 +11,8 @@ module.exports.build = function (scenes, keyboard, _) {
 
     const keyboarStart = new Keyboard()
         .add(keyboard.CREATE, keyboard.LIST, keyboard.DELETE)
-        .add(keyboard.START, keyboard.STOP, keyboard.DONE)
+        .add(keyboard.START, keyboard.STOP)
+        .add(keyboard.TOP, keyboard.DONE)
         .draw();
 
     const scene = new Scene(scenes.MENU);
@@ -28,6 +29,7 @@ module.exports.build = function (scenes, keyboard, _) {
     scene.hears(keyboard.LIST, ctx => ctx.scene.enter(scenes.LIST));
     scene.hears(keyboard.START, ctx => ctx.scene.enter(scenes.START));
     scene.hears(keyboard.STOP, ctx => ctx.scene.enter(scenes.STOP));
+    scene.hears(keyboard.TOP, ctx => ctx.scene.enter(scenes.TOP_ID));
     scene.hears(keyboard.DONE, async ctx => {
         ctx.session.isNotFirst = false;
         await ctx.reply("See you soon!", { reply_markup: { remove_keyboard: true } });
