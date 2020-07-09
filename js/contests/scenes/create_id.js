@@ -1,11 +1,12 @@
 const Scene = require('telegraf/scenes/base');
+const scenes = require('../../../data/scenes.json').contest;
 
 /**
  * Scene to enter the id of a new contest.
  * @param {*} scenes 
  * @param {*} _ 
  */
-module.exports.build = function (scenes, _, _) {
+module.exports.build = function (_, _) {
 
     const scene = new Scene(scenes.CREATE_ID);
     scene.enter(async ctx => {

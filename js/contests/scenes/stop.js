@@ -3,6 +3,7 @@ const Keyboard = require('telegraf-keyboard');
 const { serializeError } = require('serialize-error');
 
 const log = require('../../log');
+const scenes = require('../../../data/scenes.json').contest;
 
 /**
  * Scene to stop a contest
@@ -10,7 +11,7 @@ const log = require('../../log');
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (scenes, keyboard, clients) {
+module.exports.build = function (keyboard, clients) {
     const scene = new Scene(scenes.STOP);
     scene.enter(async ctx => {
         try {

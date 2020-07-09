@@ -1,5 +1,6 @@
 const Scene = require('telegraf/scenes/base');
 const Keyboard = require('telegraf-keyboard');
+const scenes = require('../../../data/scenes.json').contest;
 const { serializeError } = require('serialize-error');
 
 const log = require('../../log');
@@ -9,7 +10,7 @@ const log = require('../../log');
  * @param {*} scenes 
  * @param {*} keyboard 
  */
-module.exports.build = function (scenes, keyboard, clients) {
+module.exports.build = function (keyboard, clients) {
 
     const keyboardYesNo = new Keyboard()
         .add(keyboard.YES, keyboard.NO)

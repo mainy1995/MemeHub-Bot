@@ -11,7 +11,10 @@
         "contestStarted": "events:contest-started",
         "contestStopped": "events:contest-stopped",
         "contestCreated": "events:contest-created",
-        "contestDeleted": "events:contest-deleted"
+        "contestDeleted": "events:contest-deleted",
+        "categoryCreated": "events:category-created",
+        "categoryDeleted": "events:category-deleted",
+        "categoryMaximumChanged": "events:category-maximum-changed"
     },
     "queues": {
         "mayUserPost": "limits:may-post",
@@ -25,6 +28,15 @@
         "contestsStop": "contests:stop",
         "contestsDelete": "contests:delete",
         "contestsList": "contests:list",
-        "contestsTop": "contests:top"
+        "contestsTop": "contests:top",
+        "categoriesCreate": "categories:create",
+        "categoriesDelete": "categories:delete",
+        "categoriesList": "categoires:list",
+        "categoriesGet": "categoires:get",
+        "categoriesSet": "categories:set",
+        "cateogiresAdd": "categories:add",
+        "categoriesRemove": "categories:remove",
+        "categoriesValidate": "categoires:validate",
+        "categoriesGetOrSetMaximum": "categories:maximum"
     }
 }

@@ -7,22 +7,8 @@ const _config = require('../config');
 const lc = require('../lifecycle');
 const admins = require('../admins');
 const util = require('../util');
+const scenes = require('../../data/scenes.json').contest;
 
-// Scene names
-const scenes = {
-    MENU: 'contests_menu',
-    CREATE_ID: 'contests_create_id',
-    CREATE_TAG: 'contests_create_tag',
-    CREATE_EMOJI: 'contests_create_emoji',
-    CREATE_FINISH: 'contests_create_finish',
-    DELETE: 'contests_delete',
-    LIST: 'contests_list',
-    START: 'contests_start',
-    STOP: 'contests_stop',
-    TOP_ID: 'contests_top_id',
-    TOP_VOTE: 'contests_top_vote',
-    TOP_AMOUNT: 'contests_top_amount'
-}
 // Keyboard options
 const keyboard_ = {
     CREATE: "Create a new one",
@@ -50,18 +36,18 @@ _bot.subscribe(bot => {
     bot.command('contest', command_contest);
     // Create stage and load scenes
     bot._stage.register(
-        require('./scenes/menu').build(scenes, keyboard_, clients),
-        require('./scenes/create_id').build(scenes, keyboard_, clients),
-        require('./scenes/create_tag').build(scenes, keyboard_, clients),
-        require('./scenes/create_emoji').build(scenes, keyboard_, clients),
-        require('./scenes/create_finish').build(scenes, keyboard_, clients),
-        require('./scenes/delete').build(scenes, keyboard_, clients),
-        require('./scenes/list').build(scenes, keyboard_, clients),
-        require('./scenes/start').build(scenes, keyboard_, clients),
-        require('./scenes/stop').build(scenes, keyboard_, clients),
-        require('./scenes/top_id').build(scenes, keyboard_, clients),
-        require('./scenes/top_vote').build(scenes, keyboard_, clients),
-        require('./scenes/top_amount').build(scenes, keyboard_, clients)
+        require('./scenes/menu').build(keyboard_, clients),
+        require('./scenes/create_id').build(keyboard_, clients),
+        require('./scenes/create_tag').build(keyboard_, clients),
+        require('./scenes/create_emoji').build(keyboard_, clients),
+        require('./scenes/create_finish').build(keyboard_, clients),
+        require('./scenes/delete').build(keyboard_, clients),
+        require('./scenes/list').build(keyboard_, clients),
+        require('./scenes/start').build(keyboard_, clients),
+        require('./scenes/stop').build(keyboard_, clients),
+        require('./scenes/top_id').build(keyboard_, clients),
+        require('./scenes/top_vote').build(keyboard_, clients),
+        require('./scenes/top_amount').build(keyboard_, clients)
     )
 });
 lc.on('stop', stop);
