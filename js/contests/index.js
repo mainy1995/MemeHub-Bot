@@ -8,20 +8,7 @@ const lc = require('../lifecycle');
 const admins = require('../admins');
 const util = require('../util');
 const scenes = require('../../data/scenes.json').contest;
-
-// Keyboard options
-const keyboard_ = {
-    CREATE: "Create a new one",
-    LIST: "See all",
-    DELETE: "Delete",
-    START: "Start",
-    STOP: "Stop",
-    TOP: "Show results",
-    DONE: "I'm done",
-    YES: "Yes",
-    NO: "No",
-    CANCEL: "I changed my mind"
-};
+const keyboard = require('../../data/keyboard.json');
 
 let clients = {};
 let group_id;
@@ -36,18 +23,18 @@ _bot.subscribe(bot => {
     bot.command('contest', command_contest);
     // Create stage and load scenes
     bot._stage.register(
-        require('./scenes/menu').build(keyboard_, clients),
-        require('./scenes/create_id').build(keyboard_, clients),
-        require('./scenes/create_tag').build(keyboard_, clients),
-        require('./scenes/create_emoji').build(keyboard_, clients),
-        require('./scenes/create_finish').build(keyboard_, clients),
-        require('./scenes/delete').build(keyboard_, clients),
-        require('./scenes/list').build(keyboard_, clients),
-        require('./scenes/start').build(keyboard_, clients),
-        require('./scenes/stop').build(keyboard_, clients),
-        require('./scenes/top_id').build(keyboard_, clients),
-        require('./scenes/top_vote').build(keyboard_, clients),
-        require('./scenes/top_amount').build(keyboard_, clients)
+        require('./scenes/menu').build(clients),
+        require('./scenes/create_id').build(clients),
+        require('./scenes/create_tag').build(clients),
+        require('./scenes/create_emoji').build(clients),
+        require('./scenes/create_finish').build(clients),
+        require('./scenes/delete').build(clients),
+        require('./scenes/list').build(clients),
+        require('./scenes/start').build(clients),
+        require('./scenes/stop').build(clients),
+        require('./scenes/top_id').build(clients),
+        require('./scenes/top_vote').build(clients),
+        require('./scenes/top_amount').build(clients)
     )
 });
 lc.on('stop', stop);

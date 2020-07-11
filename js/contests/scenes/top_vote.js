@@ -3,6 +3,7 @@ const Keyboard = require('telegraf-keyboard');
 const { serializeError } = require('serialize-error');
 const _confg = require('../../config');
 const scenes = require('../../../data/scenes.json').contest;
+const keyboard = require('../../../data/keyboard.json');
 
 let vote_types;
 _confg.subscribe('vote-types', v => vote_types = v);
@@ -15,7 +16,7 @@ const log = require('../../log');
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (keyboard, clients) {
+module.exports.build = function (_) {
 
     const scene = new Scene(scenes.TOP_VOTE);
     scene.enter(async ctx => {

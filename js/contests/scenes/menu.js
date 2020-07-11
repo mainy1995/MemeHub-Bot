@@ -1,6 +1,7 @@
 const Scene = require('telegraf/scenes/base');
 const Keyboard = require('telegraf-keyboard');
 const scenes = require('../../../data/scenes.json').contest;
+const keyboard = require('../../../data/keyboard.json');
 
 /**
  * This is the main scene of the contest stage where the user
@@ -8,7 +9,7 @@ const scenes = require('../../../data/scenes.json').contest;
  * @param {*} scenes 
  * @param {*} keyboard 
  */
-module.exports.build = function (keyboard, _) {
+module.exports.build = function (_) {
 
     const keyboarStart = new Keyboard()
         .add(keyboard.CREATE, keyboard.LIST, keyboard.DELETE)

@@ -6,7 +6,7 @@ const scenes = require('../../../data/scenes.json').contest;
  * @param {*} scenes 
  * @param {*} _ 
  */
-module.exports.build = function (_, _) {
+module.exports.build = function (_) {
 
     const scene = new Scene(scenes.CREATE_EMOJI);
     scene.enter(ctx => ctx.reply('Finally, choose an emoji for the contest'));

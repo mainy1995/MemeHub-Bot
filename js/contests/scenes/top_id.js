@@ -4,6 +4,7 @@ const { serializeError } = require('serialize-error');
 
 const log = require('../../log');
 const scenes = require('../../../data/scenes.json').contest;
+const keyboard = require('../../../data/keyboard.json');
 
 /**
  * Scene to start a contest
@@ -11,7 +12,7 @@ const scenes = require('../../../data/scenes.json').contest;
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (keyboard, clients) {
+module.exports.build = function (clients) {
 
     const scene = new Scene(scenes.TOP_ID);
     scene.enter(async ctx => {

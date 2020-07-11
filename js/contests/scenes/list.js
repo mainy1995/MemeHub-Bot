@@ -7,7 +7,7 @@ const scenes = require('../../../data/scenes.json').contest;
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (_, clients) {
+module.exports.build = function (clients) {
 
     const scene = new Scene(scenes.LIST);
     scene.enter(async ctx => {

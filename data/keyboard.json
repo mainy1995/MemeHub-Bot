@@ -1,0 +1,12 @@
+{
+    "CREATE": "Create a new one",
+    "LIST": "See all",
+    "DELETE": "Delete",
+    "START": "Start",
+    "STOP": "Stop",
+    "TOP": "Show results",
+    "DONE": "I'm done",
+    "YES": "Yes",
+    "NO": "No",
+    "CANCEL": "I changed my mind"
+}

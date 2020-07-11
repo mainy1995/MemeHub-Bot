@@ -6,7 +6,7 @@ const scenes = require('../../../data/scenes.json').contest;
  * @param {*} scenes 
  * @param {*} _ 
  */
-module.exports.build = function (_, _) {
+module.exports.build = function (_) {
 
     const scene = new Scene(scenes.CREATE_ID);
     scene.enter(async ctx => {
