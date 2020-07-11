@@ -1,0 +1,28 @@
+{
+    "categories": {
+        "SELECT": "categories_select",
+        "MENU": "categories_menu",
+        "CREATE": "categories_create",
+        "DELETE": "categories_delete",
+        "LIST": "categories_list",
+        "CREATE_MAPPING_KEY": "categories_create_mapping_key",
+        "CREATE_MAPPING_CATEGORY": "categories_create_mapping_category",
+        "DELETE_MAPPING": "categories_delete_mapping",
+        "LIST_MAPPINGS": "categories_list_mappings",
+        "MAXIMUM": "categories_maximum"
+    },
+    "contest": {
+        "MENU": "contests_menu",
+        "CREATE_ID": "contests_create_id",
+        "CREATE_TAG": "contests_create_tag",
+        "CREATE_EMOJI": "contests_create_emoji",
+        "CREATE_FINISH": "contests_create_finish",
+        "DELETE": "contests_delete",
+        "LIST": "contests_list",
+        "START": "contests_start",
+        "STOP": "contests_stop",
+        "TOP_ID": "contests_top_id",
+        "TOP_VOTE": "contests_top_vote",
+        "TOP_AMOUNT": "contests_top_amount"
+    }
+}

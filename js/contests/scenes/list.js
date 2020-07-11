@@ -1,4 +1,5 @@
 const Scene = require('telegraf/scenes/base');
+const scenes = require('../../../data/scenes.json').contest;
 
 /**
  * Scene to list contests
@@ -6,7 +7,7 @@ const Scene = require('telegraf/scenes/base');
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (scenes, _, clients) {
+module.exports.build = function (clients) {
 
     const scene = new Scene(scenes.LIST);
     scene.enter(async ctx => {

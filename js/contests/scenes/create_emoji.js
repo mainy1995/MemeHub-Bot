@@ -1,11 +1,12 @@
 const Scene = require('telegraf/scenes/base');
+const scenes = require('../../../data/scenes.json').contest;
 
 /**
  * Scene to enter the emoji of a new contest
  * @param {*} scenes 
  * @param {*} _ 
  */
-module.exports.build = function (scenes, _, _) {
+module.exports.build = function (_) {
 
     const scene = new Scene(scenes.CREATE_EMOJI);
     scene.enter(ctx => ctx.reply('Finally, choose an emoji for the contest'));

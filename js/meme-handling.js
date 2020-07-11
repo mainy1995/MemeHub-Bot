@@ -44,7 +44,7 @@ async function handle_meme_request(ctx) {
             file_id: util.any_media_id(ctx.message),
             file_type: util.get_media_type_from_message(ctx.message),
             message_id: ctx.message.message_id,
-            categories: categories.parse_categories(ctx.message.caption)
+            categories: await categories.validate_categories(ctx.message.caption)
         };
 
         const username = util.name_from_user(options.user);

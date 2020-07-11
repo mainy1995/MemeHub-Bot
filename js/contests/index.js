@@ -7,35 +7,8 @@ const _config = require('../config');
 const lc = require('../lifecycle');
 const admins = require('../admins');
 const util = require('../util');
-
-// Scene names
-const scenes = {
-    MENU: 'contests_menu',
-    CREATE_ID: 'contests_create_id',
-    CREATE_TAG: 'contests_create_tag',
-    CREATE_EMOJI: 'contests_create_emoji',
-    CREATE_FINISH: 'contests_create_finish',
-    DELETE: 'contests_delete',
-    LIST: 'contests_list',
-    START: 'contests_start',
-    STOP: 'contests_stop',
-    TOP_ID: 'contests_top_id',
-    TOP_VOTE: 'contests_top_vote',
-    TOP_AMOUNT: 'contests_top_amount'
-}
-// Keyboard options
-const keyboard_ = {
-    CREATE: "Create a new one",
-    LIST: "See all",
-    DELETE: "Delete",
-    START: "Start",
-    STOP: "Stop",
-    TOP: "Show results",
-    DONE: "I'm done",
-    YES: "Yes",
-    NO: "No",
-    CANCEL: "I changed my mind"
-};
+const scenes = require('../../data/scenes.json').contest;
+const keyboard = require('../../data/keyboard.json');
 
 let clients = {};
 let group_id;
@@ -47,21 +20,21 @@ _config.subscribe('config', c => {
     group_id = c.group_id;
 })
 _bot.subscribe(bot => {
-    bot.command('contest', command_contest);
+    bot.command('contests', command_contests);
     // Create stage and load scenes
     bot._stage.register(
-        require('./scenes/menu').build(scenes, keyboard_, clients),
-        require('./scenes/create_id').build(scenes, keyboard_, clients),
-        require('./scenes/create_tag').build(scenes, keyboard_, clients),
-        require('./scenes/create_emoji').build(scenes, keyboard_, clients),
-        require('./scenes/create_finish').build(scenes, keyboard_, clients),
-        require('./scenes/delete').build(scenes, keyboard_, clients),
-        require('./scenes/list').build(scenes, keyboard_, clients),
-        require('./scenes/start').build(scenes, keyboard_, clients),
-        require('./scenes/stop').build(scenes, keyboard_, clients),
-        require('./scenes/top_id').build(scenes, keyboard_, clients),
-        require('./scenes/top_vote').build(scenes, keyboard_, clients),
-        require('./scenes/top_amount').build(scenes, keyboard_, clients)
+        require('./scenes/menu').build(clients),
+        require('./scenes/create_id').build(clients),
+        require('./scenes/create_tag').build(clients),
+        require('./scenes/create_emoji').build(clients),
+        require('./scenes/create_finish').build(clients),
+        require('./scenes/delete').build(clients),
+        require('./scenes/list').build(clients),
+        require('./scenes/start').build(clients),
+        require('./scenes/stop').build(clients),
+        require('./scenes/top_id').build(clients),
+        require('./scenes/top_vote').build(clients),
+        require('./scenes/top_amount').build(clients)
     )
 });
 lc.on('stop', stop);
@@ -74,12 +47,10 @@ async function start(rrb) {
         clients.delete = new Client(rrb.queues.contestsDelete);
         clients.list = new Client(rrb.queues.contestsList);
         clients.top = new Client(rrb.queues.contestsTop);
-        await clients.create.connect();
-        await clients.start.connect();
-        await clients.stop.connect();
-        await clients.delete.connect();
-        await clients.list.connect();
-        await clients.top.connect();
+        clients.validateCategories = new Client(rrb.queues.categoriesValidate);
+        for (const client of Object.values(clients))
+            await client.connect();
+
     }
     catch (error) {
         log.error('Failed to start contests: Cannot connect to rrb.', error);
@@ -93,7 +64,7 @@ async function stop() {
     }
 }
 
-async function command_contest(ctx) {
+async function command_contests(ctx) {
     if (!await validate(ctx))
         return;
 
@@ -111,7 +82,7 @@ async function validate(ctx) {
     // Check group
     if (!util.is_private_chat(ctx)) {
         ctx.deleteMessage(ctx.message.id).catch(e => log.error('Cannot delete command message', e));
-        ctx.telegram.sendMessage(ctx.message.from.id, 'This command can only be used here')
+        ctx.telegram.sendMessage(ctx.message.from.id, 'The /contests command can only be used here')
             .catch(e => log.error('Cannot send message to user', e));
         return false;
     }

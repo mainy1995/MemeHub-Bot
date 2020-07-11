@@ -35,6 +35,13 @@ On-way messaging (PUB/SUB)
       poster_id: string // The id of the user that posted the meme
     }
     ```
+  - `events:edit`: A meme has been edited
+    ```ts
+    {
+      meme_id: string, // The id of the meme that got edited
+      in_group: boolean // True, if the meme has been posted in the meme group
+    } 
+    ```
   - `logging:log`: A log message
    ```ts
    {
@@ -66,7 +73,39 @@ On-way messaging (PUB/SUB)
     ```ts
     string // The id of the contest
     ```
-  
+  - `events:category-created`: A category has been created
+    ```ts
+    {
+      created: string, // The new category
+      categories: string[] // The list of categories after the change
+    }
+    ```
+  - `events:category-deleted`: A category has been deleted
+    ```ts
+    {
+      deleted: string, // The old category
+      categories: string[] // The list of categories after the change
+    }
+    ```
+  - `events:category-mapping-created`: A category mapping has been created
+    ```ts
+    {
+      created: string, // The key of the created mapping
+      category: string, // The resulting category of the created mapping
+      mappings: { [key: string ]: string} // The mappings after the change
+    }
+    ```
+  - `events:category-mapping-deleted`: A category mapping has been deleted
+    ```ts
+    {
+      deleted: string // The key of the deleted
+      mappings: { [key: string ]: string} // The mappings after the change
+    }
+    ```
+  - `events:category-maximum-changed`: The maximum of allowed categories on a meme has changed
+    ```ts
+    number // The new maximum
+    ```
 
 ## Requests
 
@@ -210,14 +249,180 @@ Request and response messaging (RPC)
   - `contest:top`: Shows the best contributions for a contest
       - Worker: `MemeHub-Contests`
       - Request data:
-      ```ts
-      {
-        id: string, // The id of the contest
-        vote_type: string, // The vote type that counts
-        amount: number // The amount of memes to return
-      }
-      ``` 
+        ```ts
+        {
+          id: string, // The id of the contest
+          vote_type: string, // The vote type that counts
+          amount: number // The amount of memes to return
+        }
+        ``` 
       - Response data:
-      ```ts
-      string[] // a list of meme ids
-      ```
+        ```ts
+        string[] // a list of meme ids
+        ```
+
+### Categories
+
+  - `categories:create`: Creates a new category
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          category: string, // The category to create
+          validate: boolean // If true, only adds the category if it is valid
+        }
+        ``` 
+      - Response data:
+        ```ts
+        {
+          created: boolean, // True if the category has been created
+          categories: string[] // The list of categories after the operation
+        }
+        
+        ```
+  - `categories:delete`: Deletes a category
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          category: string // The category to delete
+        }
+        ``` 
+      - Response data:
+        ```ts
+        {
+          deleted: boolean, // True if the category has been deleted
+          categories: string[] // The list of categories after the operation
+        }
+        ```
+  - `categories:list`: List all categories
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        // none
+        ``` 
+      - Response data:
+        ```ts
+        string[] // The list of categories
+        ```
+  - `categories:create-mapping`: Creates a new category mapping
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          key: string, // The key of the new mapping
+          category: string, // The category this mapping should result in
+        }
+        ``` 
+      - Response data:
+        ```ts
+        {
+          created: boolean, // True if the mapping has been created
+          mappings: { [key: string]: string } // The mappings after the operation
+        }
+        
+        ```
+  - `categories:delete-mapping`: Deletes a category mapping
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          key: string // The key of the mapping to delete
+        }
+        ``` 
+      - Response data:
+        ```ts
+        {
+          deleted: boolean, // True if the mapping has been deleted
+          mappings: { [key: string]: string } // The mappings after the operation
+        }
+        ```
+  - `categories:mappings`: Returns current mappings
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        // none
+        ``` 
+      - Response data:
+        ```ts
+        { [key: string]: string } // The mappings
+        ```
+  - `categories:maximum`: Get or set the maximum of categories allowed
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        number | null // The maximum to set, or none
+        ``` 
+      - Response data:
+        ```ts
+        number // The maximum of allowed categoreis after the operation
+        ```
+  - `categories:get`: Gets the categories of a meme
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        string, // The id of the meme
+        ``` 
+      - Response data:
+        ```ts
+        string[] // The categories of the meme
+        ```
+  - `categories:set`: Sets the categories of a meme
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          meme_id: string, // The id of the meme
+          categories: string[], // The categories to set
+          validate: boolean // If true, categories will be validated before setting them
+        }
+        ``` 
+      - Response data:
+        ```ts
+        boolean // True if the categories have been set
+        ```
+  - `categories:add`: Adds categories to a meme
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          meme_id: string, // The id of the meme
+          categories: string[], // The categories to add
+          validate: boolean // If true, categories will be validated before adding them
+        }
+        ``` 
+      - Response data:
+        ```ts
+        boolean // True if categories have been added
+        ```
+  - `categories:remove`: Removes categories from a meme
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        {
+          meme_id: string, // The id of the meme
+          categories: string[], // The categories to remove
+          validate: boolean // If true, categories will be validated before removing them
+        }
+        ``` 
+      - Response data:
+        ```ts
+        boolean // True if categories have been removed
+        ```
+  - `categories:validate`: Validates categories.
+    Accepts either a single category or a list of categories. If a single category has been requested,
+    the worker will respond with a single one. If a list of categories has been requested, the worker
+    will respond with a list.
+
+    A single category might be `null` or a valid category. `null` indicates that the cateory is not valid
+    A list of categories will only contain valid categories but might be empty.
+      - Worker: `MemeHub-Categories`
+      - Request data:
+        ```ts
+        string | string[] // A single category or a list of categories to validate
+        ``` 
+      - Response data:
+        ```ts
+        null | string | string[] // A single validated vategory or a list of validated categories
+        ```
+  

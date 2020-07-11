@@ -4,6 +4,8 @@ const util = require('../../util');
 const db = require('../../mongo-db');
 
 const log = require('../../log');
+const scenes = require('../../../data/scenes.json').contest;
+const keyboard = require('../../../data/keyboard.json');
 
 /**
  * Scene to start a contest
@@ -11,7 +13,7 @@ const log = require('../../log');
  * @param {*} keyboard 
  * @param {*} clients 
  */
-module.exports.build = function (scenes, keyboard, clients) {
+module.exports.build = function (clients) {
 
     const scene = new Scene(scenes.TOP_AMOUNT);
     scene.enter(async ctx => {
