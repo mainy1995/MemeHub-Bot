@@ -34,15 +34,15 @@
         "contestsTop": "contests:top",
         "categoriesCreate": "categories:create",
         "categoriesDelete": "categories:delete",
-        "categoriesList": "categoires:list",
+        "categoriesList": "categories:list",
         "categoriesCreateMapping": "categories:create-mapping",
         "categoriesDeleteMapping": "categories:delete-mapping",
         "categoriesMappings": "categories:mappings",
-        "categoriesGet": "categoires:get",
+        "categoriesGet": "categories:get",
         "categoriesSet": "categories:set",
         "cateogiresAdd": "categories:add",
         "categoriesRemove": "categories:remove",
-        "categoriesValidate": "categoires:validate",
+        "categoriesValidate": "categories:validate",
         "categoriesGetOrSetMaximum": "categories:maximum"
     }
 }

@@ -6,7 +6,7 @@ const log = require('../../log');
 
 module.exports.build = function build(clients) {
 
-    const scene = new Scene(scenes.SET_MAXIMUM);
+    const scene = new Scene(scenes.MAXIMUM);
 
     scene.enter(async ctx => {
         try {

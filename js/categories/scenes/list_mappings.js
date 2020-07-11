@@ -10,6 +10,10 @@ module.exports.build = function build(clients) {
         try {
             const mappings = await clients.categoriesMappings.request();
             const keys = Object.keys(mappings);
+
+            if (keys.length < 1)
+                return await ctx.reply('There are currently no mappings in place.');
+
             let text = `There are currently ${keys.length} mappings:\n`;
             for (const key of keys)
                 text += `\n${key} -> ${mappings[key]}`;

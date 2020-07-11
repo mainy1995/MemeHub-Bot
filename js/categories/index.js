@@ -1,13 +1,10 @@
 
-const { serializeError } = require('serialize-error');
 const { Client, Subscriber } = require('redis-request-broker');
-
-const Keyboard = require('telegraf-keyboard');
 
 const _bot = require('../bot');
 const util = require('../util');
 const log = require('../log');
-const _config = require('./config');
+const _config = require('../config');
 const db = require('../mongo-db');
 const admins = require('../admins');
 const posting = require('../meme-posting');
@@ -20,18 +17,27 @@ const subscribers = {};
 
 _config.subscribe('rrb', async rrb => {
     try {
+        // Init workers
+        // Category management
         clients.createCategory = new Client(rrb.queues.categoriesCreate);
         clients.deleteCategory = new Client(rrb.queues.categoriesDelete);
         clients.listCategories = new Client(rrb.queues.categoriesList);
         clients.categoriesCreateMapping = new Client(rrb.queues.categoriesCreateMapping);
         clients.categoriesDeleteMapping = new Client(rrb.queues.categoriesDeleteMapping);
         clients.categoriesMappings = new Client(rrb.queues.categoriesMappings);
+        clients.validateCategories = new Client(rrb.queues.categoriesValidate);
+        clients.getOrSetMaximum = new Client(rrb.queues.categoriesGetOrSetMaximum);
+
+        // Categories of memes
         clients.getCategories = new Client(rrb.queues.categoriesGet);
         clients.setCategories = new Client(rrb.queues.categoriesSet);
         clients.addCategories = new Client(rrb.queues.categoriesAdd);
         clients.removeCategories = new Client(rrb.queues.categoriesRemove);
-        clients.validateCategories = new Client(rrb.queues.categoriesValidate);
-        clients.getOrSetMaximum = new Client(rrb.queues.categoriesGetOrSetMaximum);
+
+        // Contests
+        clients.listContests = new Client(rrb.queues.contestsList);
+
+        // Init subscribers
         subscribers.contestStarted = new Subscriber(rrb.events.contestStarted, contestsChanged);
         subscribers.contestStopped = new Subscriber(rrb.events.contestStopped, contestsChanged);
         subscribers.contestCreated = new Subscriber(rrb.events.contestCreated, contestsChanged);
@@ -74,9 +80,15 @@ _bot.subscribe(bot => { // Has to be done before require forwarding
 });
 lc.on('stop', stop);
 lc.late('start', async () => {
-    await refreshContests();
-    await refreshCategories();
-    await refreshMaximum();
+    try {
+        await refreshContests();
+        await refreshCategories();
+        await refreshMaximum();
+    }
+    catch (error) {
+        await log.error('Failed to retrieve initial category state.', error);
+        lc.trigger('stop');
+    }
 });
 
 async function stop() {
@@ -305,7 +317,12 @@ async function contestsChanged(_) {
 
 
 async function refreshCategories() {
-    selectCategory.setCategories(await clients.getCategories.request());
+    try {
+        selectCategory.setCategories(await clients.listCategories.request());
+    }
+    catch (error) {
+        log.warn('Failed to get categories. Category buttons might not include up-to-date data.', error);
+    }
 }
 
 async function categoryCreatedOrDeleted({ categories }) {
@@ -313,7 +330,13 @@ async function categoryCreatedOrDeleted({ categories }) {
 }
 
 async function refreshMaximum() {
-    selectCategory.setMaximum(await clients.getOrSetMaximum.request());
+    try {
+        selectCategory.setMaximum(await clients.getOrSetMaximum.request());
+    }
+    catch (error) {
+        log.warn('Failed to get category maximum. Category buttons might not include up-to-date data.', error);
+    }
+
 }
 
 

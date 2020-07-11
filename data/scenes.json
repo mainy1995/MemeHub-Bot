@@ -1,5 +1,6 @@
 {
     "categories": {
+        "SELECT": "categories_select",
         "MENU": "categories_menu",
         "CREATE": "categories_create",
         "DELETE": "categories_delete",
