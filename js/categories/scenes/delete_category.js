@@ -22,7 +22,7 @@ module.exports.build = function build(clients) {
     scene.hears(_keyboard.CANCEL, ctx => ctx.scene.enter(scenes.MENU));
     scene.on('message', async ctx => {
         try {
-            const { deleted } = await workers.deleteCategory.request({ category: ctx.message.text });
+            const { deleted } = await clients.deleteCategory.request({ category: ctx.message.text });
 
             if (!deleted)
                 await ctx.reply("Looks like this category does not exist.");

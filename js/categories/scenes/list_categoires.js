@@ -13,9 +13,11 @@ module.exports.build = function build(clients) {
             if (categories.length < 1)
                 return await ctx.reply('There are currently no categories. You should create some!');
 
-            let text = `There are currently ${categories.length} categories:\n`;
+            let text = categories.length === 1
+                ? `There is currently ${categories.length} category:\n`
+                : `There are currently ${categories.length} categories:\n`;
             for (const category of categories)
-                text += `\n${category}`;
+                text += `\n#${category}`;
 
             await ctx.reply(text);
         }

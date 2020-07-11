@@ -13,7 +13,7 @@ let group_id = undefined;
 let onEdit;
 _config.subscribe('config', c => group_id = c.group_id);
 _config.subscribe('rrb', async rrb => {
-    onEdit = new Subscriber(rrb.events.edit, update_meme_in_group);
+    onEdit = new Subscriber(rrb.events.edit, on_edit);
     try {
         await onEdit.listen();
     }
@@ -39,6 +39,14 @@ async function update_user_name(user) {
                 log.error("Could not update meme caption after user name change", { error, meme });
             });
     }
+}
+
+async function on_edit({ meme_id, in_group }) {
+    // Ignore memes that can not be updated
+    if (!in_group)
+        return;
+
+    await update_meme_in_group(meme_id);
 }
 
 /** 
@@ -81,7 +89,7 @@ async function do_update(meme_id) {
             return
         }
 
-        const caption = posting.build_caption(meme.user, meme.categories);
+        const caption = posting.build_caption(meme.user, meme.categories, meme.contests);
         const votes = await db.count_votes(meme._id);
         const keyboard = voting.create_keyboard(votes);
 

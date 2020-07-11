@@ -6,7 +6,7 @@ const log = require('../../log');
 
 module.exports.build = function build(clients) {
 
-    const scene = new Scene(scenes.DELETE);
+    const scene = new Scene(scenes.DELETE_MAPPING);
 
     scene.enter(async ctx => {
 
@@ -22,7 +22,7 @@ module.exports.build = function build(clients) {
     scene.hears(_keyboard.CANCEL, ctx => ctx.scene.enter(scenes.MENU));
     scene.on('message', async ctx => {
         try {
-            const { deleted } = await workers.categoriesDeleteMapping.request({ key: ctx.message.text });
+            const { deleted } = await clients.categoriesDeleteMapping.request({ key: ctx.message.text });
 
             if (!deleted)
                 await ctx.reply("Looks like this mapping does not exist.");

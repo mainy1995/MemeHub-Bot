@@ -1,6 +1,7 @@
 const Scene = require('telegraf/scenes/base');
 const Keyboard = require('telegraf-keyboard');
 const maintain = require('../../meme-maintaining');
+const posting = require('../../meme-posting');
 const scenes = require('../../../data/scenes.json').categories;
 const log = require('../../log');
 const db = require('../../mongo-db');
@@ -58,6 +59,7 @@ module.exports.build = function (clients) {
             }
         }
         catch (error) {
+            await ctx.reply("Sorry, something went wrong", { reply_markup: { remove_keyboard: true } });
             log.error("Cannot handle provided category", error);
             ctx.scene.leave();
         }
@@ -69,10 +71,9 @@ module.exports.build = function (clients) {
             return;
         }
 
-        const categoreisWithContest = ctx.session.categories.selected.filter(cat => contestsRunning.some(cont => cont.tag === cat));
-
         try {
             // Update categoreis and contest in db 
+            const categoreisWithContest = ctx.session.categories.selected.filter(cat => contestsRunning.some(cont => cont.tag === cat));
             if (categoreisWithContest.length > 0)
                 await db.save_meme_contests(ctx.session.categories.meme_id, categoreisWithContest);
 

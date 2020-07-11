@@ -6,7 +6,7 @@ module.exports.build = function build(clients) {
 
     const scene = new Scene(scenes.CREATE);
 
-    scene.enter(async ctx => await ctx.reply("Which category do you want do add?"));
+    scene.enter(async ctx => await ctx.reply("Which category do you want do add?", { reply_markup: { remove_keyboard: true } }));
     scene.on('message', async ctx => {
         try {
             const { created } = await clients.createCategory.request({ category: ctx.message.text, validate: true });

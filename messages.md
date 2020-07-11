@@ -37,7 +37,10 @@ On-way messaging (PUB/SUB)
     ```
   - `events:edit`: A meme has been edited
     ```ts
-    string // The id of the meme that got edited
+    {
+      meme_id: string, // The id of the meme that got edited
+      in_group: boolean // True, if the meme has been posted in the meme group
+    } 
     ```
   - `logging:log`: A log message
    ```ts

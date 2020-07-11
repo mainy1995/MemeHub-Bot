@@ -18,6 +18,8 @@ The bot supports multiple commands. Some of them are restricted by admin rights 
 | [`/chatinfo`](#chatinfo)                   |                   |                       | yes     | yes   |
 | [`/updateusername`](#updateusername)       |                   |                       | yes     | yes   |
 | [`/meme`](#meme)                           | `meme_id`         | `is_admin`            | yes     | yes   |
+| [`/categoreis`](#categories)               |                   | `can_change_info`     | yes     | no    |
+| [`/contests`](#contests)                   |                   | `can_change_info`     | yes     | no    |
 
 ## `/tokens`
 
@@ -82,3 +84,12 @@ Can be disabled in `debug.json`.
 Shows a meme by its id.
 
 Can be disabled in `debug.json`.
+
+## `/categories`
+
+Starts a wizzard to manage the categories that users may choose from when posting.
+
+## `/contests`
+
+Starts a wizzard to manage contests.
+

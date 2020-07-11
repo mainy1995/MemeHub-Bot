@@ -23,14 +23,21 @@ module.exports.build = function build(clients) {
     });
     scene.hears(_keyboard.BACK, ctx => ctx.scene.enter(scenes.MENU));
     scene.on('message', async ctx => {
-        const maximum = parseInt(ctx.message.text);
-        if (!maximum)
-            return await ctx.reply("Please enter a number");
+        try {
 
-        const newMaximum = await clients.getOrSetMaximum.request(maximum);
+            const maximum = parseInt(ctx.message.text);
+            if (!maximum)
+                return await ctx.reply("Please enter a number");
 
-        await ctx.reply(`The maximum is now ${newMaximum}.`);
-        ctx.scene.enter(scenes.MENU);
+            const newMaximum = await clients.getOrSetMaximum.request(maximum);
+            await ctx.reply(`The maximum is now ${newMaximum}.`);
+        }
+        catch (error) {
+            log.warning("Failed to set category maximum", error);
+        }
+        finally {
+            ctx.scene.enter(scenes.MENU);
+        }
     })
 
     return scene;

@@ -14,9 +14,11 @@ module.exports.build = function build(clients) {
             if (keys.length < 1)
                 return await ctx.reply('There are currently no mappings in place.');
 
-            let text = `There are currently ${keys.length} mappings:\n`;
+            let text = keys.length === 1
+                ? `There is currently ${keys.length} mapping:\n`
+                : `There are currently ${keys.length} mappings:\n`;
             for (const key of keys)
-                text += `\n${key} -> ${mappings[key]}`;
+                text += `\n${key} -> #${mappings[key]}`;
 
             await ctx.reply(text);
         }

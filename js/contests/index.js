@@ -82,7 +82,7 @@ async function validate(ctx) {
     // Check group
     if (!util.is_private_chat(ctx)) {
         ctx.deleteMessage(ctx.message.id).catch(e => log.error('Cannot delete command message', e));
-        ctx.telegram.sendMessage(ctx.message.from.id, 'This command can only be used here')
+        ctx.telegram.sendMessage(ctx.message.from.id, 'The /contests command can only be used here')
             .catch(e => log.error('Cannot send message to user', e));
         return false;
     }
