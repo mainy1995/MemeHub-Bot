@@ -1,11 +1,14 @@
 {
     "categories": {
-        "SELECT": "categories_select",
+        "MENU": "categories_menu",
         "CREATE": "categories_create",
         "DELETE": "categories_delete",
+        "LIST": "categories_list",
         "CREATE_MAPPING_KEY": "categories_create_mapping_key",
         "CREATE_MAPPING_CATEGORY": "categories_create_mapping_category",
-        "DELETE_MAPPING": "categories_delete_mapping"
+        "DELETE_MAPPING": "categories_delete_mapping",
+        "LIST_MAPPINGS": "categories_list_mappings",
+        "MAXIMUM": "categories_maximum"
     },
     "contest": {
         "MENU": "contests_menu",

@@ -330,7 +330,7 @@ Request and response messaging (RPC)
       - Response data:
         ```ts
         {
-          created: boolean, // True if the mapping has been deleted
+          deleted: boolean, // True if the mapping has been deleted
           mappings: { [key: string]: string } // The mappings after the operation
         }
         ```

@@ -1,6 +1,9 @@
 const Scene = require('telegraf/scenes/base');
+const Keyboard = require('telegraf-keyboard');
 const maintain = require('../../meme-maintaining');
 const scenes = require('../../../data/scenes.json').categories;
+const log = require('../../log');
+const db = require('../../mongo-db');
 
 let contestsRunning = [];
 let categories = [];
@@ -9,13 +12,13 @@ let maximum = 1;
 module.exports.setContests = _contests => contestsRunning = _contests;
 module.exports.setCategories = _categories => categories = _categories;
 module.exports.setMaximum = _maximum => maximum = _maximum;
-module.exports.build = function () {
+module.exports.build = function (clients) {
 
     const emoji_ok = '✅';
     const emoji_no = '❌';
     const keyboard_width = 4;
 
-    const scene = new Scene(scenes.SELECT, clients);
+    const scene = new Scene(scenes.SELECT);
     scene.enter(start);
     scene.leave(cleanUp);
     scene.hears(emoji_ok, done);
@@ -73,17 +76,19 @@ module.exports.build = function () {
             if (categoreisWithContest.length > 0)
                 await db.save_meme_contests(ctx.session.categories.meme_id, categoreisWithContest);
 
-            await db.save_meme_categories(ctx.session.categories.meme_id, ctx.session.categories.selected);
+            await clients.setCategories.request({
+                meme_id: ctx.session.categories.meme_id,
+                categories: ctx.session.categories.selected,
+                validate: false
+            });
 
             if (ctx.session.categories.post_afterward)
                 await posting.post_meme(ctx.session.categories.meme_id);
-            else
-                await maintain.update_meme_in_group(ctx.session.categories.meme_id);
 
             ctx.reply(`${emoji_ok} Done`, { reply_markup: { remove_keyboard: true } });
         }
         catch (error) {
-            log.warning('Failed to save meme categories', { error: serializeError(error), session: session.categories });
+            log.warning('Failed to save meme categories', { error: serializeError(error), session: ctx.session.categories });
             ctx.reply("💥 I could not update your categories, sorry!", { reply_markup: { remove_keyboard: true } });
         }
         finally {
@@ -110,8 +115,6 @@ module.exports.build = function () {
     function cleanUp(ctx) {
         ctx.session.categories = undefined;
     }
-
-
 
     function buildCategoryKeyboard(ctx) {
         const keyboard = new Keyboard();

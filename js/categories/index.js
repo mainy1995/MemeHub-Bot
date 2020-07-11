@@ -13,18 +13,19 @@ const admins = require('../admins');
 const posting = require('../meme-posting');
 const lc = require('../lifecycle');
 const selectCategory = require('./scenes/select_category');
+const scenes = require('../../data/scenes.json').categories;
 
-const SCELE_SELECT_CATEGORY = 'categories_select';
 const clients = {};
 const subscribers = {};
 
 _config.subscribe('rrb', async rrb => {
     try {
-
-        clients.listContests = new Client(rrb.queues.contestsList);
         clients.createCategory = new Client(rrb.queues.categoriesCreate);
         clients.deleteCategory = new Client(rrb.queues.categoriesDelete);
         clients.listCategories = new Client(rrb.queues.categoriesList);
+        clients.categoriesCreateMapping = new Client(rrb.queues.categoriesCreateMapping);
+        clients.categoriesDeleteMapping = new Client(rrb.queues.categoriesDeleteMapping);
+        clients.categoriesMappings = new Client(rrb.queues.categoriesMappings);
         clients.getCategories = new Client(rrb.queues.categoriesGet);
         clients.setCategories = new Client(rrb.queues.categoriesSet);
         clients.addCategories = new Client(rrb.queues.categoriesAdd);
@@ -52,11 +53,23 @@ _config.subscribe('rrb', async rrb => {
     }
 });
 _bot.subscribe(bot => { // Has to be done before require forwarding
-    bot._stage.register(selectCategory.build(SCELE_SELECT_CATEGORY, clients));
+    bot._stage.register(
+        selectCategory.build(clients),
+        require('./scenes/create_category').build(clients),
+        require('./scenes/create_mapping_category').build(clients),
+        require('./scenes/create_mapping_key').build(clients),
+        require('./scenes/delete_category').build(clients),
+        require('./scenes/delete_mapping').build(clients),
+        require('./scenes/list_categoires').build(clients),
+        require('./scenes/list_mappings').build(clients),
+        require('./scenes/menu').build(clients),
+        require('./scenes/set_maximum').build(clients),
+    );
     bot.command('edit_categories', command_edit_categories);
     bot.command('set_categories', command_set_categories);
     bot.command('add_categories', command_add_categories);
     bot.command('remove_categories', command_remove_categories);
+    bot.command('categories', command_categories);
 
 });
 lc.on('stop', stop);
@@ -80,6 +93,24 @@ async function stop() {
     }
 }
 
+async function command_categories(ctx) {
+    // Check group
+    if (!util.is_private_chat(ctx)) {
+        ctx.deleteMessage(ctx.message.id).catch(e => log.error('Cannot delete command message', e));
+        ctx.telegram.sendMessage(ctx.message.from.id, 'This command can only be used here')
+            .catch(e => log.error('Cannot send message to user', e));
+        return;
+    }
+
+    // Check admin
+    if (!await admins.can_change_info(ctx.message.from)) {
+        log.info('User tried to issue categories command without permission.', { user: ctx.message.from, command: ctx.state.command });
+        return;
+    }
+
+    ctx.scene.enter(scenes.MENU);
+}
+
 /**
  * Edits the categories of a meme.
  * @param {The current telegraf context} ctx
@@ -88,7 +119,7 @@ async function edit_categories(ctx, meme_id, post_afterward = false) {
     try {
         const selected = await clients.getCategories.request(meme_id);
         ctx.session.categories = { meme_id, selected, post_afterward };
-        ctx.scene.enter(SCELE_SELECT_CATEGORY);
+        ctx.scene.enter(scenes.SELECT);
     }
     catch (error) {
         log.error("Failed initializing category edit scene", error);
@@ -251,16 +282,9 @@ function can_edit(ctx) {
         || admins.can_delete_messages(ctx.update.message.from);
 }
 
-
-
-
-function parse_categories(input_stirng, slice = 0) {
+module.exports.validate_categories = async function validate_categories(input_stirng, slice = 0) {
     if (typeof input_stirng !== 'string') return [];
-    return input_stirng
-        .split(' ')
-        .slice(slice)
-        .map(escape_category)
-        .filter(c => !!c);
+    return clients.validateCategories.request(input_stirng.split(' ').slice(slice));
 }
 
 async function refreshContests() {
@@ -294,5 +318,3 @@ async function refreshMaximum() {
 
 
 module.exports.edit_categories = edit_categories;
-module.exports.escape_category = escape_category;
-module.exports.parse_categories = parse_categories;

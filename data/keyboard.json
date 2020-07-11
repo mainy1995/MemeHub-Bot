@@ -1,12 +1,19 @@
 {
     "CREATE": "Create a new one",
-    "LIST": "See all",
     "DELETE": "Delete",
+    "ADD": "Add one",
+    "REMOVE": "Remove one",
+    "LIST": "See all",
     "START": "Start",
     "STOP": "Stop",
     "TOP": "Show results",
     "DONE": "I'm done",
     "YES": "Yes",
     "NO": "No",
-    "CANCEL": "I changed my mind"
+    "BACK": "Back",
+    "CANCEL": "I changed my mind",
+    "CREATE_MAPPING": "Add mapping",
+    "LIST_MAPPINGS": "See mappings",
+    "DELETE_MAPPING": "Remove mapping",
+    "SET_MAXIMUM": "Set maximum"
 }

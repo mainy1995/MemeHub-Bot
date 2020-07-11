@@ -1,14 +1,29 @@
+const { Subscriber } = require('redis-request-broker');
+
 const db = require('./mongo-db');
 const log = require('./log');
 const voting = require('./meme-voting');
 const posting = require('./meme-posting');
 const _config = require('./config');
 const _bot = require('./bot');
+const lc = require('./lifecycle');
 
 let bot;
 let group_id = undefined;
+let onEdit;
 _config.subscribe('config', c => group_id = c.group_id);
+_config.subscribe('rrb', async rrb => {
+    onEdit = new Subscriber(rrb.events.edit, update_meme_in_group);
+    try {
+        await onEdit.listen();
+    }
+    catch (error) {
+        log.error("Failed to subscribe to edit event", error);
+        lc.trigger('stop');
+    }
+})
 _bot.subscribe(b => bot = b);
+lc.on('stop', async () => await onEdit.stop().catch(e => log.warn("Failed to stop rrb subscriber", error)));
 
 const awaiting_updates = {}; // Keeping track how many promises are queued to update a meme 
 
@@ -59,6 +74,13 @@ function try_update(meme_id) {
 async function do_update(meme_id) {
     try {
         const meme = await db.get_meme_by_id(meme_id);
+
+        // Ignore memes that are not posted
+        if (!meme.group_message_id) {
+            log.info("Not updating meme, as it is not posted yet", { meme });
+            return
+        }
+
         const caption = posting.build_caption(meme.user, meme.categories);
         const votes = await db.count_votes(meme._id);
         const keyboard = voting.create_keyboard(votes);

@@ -20,7 +20,7 @@ _config.subscribe('config', c => {
     group_id = c.group_id;
 })
 _bot.subscribe(bot => {
-    bot.command('contest', command_contest);
+    bot.command('contests', command_contests);
     // Create stage and load scenes
     bot._stage.register(
         require('./scenes/menu').build(clients),
@@ -47,12 +47,10 @@ async function start(rrb) {
         clients.delete = new Client(rrb.queues.contestsDelete);
         clients.list = new Client(rrb.queues.contestsList);
         clients.top = new Client(rrb.queues.contestsTop);
-        await clients.create.connect();
-        await clients.start.connect();
-        await clients.stop.connect();
-        await clients.delete.connect();
-        await clients.list.connect();
-        await clients.top.connect();
+        clients.validateCategories = new Client(rrb.queues.categoriesValidate);
+        for (const client of Object.values(clients))
+            await client.connect();
+
     }
     catch (error) {
         log.error('Failed to start contests: Cannot connect to rrb.', error);
@@ -66,7 +64,7 @@ async function stop() {
     }
 }
 
-async function command_contest(ctx) {
+async function command_contests(ctx) {
     if (!await validate(ctx))
         return;
 
