@@ -47,6 +47,8 @@ async function log_all_updates(ctx, next) {
         return;
     }
 
+    // Log to both logger and console
+    console.log(ctx.update);
     log.info('Incoming update', ctx.update);
     next();
 }

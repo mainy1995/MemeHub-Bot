@@ -15,5 +15,6 @@
     "CREATE_MAPPING": "Add mapping",
     "LIST_MAPPINGS": "See mappings",
     "DELETE_MAPPING": "Remove mapping",
-    "SET_MAXIMUM": "Set maximum"
+    "SET_MAXIMUM": "Set maximum",
+    "SET_COLUMNS": "Set columns"
 }

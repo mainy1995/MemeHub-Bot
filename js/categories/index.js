@@ -16,6 +16,8 @@ const clients = {};
 const subscribers = {};
 
 _config.subscribe('rrb', async rrb => {
+    await stop();
+
     try {
         // Init workers
         // Category management
@@ -27,6 +29,7 @@ _config.subscribe('rrb', async rrb => {
         clients.categoriesMappings = new Client(rrb.queues.categoriesMappings);
         clients.validateCategories = new Client(rrb.queues.categoriesValidate);
         clients.getOrSetMaximum = new Client(rrb.queues.categoriesGetOrSetMaximum);
+        clients.getOrSetColumns = new Client(rrb.queues.categoriesGetOrSetColumns);
 
         // Categories of memes
         clients.getCategories = new Client(rrb.queues.categoriesGet);
@@ -45,6 +48,7 @@ _config.subscribe('rrb', async rrb => {
         subscribers.categoryCreated = new Subscriber(rrb.events.categoryCreated, categoryCreatedOrDeleted);
         subscribers.categoryDeleted = new Subscriber(rrb.events.categoryDeleted, categoryCreatedOrDeleted);
         subscribers.categoryMaximumChanged = new Subscriber(rrb.events.categoryMaximumChanged, selectCategory.setMaximum);
+        subscribers.categoryColumnsChanged = new Subscriber(rrb.events.categoryColumnsChanged, selectCategory.setColumns);
 
         for (const c of Object.values(clients))
             await c.connect()
@@ -70,6 +74,7 @@ _bot.subscribe(bot => { // Has to be done before require forwarding
         require('./scenes/list_mappings').build(clients),
         require('./scenes/menu').build(clients),
         require('./scenes/set_maximum').build(clients),
+        require('./scenes/set_columns').build(clients)
     );
     bot.command('edit_categories', command_edit_categories);
     bot.command('set_categories', command_set_categories);
@@ -84,6 +89,7 @@ lc.late('start', async () => {
         await refreshContests();
         await refreshCategories();
         await refreshMaximum();
+        await refreshColumns();
     }
     catch (error) {
         await log.error('Failed to retrieve initial category state.', error);
@@ -335,6 +341,16 @@ async function refreshMaximum() {
     }
     catch (error) {
         log.warn('Failed to get category maximum. Category buttons might not include up-to-date data.', error);
+    }
+
+}
+
+async function refreshColumns() {
+    try {
+        selectCategory.setColumns(await clients.getOrSetColumns.request());
+    }
+    catch (error) {
+        log.warn('Failed to get category columns. Category buttons might not formatted correct.', error);
     }
 
 }

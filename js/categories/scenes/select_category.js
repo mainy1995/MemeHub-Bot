@@ -1,6 +1,5 @@
 const Scene = require('telegraf/scenes/base');
 const Keyboard = require('telegraf-keyboard');
-const maintain = require('../../meme-maintaining');
 const posting = require('../../meme-posting');
 const scenes = require('../../../data/scenes.json').categories;
 const log = require('../../log');
@@ -9,15 +8,16 @@ const db = require('../../mongo-db');
 let contestsRunning = [];
 let categories = [];
 let maximum = 1;
+let columns = 4;
 
 module.exports.setContests = _contests => contestsRunning = _contests;
 module.exports.setCategories = _categories => categories = _categories;
 module.exports.setMaximum = _maximum => maximum = _maximum;
+module.exports.setColumns = _columns => columns = _columns;
 module.exports.build = function (clients) {
 
     const emoji_ok = '✅';
     const emoji_no = '❌';
-    const keyboard_width = 4;
 
     const scene = new Scene(scenes.SELECT);
     scene.enter(start);
@@ -129,8 +129,8 @@ module.exports.build = function (clients) {
                     !categories.includes(c) &&
                     !contestsRunning.some(contest => contest.tag === c)
                 ).map(c => `[ #${c} ]`));
-            for (let i = 0; i < options.length; i += keyboard_width) {
-                keyboard.add(options.slice(i, i + keyboard_width));
+            for (let i = 0; i < options.length; i += columns) {
+                keyboard.add(options.slice(i, i + columns));
             }
         }
         catch (error) {

@@ -17,7 +17,8 @@
         "categoryDeleted": "events:category-deleted",
         "categoryMappingCreated": "events:category-mapping-created",
         "categoryMappingDeleted": "events:category-mapping-deleted",
-        "categoryMaximumChanged": "events:category-maximum-changed"
+        "categoryMaximumChanged": "events:category-maximum-changed",
+        "categoryColumnsChanged": "events:category-columns-changed"
     },
     "queues": {
         "mayUserPost": "limits:may-post",
@@ -43,6 +44,7 @@
         "cateogiresAdd": "categories:add",
         "categoriesRemove": "categories:remove",
         "categoriesValidate": "categories:validate",
-        "categoriesGetOrSetMaximum": "categories:maximum"
+        "categoriesGetOrSetMaximum": "categories:maximum",
+        "categoriesGetOrSetColumns": "categories:columns"
     }
 }

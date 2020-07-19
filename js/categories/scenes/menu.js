@@ -13,7 +13,7 @@ module.exports.build = function (_) {
     const keyboarStart = new Keyboard()
         .add(keyboard.ADD, keyboard.LIST, keyboard.REMOVE)
         .add(keyboard.CREATE_MAPPING, keyboard.LIST_MAPPINGS, keyboard.DELETE_MAPPING)
-        .add(keyboard.SET_MAXIMUM, keyboard.DONE)
+        .add(keyboard.SET_MAXIMUM, keyboard.SET_COLUMNS, keyboard.DONE)
         .draw();
 
     const scene = new Scene(scenes.MENU);
@@ -32,6 +32,7 @@ module.exports.build = function (_) {
     scene.hears(keyboard.LIST_MAPPINGS, ctx => ctx.scene.enter(scenes.LIST_MAPPINGS));
     scene.hears(keyboard.DELETE_MAPPING, ctx => ctx.scene.enter(scenes.DELETE_MAPPING));
     scene.hears(keyboard.SET_MAXIMUM, ctx => ctx.scene.enter(scenes.MAXIMUM));
+    scene.hears(keyboard.SET_COLUMNS, ctx => ctx.scene.enter(scenes.COLUMNS));
     scene.hears(keyboard.DONE, async ctx => {
         ctx.session.isNotFirst = false;
         await ctx.reply("See you soon!", { reply_markup: { remove_keyboard: true } });

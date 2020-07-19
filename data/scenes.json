@@ -9,7 +9,8 @@
         "CREATE_MAPPING_CATEGORY": "categories_create_mapping_category",
         "DELETE_MAPPING": "categories_delete_mapping",
         "LIST_MAPPINGS": "categories_list_mappings",
-        "MAXIMUM": "categories_maximum"
+        "MAXIMUM": "categories_maximum",
+        "COLUMNS": "categories_columns"
     },
     "contest": {
         "MENU": "contests_menu",
