@@ -121,7 +121,7 @@ module.exports.build = function (clients) {
         const keyboard = new Keyboard();
         try {
             const options = categories.map(c => ctx.session.categories.selected.includes(c) ? `[ #${c} ]` : `#${c}`);
-            const contests = contestsRunning.map(c => ctx.session.categories.selected.includes(c.tag) ? `[ #${c.tag} ${c.emoji} ]` : `#${c.tag} ${c.emoji}`);
+            const contests = contestsRunning.map(c => ctx.session.categories.selected.includes(c.tag) ? `[ ${c.emoji} #${c.tag} ]` : `${c.emoji} #${c.tag}`);
             options.unshift(...contests);
             options.unshift(emoji_ok, emoji_no);
             options.push(...ctx.session.categories.selected

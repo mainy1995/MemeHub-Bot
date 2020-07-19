@@ -91,7 +91,7 @@ function build_caption_for_contest_entry(contests) {
     return contests.map(tag => {
         const contest = contest_data.find(c => c.tag === tag);
         if (contest)
-            return `${contest.emoji} #${tag}`;
+            return `#${tag} ${contest.emoji}`;
         return `#${tag}`;
     }).join(' · ');
 }
